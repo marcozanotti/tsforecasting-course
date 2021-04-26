@@ -1,0 +1,17 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# tsforecasting-course
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Repository for the Time Series Forecasting course.
