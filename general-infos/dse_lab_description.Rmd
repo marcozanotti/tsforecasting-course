@@ -1,8 +1,9 @@
 ---
-title: |
-  | Time Series Forecasting:
-  | Machine Learning and Deep Learning with R and Python
-output: pdf_document
+title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
+  and Python\n"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
