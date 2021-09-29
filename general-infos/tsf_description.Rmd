@@ -1,0 +1,103 @@
+---
+title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
+  and Python\n"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+In the last 15 years, business requests related to time series forecasting
+changed dramatically. Business needs evolved from predicting at most
+100, low frequency (mainly monthly or quarterly) data, to forecasting 
+10.000, high frequency (mainly daily data) time series. 
+Unfortunately, the classical tools that were highly used in the past years 
+may not be the best anymore, both in terms of accuracy and computationally.  
+Moreover, the review of M-Series Forecasting Competitions suggests that 
+newer ML and DL models, or stacking ensemble techniques may be very accurate 
+compared to easier solutions. 
+
+For these reasons, nowadays the "time series forecasting" data scientist
+is required to be capable of providing business forecasting solutions
+tackling both scalability and accuracy, constantly keeping up-to-date
+with new methods.  
+
+
+## Course Structure
+
+The aim of the course is to teach the students how time series 
+forecasting problems can be solved in practice.  
+The state-of-the-art techniques are presented from a very practical 
+point of view, throughout R tutorials on each main topic. 
+Python algorithms are also presented and used within R by means 
+of the *reticulate* package.
+Theoretical concepts are left to those who are interested in and 
+bibliographic references are listed at the end of the course.
+  
+Students will be divided into 5 groups (3 students each) and 
+will be asked to compete on a Time Series Forecasting challenge. 
+They are expected to provide a fully reproducible notebook 
+(RMarkdown / Jupiter) showing the statistical methods used to 
+solve the forecasting problem at hand.  
+The evaluation will take into consideration also the final forecasting 
+performance obtained with each methods (lower forecasting errors will 
+earn higher marks).  
+
+* 12-16 hours: practical lectures on the main contents
+* 4-8 hours: group projects
+* 4 hours: results' presentations and discussion
+
+
+## Contents
+
+* Time Series Transformations & Feature Engineering
+* Time Series Models (SARIMA, Exponential Smoothing, Facebook's Prophet)
+* Machine Learning (Elastic Net, MARS, SVM, KNN, Random Forest, 
+CatBoost, XGBoost, LightGBM)
+* Deep Learning (Amazon's GluonTS, Torch)
+* Automatic Machine Learning (H2O)
+* Ensemble Learning
+* Hyperparameter Tuning
+
+\pagebreak
+
+## Duration
+
+The course earns 3 ECTS for a total of 24 hours, divided into 6 lectures (4 hours each).
+
+
+## Calendar
+
+1. Saturday 2022-mm-dd, 9.00 - 13.00
+2. Saturday 2022-mm-dd, 9.00 - 13.00
+3. Saturday 2022-mm-dd, 9.00 - 13.00
+4. Saturday 2022-mm-dd, 9.00 - 13.00
+5. Saturday 2022-mm-dd, 9.00 - 13.00
+6. Saturday 2022-mm-dd, 9.00 - 13.00
+
+Lectures take place in ...  
+
+
+## Eligible Students & Requirements
+
+15 students  
+  
+Requirements:
+
+* Knowledge of R / Python
+* Basic knowledge of RMarkdown / Jupiter Notebook
+* Strong interest in time series domain analysis
+* Competitiveness
+
+
+## Application
+
+Motivation letter has to be sent to dse@unimi.it  
+
+Application deadline: 2022-mm-dd
+
+For more informations about the course contact zanottimarco17@gmail.com
