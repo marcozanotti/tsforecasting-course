@@ -23,6 +23,6 @@ from a very practical point of view, throughout **R** tutorials.
 the reticulate package.
 
 -   [General
-    Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/dse_lab_description.html)  
--   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/dse_lab_syllabus.html)  
--   [Materials](https://github.com/marcozanotti/tsforecasting-course)
+    Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+-   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
+-   [Materials](https://github.com/marcozanotti/tsforecasting-course/materials)

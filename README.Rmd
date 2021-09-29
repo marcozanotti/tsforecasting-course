@@ -30,6 +30,6 @@ solved in practice. The state-of-the-art techniques are presented from a very
 practical point of view, throughout **R** tutorials. **Python** algorithms are also 
 presented and used within R by means of the reticulate package.
 
-- [General Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/dse_lab_description.html)  
-- [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/dse_lab_syllabus.html)  
-- [Materials](https://github.com/marcozanotti/tsforecasting-course)  
+- [General Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+- [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
+- [Materials](https://github.com/marcozanotti/tsforecasting-course/materials)  
