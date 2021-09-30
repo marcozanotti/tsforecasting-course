@@ -28,7 +28,7 @@ accuracy, constantly keeping up-to-date with new methods.
 The aim of the course is to teach how time series forecasting problems can be 
 solved in practice. The state-of-the-art techniques are presented from a very 
 practical point of view, throughout **R** tutorials. **Python** algorithms are also 
-presented and used within R by means of the reticulate package.
+presented and used within R by means of the reticulate package. 
 
 - [General Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
 - [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
