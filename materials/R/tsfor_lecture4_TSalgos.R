@@ -492,9 +492,6 @@ refit_tbl %>%
 
 # * Save Artifacts --------------------------------------------------------
 
-# Best by RMSE
-model_fit_best_ts <- calibration_tbl %>%
-  filter(.model_id %in% model_ts_best) %>%
-  pull(.model)
-write_rds(model_fit_best_ts, "artifacts/model_fit_best_ts.rds")
+calibration_tbl %>%
+  write_rds("artifacts/calibration_ts.rds")
 

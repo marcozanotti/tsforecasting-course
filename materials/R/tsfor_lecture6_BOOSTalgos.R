@@ -245,9 +245,6 @@ refit_tbl %>%
 
 # * Save Artifacts --------------------------------------------------------
 
-# Best by RMSE
-model_fit_best_boost <- calibration_tbl %>%
-  filter(.model_id %in% model_boost_best) %>%
-  pull(.model)
-write_rds(model_fit_best_boost, "artifacts/model_fit_best_boost.rds")
+calibration_tbl %>%
+  write_rds("artifacts/calibration_boost.rds")
 
