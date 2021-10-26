@@ -2,8 +2,8 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,12 +12,120 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Course Syllabus
 
-* Time Series Transformations & Feature Engineering
-* Time Series Models (SARIMA, Exponential Smoothing, Facebook's Prophet)
-* Machine Learning (Elastic Net, MARS, SVM, KNN, Random Forest, 
-CatBoost, XGBoost, LightGBM)
-* Deep Learning (Amazon's GluonTS, Torch)
-* Automatic Machine Learning (H2O)
-* Ensemble Learning
-* Hyperparameter Tuning
+### Lecture 1: Time Series Manipulations, Transformations & Visualizations
+
+**Manipulations**:  
+- summarizing by time  
+- padding by time  
+- filtering by time  
+- mutating by time  
+- joining by time  
+
+**Transformations**:   
+- variance reduction  
+- range reduction  
+- smoothing  
+- rolling averages  
+- missing values imputation  
+- anomaly detection and cleaning  
+- lags and differencing  
+- Fourier transforms  
+- confined intervals  
+
+**Visualizations**:  
+- time series  
+- autocorrelations  
+- cross-correlations  
+- smoothing  
+- seasonality  
+- time series decomposition  
+- anomaly detection  
+- time series regressions  
+
+
+### Lecture 2: Time Series Features Engineering
+
+**Feature Engineering**:  
+- time-based features  
+- trend-based features  
+- seasonal features  
+- interaction features  
+- rolling average features  
+- lag features  
+- Fourier features  
+- event data features  
+- external features  
+
+**Tidymodel**:  
+- recipes  
+- workflows  
+
+
+### Lecture 3: Tidymodel & Modeltime
+
+**Tidymodel**:  
+- package framework  
+
+**Modeltime**:  
+- package framework  
+- algorithm specifications  
+- workflows  
+- calibration  
+- evaluation  
+- refitting  
+- forecasting  
+
+
+### Lecture 4: Time Series Models
+
+**Forecasting Methods**:  
+- Naive / Seasonal Naive  
+- Window Functions  
+- S-ARIMA-X  
+- Exponential Smoothing  
+- TBATS  
+- STLM (Decomposition models)  
+- Facebook's Prophet  
+
+
+### Lecture 5: Machine Learning Models
+
+**Forecasting Methods**:  
+- Linear Regression  
+- Elastic Net  
+- MARS  
+- SVM  
+- KNN  
+- Random Forest  
+- Boosting  
+- Cubist  
+- Neural Network  
+
+
+### Lecture 6: Boosting Time Series Models
+
+**Forecasting Methods**:  
+- ARIMA Boost  
+- Prophet Boost  
+
+
+### Lecture 7: Deep Learning Models
+
+**Forecasting Methods**:  
+- GluonTS NBEATS  
+- GluonTS DeepAR  
+- Torch  
+
+
+### Lecture 8: Automatic Machine Learning
+
+**Forecasting Methods**:  
+- H2O  
+
+
+### Lecture 9: Hyperparameter Tuning
+
+
+### Lecture 10: Ensemble Learning
+
 

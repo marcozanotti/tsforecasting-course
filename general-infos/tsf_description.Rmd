@@ -37,49 +37,56 @@ Python algorithms are also presented and used within R by means
 of the *reticulate* package.
 Theoretical concepts are left to those who are interested in and 
 bibliographic references are listed at the end of the course.
-  
-Students will be divided into 5 groups (3 students each) and 
-will be asked to compete on a Time Series Forecasting challenge. 
-They are expected to provide a fully reproducible notebook 
-(RMarkdown / Jupiter) showing the statistical methods used to 
-solve the forecasting problem at hand.  
-The evaluation will take into consideration also the final forecasting 
-performance obtained with each methods (lower forecasting errors will 
-earn higher marks).  
 
-* 12-16 hours: practical lectures on the main contents
+* 10-14 hours: practical lectures on the main contents
 * 4-8 hours: group projects
-* 4 hours: results' presentations and discussion
+* 2 hours: results' presentations and discussion
 
 
 ## Contents
 
-* Time Series Transformations & Feature Engineering
-* Time Series Models (SARIMA, Exponential Smoothing, Facebook's Prophet)
-* Machine Learning (Elastic Net, MARS, SVM, KNN, Random Forest, 
-CatBoost, XGBoost, LightGBM)
-* Deep Learning (Amazon's GluonTS, Torch)
-* Automatic Machine Learning (H2O)
-* Ensemble Learning
+* Time Series Manipulations, Transformations & Visualizations
+* Time Series Features Engineering
+* Time Series Models
+* Machine Learning Models
+* Deep Learning Models
+* Automatic Machine Learning
 * Hyperparameter Tuning
+* Ensemble Learning
 
 \pagebreak
 
-## Duration
 
-The course earns 3 ECTS for a total of 24 hours, divided into 6 lectures (4 hours each).
+## Evaluation
+
+Students will be divided into 5 groups (3 students each) and 
+will be asked to compete on a Time Series Forecasting challenge. 
+They are expected to provide a fully reproducible project showing 
+the statistical methods used to solve the forecasting problem at hand.  
+
+The evaluation will take into consideration:  
+
+* the correctness of the methods used (10pt)
+* the final average forecasting performance 
+(lower forecasting errors will earn higher marks) (5pt)
+* the total time spent on developing the project
+(less time will earn higher marks) (5pt)
+* the total computation time (2.5pt)
+* the originality of the approach (5pt) 
+* the presentation of results (2.5pt)
 
 
-## Calendar
+## Duration & Calendar
 
-1. Saturday 2022-mm-dd, 9.00 - 13.00
-2. Saturday 2022-mm-dd, 9.00 - 13.00
-3. Saturday 2022-mm-dd, 9.00 - 13.00
-4. Saturday 2022-mm-dd, 9.00 - 13.00
-5. Saturday 2022-mm-dd, 9.00 - 13.00
-6. Saturday 2022-mm-dd, 9.00 - 13.00
+The course earns 3 ECTS for a total of 20 hours, divided into 5 lectures (4 hours each).
 
-Lectures take place in ...  
+1. Saturday 2022-01-29, 9.00 - 13.00
+2. Saturday 2022-02-05, 9.00 - 13.00
+3. Saturday 2022-02-12, 9.00 - 13.00
+4. Saturday 2022-02-19, 9.00 - 13.00
+5. Saturday 2022-03-05, 9.00 - 13.00
+
+Lectures take place at University of Milan, Via Conservatorio 7.  
 
 
 ## Eligible Students & Requirements
@@ -90,6 +97,7 @@ Requirements:
 
 * Knowledge of R / Python
 * Basic knowledge of RMarkdown / Jupiter Notebook
+* Knowledge of the theoretical framework related to ML/DL models
 * Strong interest in time series domain analysis
 * Competitiveness
 
@@ -98,6 +106,8 @@ Requirements:
 
 Motivation letter has to be sent to dse@unimi.it  
 
-Application deadline: 2022-mm-dd
+**Application deadline: 2022-01-09**
 
-For more informations about the course contact zanottimarco17@gmail.com
+For more information about the course contact zanottimarco17@gmail.com
+or look at the 
+[Course Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
