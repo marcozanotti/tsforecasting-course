@@ -10,6 +10,8 @@
 # - Grid Search
 # - Tuning
 
+setwd("materials")
+
 
 
 # Packages ----------------------------------------------------------------
@@ -51,6 +53,7 @@ model_tbl <- combine_modeltime_tables(
 
 # calibrate models again
 calibration_tbl <- model_tbl %>%
+  modeltime_refit(training(splits)) %>% # refitting helps solving errors from saved models
   modeltime_calibrate(testing(splits))
 
 calibration_tbl %>%

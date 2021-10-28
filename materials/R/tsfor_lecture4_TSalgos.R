@@ -31,6 +31,7 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 
 
 # * Train / Test Sets -----------------------------------------------------
+
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
 splits %>%

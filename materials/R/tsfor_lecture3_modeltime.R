@@ -60,7 +60,7 @@ rcp_spec_lag <- artifacts_list$recipes$rcp_spec_lag
 # https://github.com/business-science/modeltime/issues/5
 
 
-# * Algorithms' Specification (Engines) -----------------------------------
+# * Engines (Algorithms' Specification) -----------------------------------
 
 # - parsnip algorithms
 # - modeltime algorithms
@@ -95,7 +95,7 @@ model_spec_xgb <- boost_tree(
   set_engine("xgboost")
 
 
-# * Workflows -------------------------------------------------------------
+# * Workflows (Fitting / Training) ----------------------------------------
 
 # - workflow()
 # - add_recipe()
