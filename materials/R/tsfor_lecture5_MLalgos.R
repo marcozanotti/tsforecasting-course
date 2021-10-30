@@ -24,6 +24,13 @@ setwd("materials")
 source("R/utils.R")
 source("R/packages.R")
 
+# packages treesnip and catboost have to be installed from dev versions
+remotes::install_github("curso-r/treesnip")
+devtools::install_url(
+  "https://github.com/catboost/catboost/releases/download/v1.0.0/catboost-R-Linux-1.0.0.tgz",
+  INSTALL_opts = c("--no-multiarch", "--no-test-load")
+)
+
 
 
 # Data & Artifacts --------------------------------------------------------
@@ -462,6 +469,14 @@ calibrate_evaluate_plot(
 
 ?boost_tree()
 
+# LIGHT GBM
+# https://lightgbm.readthedocs.io/en/latest/
+# https://github.com/microsoft/LightGBM
+
+# CAT BOOST
+# https://catboost.ai/en/docs/
+# https://github.com/catboost/catboost
+
 # - Strengths: Best for seasonality & complex patterns
 # - Weaknesses:
 #   - Cannot predict beyond the maximum/minimum target (e.g. increasing trend)
@@ -484,6 +499,16 @@ model_spec_xgb <- boost_tree(
 ) %>%
   set_engine("xgboost")
 
+# LIGHT GBM
+model_spec_lightgbm <- boost_tree(mode = "regression") %>%
+  set_engine("lightgbm")
+# objective = "reg:tweedie"
+
+# CAT BOOST
+model_spec_catboost <- boost_tree(mode = "regression") %>%
+  set_engine("catboost")
+# loss_function = "Tweedie:variance_power=1.5"
+
 
 # * Workflows -------------------------------------------------------------
 
@@ -494,6 +519,12 @@ wrkfl_fit_xgb_spline <- workflow() %>%
   add_recipe(rcp_spec_spline) %>%
   fit(training(splits))
 
+wrkfl_fit_xgb_spline %>%
+  extract_fit_parsnip() %>%
+  pluck("fit") %>%
+  xgboost::xgb.importance(model = .) %>%
+  xgboost::xgb.plot.importance()
+
 # XGBOOST + Lags
 set.seed(123)
 wrkfl_fit_xgb_lag <- workflow() %>%
@@ -501,15 +532,75 @@ wrkfl_fit_xgb_lag <- workflow() %>%
   add_recipe(rcp_spec_lag) %>%
   fit(training(splits))
 
+wrkfl_fit_xgb_lag %>%
+  extract_fit_parsnip() %>%
+  pluck("fit") %>%
+  xgboost::xgb.importance(model = .) %>%
+  xgboost::xgb.plot.importance()
+
+
+# LIGHT GBM + Splines
+set.seed(123)
+wrkfl_fit_lightgbm_spline <- workflow() %>%
+  add_model(model_spec_lightgbm) %>%
+  add_recipe(rcp_spec_spline) %>%
+  fit(training(splits))
+
+# LIGHT GBM + Lags
+set.seed(123)
+wrkfl_fit_lightgbm_lag <- workflow() %>%
+  add_model(model_spec_lightgbm) %>%
+  add_recipe(rcp_spec_lag) %>%
+  fit(training(splits))
+
+wrkfl_fit_lightgbm_lag %>%
+  parsnip::extract_fit_engine() %>%
+  lightgbm::lgb.importance() %>%
+  lightgbm::lgb.plot.importance()
+
+
+# CAT BOOST + Splines
+set.seed(123)
+wrkfl_fit_catboost_spline <- workflow() %>%
+  add_model(model_spec_catboost) %>%
+  add_recipe(rcp_spec_spline) %>%
+  fit(training(splits))
+
+# CAT BOOST + Lags
+set.seed(123)
+wrkfl_fit_catboost_lag <- workflow() %>%
+  add_model(model_spec_catboost) %>%
+  add_recipe(rcp_spec_lag) %>%
+  fit(training(splits))
+
+wrkfl_fit_catboost_lag %>%
+  parsnip::extract_fit_engine() %>%
+  catboost::catboost.get_feature_importance() %>%
+  as_tibble(rownames = "feature") %>%
+  rename(value = V1) %>%
+  arrange(-value) %>%
+  mutate(feature = as_factor(feature) %>% fct_rev()) %>%
+  dplyr::slice(1:10) %>%
+  ggplot(aes(value, feature)) +
+  geom_col()
+
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
 calibrate_evaluate_plot(
   wrkfl_fit_xgb_spline,
   wrkfl_fit_xgb_lag,
-  updated_desc = c("XGB - Splines", "XGB - Lags")
+  #wrkfl_fit_lightgbm_spline,
+  #wrkfl_fit_lightgbm_lag,
+  wrkfl_fit_catboost_spline,
+  wrkfl_fit_catboost_lag,
+  updated_desc = c(
+    "XGB - Splines", "XGB - Lags",
+    #"LIGHT GBM - Splines", "LIGHT GBM - Lags",
+    "CATBOOST - Splines", "CATBOOST - Lags"
+  )
 )
-
+# learn how to train Light GBM and CAT Boost
 
 
 # CUBIST ------------------------------------------------------------------
