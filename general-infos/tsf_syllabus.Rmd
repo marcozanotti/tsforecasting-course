@@ -2,8 +2,8 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -111,10 +111,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Lecture 7: Deep Learning Models
 
-**Forecasting Methods**:  
-- GluonTS NBEATS  
-- GluonTS DeepAR  
-- Torch  
+**Forecasting Methods**:    
+- GluonTS Deep AR   
+- GluonTS NBEATS    
+- GluonTS GP Forecaster  
+- GluonTS Deep State  
+- Torch Deep AR   
 
 
 ### Lecture 8: Automatic Machine Learning
@@ -125,7 +127,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Lecture 9: Hyperparameter Tuning
 
+**Methods**:    
+- Sequential  
+- Non-Sequential  
+
+**Cross Validation**:  
+- Time Series Cross Validation  
+- V-Fold Cross Validation  
+- Grid Searches  
+
 
 ### Lecture 10: Ensemble Learning
 
+**Forecasting Methods**:  
+- Simple Averaging Ensemble  
+- Weight Averaging Ensemble  
+- Stacking and Metalearning  
+- Multi-level Ensemble  
 

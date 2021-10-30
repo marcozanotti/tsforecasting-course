@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 
 2021-2022
 
-MSc Data Science for Economics, University of Milan
+[MSc Data Science for Economics, University of Milan](https://dse.cdl.unimi.it/en)
 
 *Overview*
 
