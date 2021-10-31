@@ -3,7 +3,8 @@
 
 2021-2022
 
-MSc Data Science for Economics, University of Milan
+[MSc Data Science for Economics, University of
+Milan](https://dse.cdl.unimi.it/en)
 
 *Overview*
 
@@ -25,4 +26,5 @@ the reticulate package.
 -   [General
     Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
 -   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
--   [Materials](https://github.com/marcozanotti/tsforecasting-course/tree/master/materials)
+-   Materials: access to the course materials will be given to the
+    students during the first lecture.
