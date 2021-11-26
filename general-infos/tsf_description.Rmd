@@ -2,8 +2,8 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -39,6 +39,7 @@ Theoretical concepts are left to those who are interested in and
 bibliographic references are listed at the end of the course.
 
 * 10-14 hours: practical lectures on the main contents
+* 1 hour: virtual meeting with Matt Dancho
 * 4-8 hours: group projects
 * 2 hours: results' presentations and discussion
 

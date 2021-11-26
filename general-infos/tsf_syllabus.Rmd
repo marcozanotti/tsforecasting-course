@@ -2,8 +2,8 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -125,6 +125,14 @@ knitr::opts_chunk$set(echo = TRUE)
 - H2O  
 
 
+<!--
+### Lecture 9: Bayesian Modelling
+
+**Forecasting Methods**:  
+- 
+-->
+
+
 ### Lecture 9: Hyperparameter Tuning
 
 **Methods**:    
@@ -144,4 +152,28 @@ knitr::opts_chunk$set(echo = TRUE)
 - Weight Averaging Ensemble  
 - Stacking and Metalearning  
 - Multi-level Ensemble  
+
+
+### Lecture 11: Recursive Machine Learning Forecasting
+
+**ML Recursivity**:  
+- single time series recursive modelling  
+- panel data recursive modelling
+
+
+<!--
+### Lecture 12: Panel Data Forecasting
+
+**Forecasting Methods**:  
+- Nested Forecasting 
+- Global Modelling
+- Hierarchical Time Series Forecasting
+
+
+### Lecture 13: Spark Backend
+
+**Sparlyr**:  
+- single time series Spark workflow
+- panel data Spark workflow
+-->
 
