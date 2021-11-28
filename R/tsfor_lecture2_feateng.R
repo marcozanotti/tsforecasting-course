@@ -8,8 +8,6 @@
 # - Learn advanced features engineering workflows & techniques
 # - Learn how to use recipes
 
-setwd("materials")
-
 
 
 # Packages ----------------------------------------------------------------

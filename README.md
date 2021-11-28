@@ -29,6 +29,8 @@ the reticulate package.
 
 # Materials:
 
+-   Slides of the course  
 -   R scripts for each lecture  
 -   Data for the lectures  
--   Slides of the course
+-   Challenges
+-   Examination

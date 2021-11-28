@@ -9,8 +9,6 @@
 # - Commonly used time series transformations
 # - Commonly used time series visualizations
 
-setwd("materials")
-
 
 
 # Packages ----------------------------------------------------------------
@@ -68,14 +66,6 @@ subscribers_tbl <- read_rds("data/subscribers.rds")
 
 # - Host Events
 events_tbl <- read_rds("data/events.rds")
-
-
-# * Revenues --------------------------------------------------------------
-
-# - Revenue data (weekly)
-# - Product Events
-# transactions_tbl  <- read_rds("data/transactions_weekly.rds")
-# product_tbl <- read_rds("data/product_events.rds")
 
 
 
