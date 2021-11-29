@@ -2,8 +2,8 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -39,7 +39,7 @@ Theoretical concepts are left to those who are interested in and
 bibliographic references are listed at the end of the course.
 
 * 10-14 hours: practical lectures on the main contents
-* 1 hour: virtual meeting with Matt Dancho
+* 1 hour: virtual meeting with [Matt Dancho](https://github.com/mdancho84)
 * 4-8 hours: group projects
 * 2 hours: results' presentations and discussion
 
@@ -54,6 +54,7 @@ bibliographic references are listed at the end of the course.
 * Automatic Machine Learning
 * Hyperparameter Tuning
 * Ensemble Learning
+* Recursivity of ML Models
 
 \pagebreak
 
@@ -68,13 +69,11 @@ the statistical methods used to solve the forecasting problem at hand.
 The evaluation will take into consideration:  
 
 * the correctness of the methods used (10pt)
-* the final average forecasting performance 
-(lower forecasting errors will earn higher marks) (5pt)
-* the total time spent on developing the project
-(less time will earn higher marks) (5pt)
-* the total computation time (2.5pt)
+* the final average forecasting performance (5pt)
+* the total time spent on developing the project (5pt)
+* the total computation time (1pt)
 * the originality of the approach (5pt) 
-* the presentation of results (2.5pt)
+* the presentation of results (4pt)
 
 
 ## Duration & Calendar
@@ -87,7 +86,9 @@ The course earns 3 ECTS for a total of 20 hours, divided into 5 lectures (4 hour
 4. Saturday 2022-02-19, 9.00 - 13.00
 5. Saturday 2022-03-05, 9.00 - 13.00
 
-Lectures take place at University of Milan, Via Conservatorio 7.  
+Lectures take place at University of Milan, Via Conservatorio 7.   
+
+The 1 hour virtual meeting with Matt Dancho will take place during the week after 18pm.
 
 
 ## Eligible Students & Requirements
@@ -98,6 +99,7 @@ Requirements:
 
 * Knowledge of R / Python
 * Basic knowledge of RMarkdown / Jupiter Notebook
+* GitHub Account
 * Knowledge of the theoretical framework related to ML/DL models
 * Strong interest in time series domain analysis
 * Competitiveness
