@@ -1,8 +1,12 @@
 ---
-title: "Exam Guidelines"
+title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
+  and Python\n- Exam Guidelines -"
 author: "Marco Zanotti"
 date: "2021-2022"
-output: html_document
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
@@ -75,6 +79,8 @@ ids <- data$info %>%
   pull(id)
 ```
 
+&nbsp;  
+
 ```{r hourly, echo=FALSE}
 data$data %>% 
   filter(id %in% ids & period == "Hourly") %>% 
@@ -87,6 +93,8 @@ data$data %>%
     .title = "Hourly sample of 5 M4-competition time series"
   )
 ```
+
+&nbsp;  
 
 ```{r daily, echo=FALSE}
 data$data %>% 
@@ -101,6 +109,8 @@ data$data %>%
   )
 ```
 
+&nbsp;  
+
 ```{r weekly, echo=FALSE}
 data$data %>% 
   filter(id %in% ids & period == "Weekly") %>% 
@@ -113,6 +123,8 @@ data$data %>%
     .title = "Weekly sample of 5 M4-competition time series"
   )
 ```
+
+&nbsp;  
 
 ```{r monthly, echo=FALSE}
 data$data %>% 
@@ -127,6 +139,8 @@ data$data %>%
   )
 ```
 
+&nbsp;  
+
 ```{r quarterly, echo=FALSE}
 data$data %>% 
   filter(id %in% ids & period == "Quarterly") %>% 
@@ -139,6 +153,8 @@ data$data %>%
     .title = "Quarterly sample of 5 M4-competition time series"
   )
 ```
+
+&nbsp;  
 
 ```{r yearly, echo=FALSE}
 data$data %>% 
