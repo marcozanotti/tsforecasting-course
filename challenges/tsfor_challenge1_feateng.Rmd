@@ -2,7 +2,10 @@
 title: "Challenge 1 - Feature Engineering"
 author: "Marco Zanotti"
 date: "2021-2022"
-output: html_document
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
