@@ -1,0 +1,166 @@
+---
+title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
+  and Python\n- Exam Guidelines -"
+author: "Marco Zanotti"
+date: "2021-2022"
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(timetk)
+```
+
+## Content
+
+This is challenge is all about time series forecasting & reporting.    
+
+The purpose of this challenge is to verify your ability to accurately and timely
+forecast many business time series of different frequencies. 
+
+You are free to use the tool you prefer to estimate models and produce forecasts.  
+
+
+
+## Requirements
+
+You are required to produce a notebook to present your whole project, from
+methodologies used to the results obtained, carefully explaining your
+approaches.  
+
+In particular, you have to report:
+- list of forecasting methods used  
+- accuracy results on test set for each time series and each method using RMSSE, MASE and sMAPE  
+- best accuracy results on test set for each time series using RMSSE, MASE and sMAPE    
+- average accuracy result on test set (Average RMSSE, MASE and sMAPE)   
+- total computation time required to make the computations with system information  
+- total time spent on developing the project  
+
+
+
+## Data
+
+The data comes from the M4-Competition, the fourth of the 
+[Makridakis Competitions](https://en.wikipedia.org/wiki/Makridakis_Competitions),
+a series of open competitions to evaluate and compare the accuracy of different 
+time series forecasting methods.  
+
+The "M" competitions have had an enormous influence on the field of forecasting.  
+"They focused attention on what models produced good forecasts, rather than on 
+the mathematical properties of those models." Professor Rob J. Hyndman
+
+The dataset of the M-Competitions are publicly available and downloadable from
+the International [Institute of Forecasters](https://forecasters.org/resources/time-series-data/).
+In particular, the exam data is taken sampling the 120 different time series 
+from the M4-Competition at various periodicities.   
+
+You are encouraged to read about the main results of this competition:  
+- [The M4 Competition: 100,000 time series and 61 forecasting methods](https://www.sciencedirect.com/science/article/pii/S0169207019301128?via%3Dihub)  
+- [The M4 Competition: Results, findings, conclusion and way forward](https://www.sciencedirect.com/science/article/abs/pii/S0169207018300785?via%3Dihub)  
+
+Exam dataset contains 120 time series from the M4-competitions:  
+- 20 hourly time series     
+- 20 daily time series     
+- 20 weekly time series    
+- 20 monthly time series   
+- 20 quarterly time series   
+- 20 yearly time series  
+
+```{r data, echo=FALSE}
+data <- read_rds("sample_data.rds")
+```
+
+&nbsp;  
+
+```{r hourly, echo=FALSE}
+data %>% 
+  filter(period == "Hourly") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Hourly sample of 5 M4-competition time series"
+  )
+```
+
+&nbsp;  
+
+```{r daily, echo=FALSE}
+data %>% 
+  filter(period == "Daily") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Daily sample of 5 M4-competition time series"
+  )
+```
+
+&nbsp;  
+
+```{r weekly, echo=FALSE}
+data %>% 
+  filter(period == "Weekly") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Weekly sample of 5 M4-competition time series"
+  )
+```
+
+&nbsp;  
+
+```{r monthly, echo=FALSE}
+data %>% 
+  filter(period == "Monthly") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Monthly sample of 5 M4-competition time series"
+  )
+```
+
+&nbsp;  
+
+```{r quarterly, echo=FALSE}
+data %>% 
+  filter(period == "Quarterly") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Quarterly sample of 5 M4-competition time series"
+  )
+```
+
+&nbsp;  
+
+```{r yearly, echo=FALSE}
+data %>% 
+  filter(period == "Yearly") %>% 
+  plot_time_series(
+    .date_var = date, 
+    .value = value, 
+    .facet_vars = id, 
+    .facet_scales = "free", 
+    .smooth = FALSE,
+    .title = "Yearly sample of 5 M4-competition time series"
+  )
+```
