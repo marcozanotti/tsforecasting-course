@@ -73,6 +73,7 @@ Exam dataset contains 120 time series from the M4-competitions:
 
 ```{r data, echo=FALSE}
 data <- read_rds("../data/exam_dataset.rds")
+set.seed(123)
 ids <- data$info %>% 
   group_by(period) %>% 
   slice_sample(n = 5) %>% 
