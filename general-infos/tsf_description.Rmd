@@ -1,8 +1,10 @@
 ---
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
+author: "Marco Zanotti"
+date: "2021-2022"
 output:
-  #pdf_document: default
+  pdf_document: default
   rmdformats::downcute:
     highlight: tango
 ---
@@ -11,6 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+&nbsp;  
 
 In the last 15 years, business requests related to time series forecasting
 changed dramatically. Business needs evolved from predicting at most

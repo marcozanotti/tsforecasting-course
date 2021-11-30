@@ -1,8 +1,10 @@
 ---
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
-  and Python\n-Course Syllabus-"
+  and Python\n- Course Syllabus -"
+author: "Marco Zanotti"
+date: "2021-2022"
 output:
-  #pdf_document: default
+  pdf_document: default
   rmdformats::downcute:
     highlight: tango
     toc_depth: 2
