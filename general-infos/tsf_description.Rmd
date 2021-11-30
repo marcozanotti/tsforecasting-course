@@ -2,8 +2,9 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 output:
-  pdf_document: default
-  html_document: default
+  #pdf_document: default
+  rmdformats::downcute:
+    highlight: tango
 ---
 
 ```{r setup, include=FALSE}

@@ -1,18 +1,19 @@
 ---
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
-  and Python\n"
+  and Python\n-Course Syllabus-"
 output:
-  html_document: default
-  pdf_document: default
+  #pdf_document: default
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Course Syllabus
 
-### Lecture 1: Time Series Manipulations, Transformations & Visualizations
+## Lecture 1: Time Series Manipulations, Transformations & Visualizations
 
 **Manipulations**:  
 - summarizing by time  
@@ -43,7 +44,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - time series regressions  
 
 
-### Lecture 2: Time Series Features Engineering
+## Lecture 2: Time Series Features Engineering
 
 **Feature Engineering**:  
 - time-based features  
@@ -61,7 +62,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - workflows  
 
 
-### Lecture 3: Tidymodel & Modeltime
+## Lecture 3: Tidymodel & Modeltime
 
 **Tidymodel**:  
 - package framework  
@@ -76,7 +77,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - forecasting  
 
 
-### Lecture 4: Time Series Models
+## Lecture 4: Time Series Models
 
 **Forecasting Methods**:  
 - Naive / Seasonal Naive  
@@ -88,7 +89,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - Facebook's Prophet  
 
 
-### Lecture 5: Machine Learning Models
+## Lecture 5: Machine Learning Models
 
 **Forecasting Methods**:  
 - Linear Regression  
@@ -102,14 +103,14 @@ knitr::opts_chunk$set(echo = TRUE)
 - Neural Network  
 
 
-### Lecture 6: Boosting Time Series Models
+## Lecture 6: Boosting Time Series Models
 
 **Forecasting Methods**:  
 - ARIMA Boost  
 - Prophet Boost  
 
 
-### Lecture 7: Deep Learning Models
+## Lecture 7: Deep Learning Models
 
 **Forecasting Methods**:    
 - GluonTS Deep AR   
@@ -119,7 +120,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - Torch Deep AR   
 
 
-### Lecture 8: Automatic Machine Learning
+## Lecture 8: Automatic Machine Learning
 
 **Forecasting Methods**:  
 - H2O  
@@ -133,7 +134,7 @@ knitr::opts_chunk$set(echo = TRUE)
 -->
 
 
-### Lecture 9: Hyperparameter Tuning
+## Lecture 9: Hyperparameter Tuning
 
 **Methods**:    
 - Sequential  
@@ -145,7 +146,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - Grid Searches  
 
 
-### Lecture 10: Ensemble Learning
+## Lecture 10: Ensemble Learning
 
 **Forecasting Methods**:  
 - Simple Averaging Ensemble  
@@ -154,7 +155,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - Multi-level Ensemble  
 
 
-### Lecture 11: Recursive Machine Learning Forecasting
+## Lecture 11: Recursive Machine Learning Forecasting
 
 **ML Recursivity**:  
 - single time series recursive modelling  
