@@ -17,7 +17,7 @@ library(timetk)
 
 ## Content
 
-This is challenge is about hyperparameter tuning (Lectures 1 and 2).  
+This challenge is about hyperparameter tuning (Lectures 1 and 2).  
 
 The purpose of this challenge is to test your ability to optimize sequential and
 non-sequential models for time series forecasting.  

@@ -17,14 +17,11 @@ library(timetk)
 
 ## Content
 
-This is challenge is about testing time series forecasting algorithms 
+This challenge is about testing time series forecasting algorithms 
 (Lectures 4, 5, 6, 7, 8 and 10).  
 
 The purpose of this challenge is to test your ability to use many models
 to forecast different time series and to evaluate them.  
-
-The analysis you perform at this first stage will be the basis to perform accurate
-forecasts during the next challenges.  
 
 
 

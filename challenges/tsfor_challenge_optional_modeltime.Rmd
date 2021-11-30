@@ -17,7 +17,7 @@ library(timetk)
 
 ## Content
 
-This is challenge is about the use of modeltime R package (Lecture 3).  
+This challenge is about the use of modeltime R package (Lecture 3).  
 
 The purpose of this challenge is to apply the modeltime workflow to one or
 more time series of the challenge.   

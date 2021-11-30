@@ -17,7 +17,7 @@ library(timetk)
 
 ## Content
 
-This is challenge is all about explorative data analysis (EDA) and
+This challenge is all about explorative data analysis (EDA) and
 features engineering in time series (Lectures 1 and 2).  
 
 The purpose of this challenge is to test your ability to effectively understand 
