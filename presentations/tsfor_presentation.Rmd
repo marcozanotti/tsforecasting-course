@@ -405,3 +405,10 @@ background-image: url("imgs/img39.png")
 background-size: contain 
 background-color: black
 
+
+---
+class: inverse, center, middle
+background-color: black
+
+# Thank you!
+<!-- Separator -->
