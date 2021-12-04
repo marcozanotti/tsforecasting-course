@@ -1,6 +1,6 @@
 ---
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
-  and Python\n- Exam Guidelines -"
+  and Python\n- Hackathon -"
 author: "Marco Zanotti"
 date: "2021-2022"
 output: 
@@ -18,16 +18,28 @@ library(timetk)
 
 ## Content
 
-This is challenge is all about time series forecasting & reporting.    
+The Hackathon is all about time series forecasting & reporting.    
 
-The purpose of this challenge is to verify your ability to accurately and timely
+The purpose of this hackathon is to verify your ability to accurately and timely
 forecast many business time series of different frequencies. 
 
 You are free to use the tool you prefer to estimate models and produce forecasts.  
 
 
+## Timeline
+
+The competition will take place by the end of the course lectures and you
+will have 3 weeks to complete the requirements.  
+
+The full dataset will be made available by the Professor.  
+
+The last lecture of the course will be dedicated to the presentations of the 
+results.  
+
 
 ## Requirements
+
+This is a team competition. Each team has to contain three members.  
 
 You are required to produce a notebook to present your whole project, from
 methodologies used to the results obtained, carefully explaining your
@@ -40,7 +52,6 @@ In particular, you have to report:
 - average accuracy result on test set (Average RMSSE, MASE and sMAPE)   
 - total computation time required to make the computations with system information  
 - total time spent on developing the project  
-
 
 
 ## Data
