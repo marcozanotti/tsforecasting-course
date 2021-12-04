@@ -26,7 +26,7 @@ the reticulate package.
 -   [General
     Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
 -   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
--   [Hackathon](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_exam_guidelines.html)
+-   [Hackathon](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)
 
 # Materials:
 
