@@ -103,7 +103,7 @@ Requirements:
 
 * Knowledge of R / Python
 * Basic knowledge of RMarkdown / Jupiter Notebook
-* GitHub Account
+* Personal laptop
 * Knowledge of the theoretical framework related to ML/DL models
 * Strong interest in time series domain analysis
 * Competitiveness
