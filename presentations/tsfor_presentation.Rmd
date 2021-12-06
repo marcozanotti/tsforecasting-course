@@ -338,6 +338,13 @@ background-color: black
 
 ---
 class: inverse, center, middle
+background-image: url("imgs/img53.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
 background-image: url("imgs/img31.png")
 background-size: contain 
 background-color: black
@@ -380,6 +387,13 @@ background-color: black
 
 ---
 class: inverse, center, middle
+background-image: url("imgs/img55.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
 background-image: url("imgs/img51.png")
 background-size: contain
 background-color: black
@@ -388,6 +402,13 @@ background-color: black
 ---
 class: inverse, center, middle
 background-image: url("imgs/img37.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img54.png")
 background-size: contain 
 background-color: black
 
