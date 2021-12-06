@@ -138,26 +138,31 @@ calibrate_evaluate_plot <- function(..., type = "testing", updated_desc = NULL) 
 
 
 # Function to extract the .model_id of the "best" model according to a metric
-select_best_id <- function(calibration, metric = "rmse", n) {
-
+select_best_id <- function(calibration, n = 1, metric = "rmse", by_id = FALSE, id_var = NULL) {
+  
+  model_best_id <- calibration %>%
+    modeltime_accuracy(acc_by_id = by_id)
+  
+  if (by_id) {
+    if (is.null(id_var)) {
+      stop("Specify the id variable name.")
+    }
+    model_best_id <- model_best_id %>% 
+      group_by(!!rlang::sym(id_var))
+  }
+  
   if (metric == "rsq") {
-
-    model_best_id <- calibration %>%
-      modeltime_accuracy() %>%
+    model_best_id <- model_best_id %>% 
       slice_max(!!rlang::sym(metric), n = n) %>%
       pull(.model_id)
-
   } else {
-
-    model_best_id <- calibration_tbl %>%
-      modeltime_accuracy() %>%
+    model_best_id <- model_best_id %>%
       slice_min(!!rlang::sym(metric), n = n) %>%
       pull(.model_id)
-
   }
-
+  
   return(model_best_id)
-
+  
 }
 
 
@@ -178,3 +183,28 @@ lag_transf_grouped <- function(data){
   return(data_lags)
 }
 
+
+# Function to calibrate models, evaluate their accuracy and plot results on nested data
+nested_calibrate_evaluate_plot <- function(nested_data, workflows, id_var, parallel = FALSE) {
+  
+  nested_calibration_tbl <- nested_data %>% 
+    modeltime_nested_fit(
+      model_list = workflows,
+      control = control_nested_fit(
+        verbose   = TRUE,
+        allow_par = parallel
+      )
+    )
+  
+  print(nested_calibration_tbl %>% extract_nested_test_accuracy())
+  
+  print(
+    nested_calibration_tbl %>%
+      extract_nested_test_forecast() %>%
+      group_by(!!rlang::sym(id_var)) %>% 
+      plot_modeltime_forecast(.conf_interval_show = FALSE)
+  )
+  
+  return(invisible(nested_calibration_tbl))
+  
+}
