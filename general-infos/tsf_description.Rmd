@@ -59,6 +59,8 @@ bibliographic references are listed at the end of the course.
 * Hyperparameter Tuning
 * Ensemble Learning
 * Recursivity of ML Models
+* Nested (Iterative) Forecasting
+* Global Modelling
 
 \pagebreak
 

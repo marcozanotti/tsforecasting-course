@@ -133,6 +133,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **Forecasting Methods**:  
 - 
+
+
+### Lecture 10: GAMs Modelling
+
+**Forecasting Methods**:  
+- 
 -->
 
 
@@ -164,15 +170,15 @@ knitr::opts_chunk$set(echo = TRUE)
 - panel data recursive modelling
 
 
-<!--
 ### Lecture 12: Panel Data Forecasting
 
 **Forecasting Methods**:  
-- Nested Forecasting 
-- Global Modelling
-- Hierarchical Time Series Forecasting
+- Nested Forecasting  
+- Global Modelling  
+<!--- Hierarchical Time Series Forecasting-->
 
 
+<!--
 ### Lecture 13: Spark Backend
 
 **Sparlyr**:  
