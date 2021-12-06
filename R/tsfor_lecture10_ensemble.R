@@ -13,8 +13,6 @@
 # - Stacking Hyperparameter tuning
 # - TSCV vs VFCV performances
 
-setwd("materials")
-
 
 
 # Packages ----------------------------------------------------------------

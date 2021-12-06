@@ -15,8 +15,6 @@
 # - Cubist
 # - Neural Networks
 
-setwd("materials")
-
 
 
 # Packages ----------------------------------------------------------------

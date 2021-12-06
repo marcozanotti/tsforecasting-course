@@ -8,8 +8,6 @@
 # - Recursivity
 # - Panel Recursivity
 
-setwd("materials")
-
 
 
 # Packages ----------------------------------------------------------------
@@ -180,7 +178,7 @@ model_spec_svm <- svm_rbf(
 
 # * Workflows -------------------------------------------------------------
 
-# ELASTIC NET - Recursive
+# SVM - Recursive
 wrkfl_fit_svm_recursive <- workflow() %>%
   add_model(model_spec_svm) %>%
   add_recipe(rcp_spec) %>%
@@ -399,7 +397,7 @@ model_spec_knn <- nearest_neighbor(
 
 # * Workflows -------------------------------------------------------------
 
-# ELASTIC NET - Recursive
+# KNN - Recursive
 wrkfl_fit_knn_recursive <- workflow() %>%
   add_model(model_spec_knn) %>%
   add_recipe(rcp_spec) %>%
