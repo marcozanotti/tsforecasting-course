@@ -45,7 +45,7 @@ You are required to produce a notebook to present your whole project, from
 methodologies used to the results obtained, carefully explaining your
 approaches.  
 
-In particular, you have to report:
+In particular, you have to report:  
 - list of forecasting methods used  
 - accuracy results on test set for each time series and each method using RMSSE, MASE and sMAPE  
 - best accuracy results on test set for each time series using RMSSE, MASE and sMAPE    
