@@ -8,6 +8,9 @@
 # - Learn advanced features engineering workflows & techniques
 # - Learn how to use recipes
 
+# Challenges:
+# - Challenge 1 - Feature Engineering
+
 
 
 # Packages ----------------------------------------------------------------

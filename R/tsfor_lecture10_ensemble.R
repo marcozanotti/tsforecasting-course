@@ -13,6 +13,9 @@
 # - Stacking Hyperparameter tuning
 # - TSCV vs VFCV performances
 
+# Challenges:
+# - Challenge 4 - Testing Forecasting Algorithms
+
 
 
 # Packages ----------------------------------------------------------------

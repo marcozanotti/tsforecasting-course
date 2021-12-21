@@ -15,6 +15,10 @@
 # - Cubist
 # - Neural Networks
 
+# Challenges:
+# - Challenge 2 - Testing New Forecasting Algorithms
+# - Challenge (Optional) - Modeltime
+
 
 
 # Packages ----------------------------------------------------------------

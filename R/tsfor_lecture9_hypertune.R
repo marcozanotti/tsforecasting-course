@@ -10,6 +10,9 @@
 # - Grid Search
 # - Tuning
 
+# Challenges:
+# - Challenge 3 - Hyperparameter Tuning
+
 
 
 # Packages ----------------------------------------------------------------
