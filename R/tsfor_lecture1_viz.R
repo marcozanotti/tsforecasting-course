@@ -13,35 +13,6 @@
 
 # Packages ----------------------------------------------------------------
 
-# * Data Wrangling & Viz --------------------------------------------------
-library(tidyverse)    # Meta - dplyr, ggplot2, purrr, tidyr, stringr, forcats
-library(lubridate)    # date and time
-library(timetk)       # Time series data wrangling, visualization and preprocessing
-library(DataExplorer) # Data Viz
-library(fs)           # Work with files
-
-# * Time Series -----------------------------------------------------------
-library(forecast)     # Auto ARIMA, ETS
-library(prophet)      # FB Prophet
-
-# * Machine Learning ------------------------------------------------------
-library(glmnet)       # Elastic Net
-library(earth)        # Mars Regression Splines
-library(kernlab)      # Support Vector Machine
-library(knn)          # K-Nearest Neighbors
-library(randomForest) # Random Forest
-library(ranger)       # Random Forest
-library(xgboost)      # Boosted Trees
-library(Cubist)       # Cubist Rule-Based Algorithm
-
-# * Time Series ML --------------------------------------------------------
-library(tidymodels)   # Meta - workflows, parsnip, tune, dials, recipes, rsample, yardstick
-library(rules)        # Rule-based models (cubist)
-library(modeltime)    # tidymodels time series extension
-
-# * Deep Learning ---------------------------------------------------------
-library(reticulate)   # Python interface
-
 source("R/utils.R")
 source("R/packages.R")
 
@@ -49,22 +20,8 @@ source("R/packages.R")
 
 # Data --------------------------------------------------------------------
 
-# * Google Analytics ------------------------------------------------------
-
-# - Website traffic (Page Views, Sessions, Organic Traffic)
-# - Top 20 Pages
 analytics_tbl <- read_rds("data/analytics_hourly.rds")
-
-
-# * Users -----------------------------------------------------------------
-
-# - Collect emails
 subscribers_tbl <- read_rds("data/subscribers.rds")
-
-
-# * Events ----------------------------------------------------------------
-
-# - Host Events
 events_tbl <- read_rds("data/events.rds")
 
 
