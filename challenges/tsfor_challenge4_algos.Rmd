@@ -1,0 +1,51 @@
+---
+title: "Challenge 4 - Testing Forecasting Algorithms"
+author: "Marco Zanotti"
+date: "2021-2022"
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(timetk)
+```
+
+## Content
+
+This challenge is about testing time series forecasting algorithms 
+(Lectures 4, 5, 6, 7, 8 and 10).  
+
+The purpose of this challenge is to test your ability to use many models
+to forecast different time series and to evaluate them.  
+
+
+
+## Requirements
+
+You are required to produce a fully reproducible notebook report explaining 
+all the steps to forecast with Time Series, Machine Learning and Ensemble models.  
+
+You are free to apply the feature sets you created during challenge 1.  
+
+
+
+## Data
+
+Challenge dataset contains:  
+- daily website page views   
+- hourly website organic searches  
+- weekly website sales  
+
+```{r data, echo=FALSE}
+data <- read_rds("../data/challenges_dataset.rds")
+data %>% 
+  map(~ select(., 1:2)) %>% 
+  map(~ pivot_longer(., -date, names_to = "series")) %>% 
+  bind_rows() %>% 
+  plot_time_series(.date_var = date, .value = value, .facet_vars = series, .facet_scales = "free")
+```

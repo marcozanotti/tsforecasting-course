@@ -1,0 +1,51 @@
+---
+title: "Challenge 0 - Jumpstart"
+author: "Marco Zanotti"
+date: "2021-2022"
+output:
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(timetk)
+```
+
+## Content
+
+This challenge is about time series forecasting.  
+
+The purpose of this challenge is to apply the methods you know by now 
+to produce the most accurate forecast for a single time series.
+
+
+
+## Requirements
+
+You are required to produce a fully reproducible notebook report explaining 
+all the steps to forecast and their evaluation.    
+
+You have to apply your methods on the train set, forecast 8 weeks ahead and 
+evaluate on the test set.  
+
+You have to evaluate your methods with RMSE.   
+
+You have to produce the results in 30 minutes.  
+
+You are free to apply any method and software you like (even MS Excel).  
+
+
+
+## Data
+
+Challenge dataset contains:  
+- daily time series of website subscribers volume (in log)
+
+```{r data, echo=FALSE, message=FALSE}
+data <- read_csv("../data/challenge0_dataset.csv")
+plot_time_series(data, .date_var = date, .value = value, .color_var = type, .smooth = FALSE)
+```

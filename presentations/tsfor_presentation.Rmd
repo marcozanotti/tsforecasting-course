@@ -1,0 +1,435 @@
+---
+title: "Time Series Forecasting:<br/> Machine Learning and Deep Learning<br/> with<br/> R & Python"
+subtitle: ""
+author: "Marco Zanotti"
+institute: "University of Milan"
+date: "2021/2022"
+output:
+  xaringan::moon_reader:
+    css: ["default", "css/custom.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: false
+    
+    
+---
+class: inverse, center, middle
+background-color: black
+
+# Time Series Forecasting:<br/> Machine Learning and Deep Learning<br/> with<br/> R & Python
+### Marco Zanotti
+### University of Milan
+### 2021/2022
+
+
+---
+class: separator, right, middle
+background-color: black
+
+# Part I
+# Time Series Forecasting in 2022
+<!-- Separator -->
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img01.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img04.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img02.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img03.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img05.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img06.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img07.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img08.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: separator, right, middle
+background-color: black
+
+# Part II
+# Competitions
+<!-- Separator -->
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img10.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img11.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img12.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img13.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img14.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img15.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: separator, right, middle
+background-color: black
+
+# Part III
+# Modeltime
+<!-- Separator -->
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img16.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img17.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img18.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img19.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img20.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img21.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img22.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img23.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img25.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img26.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img27.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img28.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img29.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img30.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img24.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: separator, right, middle
+background-color: black
+
+# Part IV
+# Recursivity
+<!-- Separator -->
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img40.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img41.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img42.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img45.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img46.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img47.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img48.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img49.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img50.png")
+background-size: contain
+background-color: black
+
+
+---
+class: separator, right, middle
+background-color: black
+
+# Part V
+# Scalability
+<!-- Separator -->
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img53.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img31.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img32.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img33.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img34.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img35.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img52.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img55.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img51.png")
+background-size: contain
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img37.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img54.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img38.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-image: url("imgs/img39.png")
+background-size: contain 
+background-color: black
+
+
+---
+class: inverse, center, middle
+background-color: black
+
+# Thank you!
+<!-- Separator -->

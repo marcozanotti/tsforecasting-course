@@ -1,0 +1,57 @@
+---
+title: "Challenge 1 - Feature Engineering"
+author: "Marco Zanotti"
+date: "2021-2022"
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(timetk)
+```
+
+## Content
+
+This challenge is all about explorative data analysis (EDA) and
+features engineering in time series (Lectures 1 and 2).  
+
+The purpose of this challenge is to test your ability to effectively understand 
+the dynamics of different time series allowing you to create one or more 
+features' recipe.  
+
+The analysis you perform at this first stage will be the basis to perform accurate
+forecasts during the next challenges.  
+
+
+
+## Requirements
+
+You are required to produce a fully reproducible notebook report explaining 
+all the steps that takes you towards the creation of all the new features 
+you would like to use in forecasting models.  
+
+At least one feature set for each time series has to be produced.  
+
+
+
+## Data
+
+Challenge dataset contains:  
+- daily website page views   
+- hourly website organic searches  
+- weekly website sales  
+
+```{r data, echo=FALSE}
+data <- read_rds("../data/challenges_dataset.rds")
+data %>% 
+  map(~ select(., 1:2)) %>% 
+  map(~ pivot_longer(., -date, names_to = "series")) %>% 
+  bind_rows() %>% 
+  plot_time_series(.date_var = date, .value = value, .facet_vars = series, .facet_scales = "free")
+```
+
