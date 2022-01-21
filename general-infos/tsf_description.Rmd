@@ -87,9 +87,9 @@ The evaluation will take into consideration:
 The course earns 3 ECTS for a total of 20 hours, divided into 5 lectures (4 hours each).
 
 1. Saturday 2022-01-29, 9.00 - 13.00
-2. Saturday 2022-02-05, 9.00 - 13.00
-3. Saturday 2022-02-12, 9.00 - 13.00
-4. Saturday 2022-02-19, 9.00 - 13.00
+2. Saturday 2022-02-12, 9.00 - 13.00
+3. Saturday 2022-02-19, 9.00 - 13.00
+4. Saturday 2022-02-26, 9.00 - 13.00
 5. Saturday 2022-03-12, 9.00 - 13.00
 
 Lectures take place at University of Milan, Via Conservatorio 7.   
