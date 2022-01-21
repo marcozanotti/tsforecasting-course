@@ -33,7 +33,7 @@ the reticulate package.
 
 -   [Presentation](https://marcozanotti.github.io/tsforecasting-course/presentations/tsfor_presentation.html)  
 -   [R Tutorials
-    (lectures)](https://marcozanotti.github.io/tsforecasting-course/R)  
+    (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)  
 -   [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)
 
 ## Challenges
