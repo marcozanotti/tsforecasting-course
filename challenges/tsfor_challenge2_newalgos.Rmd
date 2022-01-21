@@ -1,0 +1,62 @@
+---
+title: "Challenge 2 - Testing New Forecasting Algorithms"
+author: "Marco Zanotti"
+date: "2021-2022"
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(timetk)
+```
+
+## Content
+
+This challenge is about testing previously unseen time series forecasting
+algorithms.  
+
+The purpose of this challenge is to test your ability to use new models 
+for time series forecasting as soon as they become available.  
+
+
+
+## Requirements
+
+You are required to produce a fully reproducible notebook report explaining 
+all the steps to forecast with Bayesian models & GAMs.  
+
+You can use the feature sets we created during Lecture 2.  
+
+References:  
+- [Bayes Models](https://albertoalmuinha.github.io/bayesmodels/)  
+- [GAMs](https://hsbadr.github.io/additive/)  
+- [GAMs method](https://petolau.github.io/Analyzing-double-seasonal-time-series-with-GAM-in-R/)  
+
+
+
+## Data
+
+You have to apply the new methodologies to the same dataset we used 
+throughout the Lectures.
+
+```{r data, echo=FALSE}
+artifacts_list <- read_rds("../artifacts/feature_engineering_artifacts_list.rds")
+data_prep_tbl <- artifacts_list$data$data_prep_tbl
+forecast_tbl <- artifacts_list$data$forecast_tbl
+
+splits <- time_series_split(
+  data_prep_tbl, 
+  date_var = optin_time,
+  assess = "8 weeks", 
+  cumulative = TRUE
+)
+splits %>%
+  tk_time_series_cv_plan() %>%
+  plot_time_series_cv_plan(optin_time, optins_trans)
+```
+
