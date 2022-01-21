@@ -23,15 +23,33 @@ from a very practical point of view, throughout **R** tutorials.
 **Python** algorithms are also presented and used within R by means of
 the reticulate package.
 
--   [General
-    Information](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
--   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
--   [Hackathon](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)
+## General Information
 
-# Materials:
+-   [Course
+    Description](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+-   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
 
--   Slides of the course  
--   R scripts for each lecture  
--   Data for the lectures  
--   Challenges
--   Hackathon
+## Materials:
+
+-   [Presentation](https://marcozanotti.github.io/tsforecasting-course/presentations/tsfor_presentation.html)  
+-   [R Tutorials
+    (lectures)](https://marcozanotti.github.io/tsforecasting-course/R)  
+-   [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)
+
+## Challenges
+
+-   [Jumpstart](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge0_jumpstart.html)  
+-   [Feature
+    Engineering](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge1_feateng.html)  
+-   [New
+    Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge2_newalgos.html)  
+-   [Tuning](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge3_tuning.html)  
+-   [Testing
+    Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge4_algos.html)  
+-   [Modeltime
+    (optional)](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge_optional_modeltime.html)
+
+## Hackathon
+
+[Hackathon
+Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)
