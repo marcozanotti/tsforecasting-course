@@ -68,8 +68,8 @@ calibration_tbl %>%
 # - Sequential Model Definition:
 #   - Creates Lags internally
 #   - Predicts next H observations (recursive)
-#   - All data must be sequential
-#   - Cannot use K-Fold Cross Validation / Must use Time Series Cross Validation
+#   - All data must be sequential (ordered by date)
+#   - Cannot use V-Fold Cross Validation / Must use Time Series Cross Validation
 # - Examples of Sequential Models:
 #   - ARIMA
 #   - Exponential Smoothing
@@ -120,7 +120,7 @@ wrkfl_tune_nnetar <- wrkfl_fit_nnetar %>%
 
 resamples_tscv_lag <- time_series_cv(
   data = training(splits) %>% drop_na(),
-  cumulative = TRUE,
+  cumulative = TRUE, # expanding window
   initial = "6 months",
   assess = "8 weeks",
   skip = "4 weeks",
@@ -168,7 +168,7 @@ grid_spec_nnetar_lh2 <- grid_latin_hypercube(
 
 # * Tuning ----------------------------------------------------------------
 
-# - Expensive Operation
+# - Expensive Operation (15 combinations * 2 grids * 6 slices = 180 NNETAR)
 # - Parallel Processing is very important
 
 ?tune_grid()
@@ -236,6 +236,7 @@ wrkfl_fit_nnetar_tscv <- wrkfl_tune_nnetar %>%
 
 # Re-evaluate the model on the whole test set
 calibrate_evaluate_plot(
+  wrkfl_fit_nnetar,
   wrkfl_fit_nnetar_tscv
 )
 
@@ -380,7 +381,7 @@ toc()
 plan(strategy = sequential)
 
 
-# Inspect Results (LH3 better)
+# Inspect Results (LH2 better)
 tune_res_prophet_boost_lh1 %>% show_best(metric = "rmse", n = Inf)
 tune_res_prophet_boost_lh1 %>%
   autoplot() +
@@ -423,9 +424,9 @@ calibration_tune_tbl <- modeltime_table(
   wrkfl_fit_prophet_boost_vfcv
 ) %>%
   update_modeltime_description(.model_id = 1, .new_model_desc = "NNETAR") %>%
-  update_modeltime_description(.model_id = 2, .new_model_desc = "NNETAR - TUNE") %>%
+  update_modeltime_description(.model_id = 2, .new_model_desc = "NNETAR - TUNED") %>%
   update_modeltime_description(.model_id = 3, .new_model_desc = "PROPHET BOOST") %>%
-  update_modeltime_description(.model_id = 4, .new_model_desc = "PROPHET BOOST - TUNE") %>%
+  update_modeltime_description(.model_id = 4, .new_model_desc = "PROPHET BOOST - TUNED") %>%
   modeltime_calibrate(testing(splits))
 
 # * Evaluation

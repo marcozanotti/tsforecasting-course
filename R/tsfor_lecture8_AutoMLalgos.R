@@ -109,7 +109,7 @@ model_spec_h2o <- automl_reg(mode = 'regression') %>%
     max_models = 10,
     nfolds = 10,
     sort_metric = "rmse",
-    exclude_algos = c("DeepLearning"),
+    exclude_algos = c("DeepLearning"), # remove deeplearning for computation time
     verbosity = NULL,
     seed = 123
   )
@@ -126,14 +126,17 @@ wrkfl_fit_h2o <- workflow() %>%
 wrkfl_fit_h2o
 
 wrkfl_fit_h2o %>% automl_leaderboard() %>% head(20)
+gbm_name <- "GBM_2_AutoML_1_20220125_103318"
+xgb_name <- "XGBoost_3_AutoML_1_20220125_103318"
+stack_name <- "StackedEnsemble_AllModels_5_AutoML_1_20220125_103318"
 
 # change default selected models
 wrkfl_fit_h20_gbm <- wrkfl_fit_h2o %>%
-  automl_update_model("GBM_6_AutoML_2_20211028_152707")
+  automl_update_model(gbm_name)
 wrkfl_fit_h20_xgb <- wrkfl_fit_h2o %>%
-  automl_update_model("XGBoost_3_AutoML_1_20211028_152502")
+  automl_update_model(xgb_name)
 wrkfl_fit_h20_stack <- wrkfl_fit_h2o %>%
-  automl_update_model("StackedEnsemble_AllModels_5_AutoML_1_20211028_152502")
+  automl_update_model(stack_name)
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------

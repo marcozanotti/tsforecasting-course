@@ -137,7 +137,7 @@ subscribers_day_tbl <- subscribers_tbl %>%
 subscribers_daily_tbl %>%
   future_frame(.length_out = 10)
 
-# modelling example
+# modelling example on date features
 model_fit_lm <- lm(
   optins ~ as.numeric(optin_time) + wday(optin_time, label = TRUE),
   data = subscribers_daily_tbl
@@ -300,8 +300,8 @@ subscribers_cleaned_daily_tbl %>%
   plot_time_series_regression(
     optin_time,
     .formula = optins ~ as.numeric(optin_time) +
-      wday(optin_time, label = TRUE) +
-      month(optin_time, label = TRUE),
+      lubridate::wday(optin_time, label = TRUE) +
+      lubridate::month(optin_time, label = TRUE),
     .show_summary = TRUE
   )
 
@@ -310,8 +310,8 @@ subscribers_cleaned_daily_tbl %>%
   plot_time_series_regression(
     optin_time,
     .formula = optins_cleaned ~ as.numeric(optin_time) +
-      wday(optin_time, label = TRUE) +
-      month(optin_time, label = TRUE),
+      lubridate::wday(optin_time, label = TRUE) +
+      lubridate::month(optin_time, label = TRUE),
     .show_summary = TRUE
   )
 
@@ -321,8 +321,8 @@ subscribers_cleaned_daily_tbl %>%
   plot_time_series_regression(
     optin_time,
     .formula = optins_log ~ as.numeric(optin_time) +
-      wday(optin_time, label = TRUE) +
-      month(optin_time, label = TRUE),
+      lubridate::wday(optin_time, label = TRUE) +
+      lubridate::month(optin_time, label = TRUE),
     .show_summary = TRUE
   )
 
@@ -331,8 +331,8 @@ subscribers_cleaned_daily_tbl %>%
   plot_time_series_regression(
     optin_time,
     .formula = optins_log_cleaned ~ as.numeric(optin_time) +
-      wday(optin_time, label = TRUE) +
-      month(optin_time, label = TRUE),
+      lubridate::wday(optin_time, label = TRUE) +
+      lubridate::month(optin_time, label = TRUE),
     .show_summary = TRUE
   )
 
@@ -470,6 +470,26 @@ subscribers_day_tbl %>%
   )
 
 
+# * Boxplots --------------------------------------------------------------
+
+subscribers_day_tbl %>%
+  plot_time_series_boxplot(
+    optin_time,
+    log(optins + 1),
+    .period = "1 month"
+  )
+
+subscribers_day_tbl %>%
+  plot_time_series_boxplot(
+    optin_time,
+    log(optins + 1),
+    .period = "2 week",
+    .smooth = TRUE,
+    .smooth_func = median, # change smoother
+    .color_var = lubridate::year(optin_time)
+  )
+
+
 # * Seasonality Plot ------------------------------------------------------
 
 subscribers_day_tbl  %>%
@@ -498,8 +518,8 @@ subscribers_day_tbl %>%
     optin_time,
     log(optins + 1) ~
       as.numeric(optin_time) + # linear trend
-      wday(optin_time, label = TRUE) + # week day calendar features
-      month(optin_time, label = TRUE), # month calendar features
+      lubridate::wday(optin_time, label = TRUE) + # week day calendar features
+      lubridate::month(optin_time, label = TRUE), # month calendar features
     .show_summary = TRUE
   )
 

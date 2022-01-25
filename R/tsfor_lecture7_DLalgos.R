@@ -124,7 +124,7 @@ modeltime_table(model_fit_deepar) %>%
 library(modeltime.gluonts)
 reticulate::py_config()
 
-# setwd("~/Desktop/RProjects/tsforecasting-course/materials") sorry for this path
+setwd("~/Desktop/RProjects/tsforecasting-course") # sorry for this path
 source("R/utils.R")
 source("R/packages.R")
 
@@ -625,7 +625,7 @@ calibrate_evaluate_plot(
 # MODELTIME GLUONTS
 # - Pros:
 #   - Simplifies creating ListDataset() objects
-#   - Can compare w/ other forecast algorithms (shown next)
+#   - Can compare w/ other forecast algorithms
 #   - Good for scaling up predictions
 # - Cons:
 #   - Requires 2 rounds of training to get confidence intervals

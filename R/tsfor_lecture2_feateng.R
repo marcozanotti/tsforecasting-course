@@ -156,7 +156,7 @@ data_prep_rolls_tbl %>%
 data_prep_tbl %>%
   plot_acf_diagnostics(optin_time, optins_trans, .lags = 100)
 
-data_prep_lags_tbl <- data_prepared_tbl %>%
+data_prep_lags_tbl <- data_prep_tbl %>%
   tk_augment_lags(optins_trans, .lags = c(1, 7, 14, 30, 90, 365)) %>%
   drop_na()
 data_prep_lags_tbl %>% glimpse()
@@ -172,7 +172,7 @@ data_prep_lags_tbl %>%
 data_prep_tbl %>%
   plot_acf_diagnostics(optin_time, optins_trans, .lags = 100)
 
-data_prep_fourier_tbl <- data_prepared_tbl %>%
+data_prep_fourier_tbl <- data_prep_tbl %>%
   tk_augment_fourier(optin_time, .periods = c(1, 7, 14, 30, 90, 365), .K = 2)
 data_prep_fourier_tbl %>% glimpse()
 
@@ -217,6 +217,7 @@ data_prep_google_tbl %>%
 data_prep_google_tbl <- data_prep_google_tbl %>%
   tk_augment_lags(pageViews:sessions, .lags = c(7, 42)) %>%
   drop_na()
+data_prep_google_tbl %>% glimpse()
 
 data_prep_google_tbl %>%
   plot_time_series_regression(optin_time, optins_trans ~ ., .show_summary = TRUE)
@@ -435,7 +436,7 @@ wrkfl_fit_lm_2_lag %>%
   summary()
 
 
-# * Modeltime  ------------------------------------------------------------
+# * Modeltime -------------------------------------------------------------
 
 # Calibration
 calibration_tbl <- modeltime_table(

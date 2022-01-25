@@ -154,6 +154,7 @@ calibrate_evaluate_plot(
 # ARIMA LIGHT GBM ---------------------------------------------------------
 
 ?boost_arima()
+# does not work now, there is a bug
 
 
 # * Engines ---------------------------------------------------------------
@@ -192,26 +193,26 @@ model_spec_auto_arima_lgbm <- boost_arima(
 # * Workflows -------------------------------------------------------------
 
 # ARIMA with Light GBM + base recipe
-set.seed(123)
-wrkfl_fit_arima_lgbm <- workflow() %>%
-  add_model(model_spec_arima_lgbm) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_arima_lgbm <- workflow() %>%
+#   add_model(model_spec_arima_lgbm) %>%
+#   add_recipe(rcp_spec) %>%
+#   fit(training(splits))
 
 # Auto-ARIMA with Light GBM + base recipe
-set.seed(123)
-wrkfl_fit_auto_arima_lgbm <- workflow() %>%
-  add_model(model_spec_auto_arima_lgbm) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_auto_arima_lgbm <- workflow() %>%
+#   add_model(model_spec_auto_arima_lgbm) %>%
+#   add_recipe(rcp_spec) %>%
+#   fit(training(splits))
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
-calibrate_evaluate_plot(
-  wrkfl_fit_arima_lgbm,
-  wrkfl_fit_auto_arima_lgbm
-)
+# calibrate_evaluate_plot(
+#   wrkfl_fit_arima_lgbm,
+#   wrkfl_fit_auto_arima_lgbm
+# )
 
 
 
@@ -338,6 +339,7 @@ calibrate_evaluate_plot(
 # PROPHETLIGHT GBM ---------------------------------------------------------
 
 ?boost_arima()
+# does not work, there is a bug
 
 
 # * Engines ---------------------------------------------------------------
@@ -364,16 +366,16 @@ model_spec_prophet_lgbm <- boost_prophet(
 # * Workflows -------------------------------------------------------------
 
 # PROPHET with Light GBM + base recipe
-set.seed(123)
-wrkfl_fit_prophet_lgbm <- workflow() %>%
-  add_model(model_spec_prophet_lgbm) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_prophet_lgbm <- workflow() %>%
+#   add_model(model_spec_prophet_lgbm) %>%
+#   add_recipe(rcp_spec) %>%
+#   fit(training(splits))
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
-calibrate_evaluate_plot(wrkfl_fit_prophet_lgbm)
+# calibrate_evaluate_plot(wrkfl_fit_prophet_lgbm)
 
 
 

@@ -297,7 +297,7 @@ subscribers_tbl %>% count(member_rating)
 # subscribers data by group
 subscribers_daily_tbl <- subscribers_tbl %>%
   rename(id = member_rating) %>%
-  mutate(id = ifelse(id == 2, id, 1)) %>%
+  mutate(id = ifelse(id == 2, id, 1) %>% as.factor()) %>%
   group_by(id) %>%
   summarise_by_time(optin_time, .by = "day", optins = n()) %>%
   pad_by_time(.pad_value = 0)

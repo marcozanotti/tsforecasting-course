@@ -76,7 +76,7 @@ calibration_tbl %>%
 
 # * Sub-Models Selections -------------------------------------------------
 
-# try to beat the tier 1
+# try to beat the tier 1 (PROPHET W/ XGBOOST ERRORS)
 model_id_sel1 <- calibration_tbl %>%
   modeltime_accuracy() %>%
   arrange(rmse) %>%
@@ -184,6 +184,12 @@ calibrate_evaluate_plot(
   ensemble_fit_wt_sel2,
   updated_desc = c("ENSEMBLE (WEIGHTED) - TOP", "ENSEMBLE (WEIGHTED) - DOWN")
 )
+
+calibration_tbl %>%
+  modeltime_accuracy() %>%
+  arrange(rmse) %>%
+  dplyr::slice(1)
+# almost reached our best model
 
 
 

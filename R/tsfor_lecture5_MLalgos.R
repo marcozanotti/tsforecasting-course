@@ -17,7 +17,6 @@
 
 # Challenges:
 # - Challenge 2 - Testing New Forecasting Algorithms
-# - Challenge (Optional) - Modeltime
 
 
 
@@ -252,7 +251,7 @@ calibrate_evaluate_plot(
 ?svm_rbf
 
 # Strengths: Well-rounded algorithm
-# Weaknesses: Needs tuned or can overfit
+# Weaknesses: Needs tuned or can overfit and can be computationally inefficient
 
 
 # * Engines ---------------------------------------------------------------
@@ -592,13 +591,13 @@ wrkfl_fit_catboost_lag %>%
 calibrate_evaluate_plot(
   wrkfl_fit_xgb_spline,
   wrkfl_fit_xgb_lag,
-  #wrkfl_fit_lightgbm_spline,
-  #wrkfl_fit_lightgbm_lag,
+  wrkfl_fit_lightgbm_spline,
+  wrkfl_fit_lightgbm_lag,
   wrkfl_fit_catboost_spline,
   wrkfl_fit_catboost_lag,
   updated_desc = c(
     "XGB - Splines", "XGB - Lags",
-    #"LIGHT GBM - Splines", "LIGHT GBM - Lags",
+    "LIGHT GBM - Splines", "LIGHT GBM - Lags",
     "CATBOOST - Splines", "CATBOOST - Lags"
   )
 )

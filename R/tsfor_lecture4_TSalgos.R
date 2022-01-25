@@ -122,7 +122,7 @@ calibration_tbl %>%
 
 calibration_tbl %>%
   modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
-  plot_modeltime_forecast()
+  plot_modeltime_forecast(.conf_interval_show = FALSE)
 
 
 # * Refitting & Forecasting -----------------------------------------------
@@ -231,6 +231,11 @@ model_fit_theta <- exp_smoothing() %>%
   set_engine("theta") %>%
   fit(optins_trans ~ optin_time, data = training(splits))
 
+# CROSTON (method for intermittent demand forecasting)
+# model_fit_croston <- exp_smoothing() %>%
+#   set_engine("croston") %>%
+#   fit(optins_trans ~ optin_time, data = training(splits))
+
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
@@ -253,6 +258,7 @@ calibrate_evaluate_plot(
 # - Extension of ETS for complex seasonality
 # - Automatic
 # - Does not support XREGS
+# - Computationally low (often)
 
 
 # * Engines ---------------------------------------------------------------
@@ -472,7 +478,7 @@ calibration_tbl %>%
 
 calibration_tbl %>%
   modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
-  plot_modeltime_forecast()
+  plot_modeltime_forecast(.conf_interval_show = FALSE)
 
 # * Refitting & Forecasting
 

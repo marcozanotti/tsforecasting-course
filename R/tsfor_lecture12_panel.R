@@ -31,10 +31,7 @@ subscribers_tbl %>% count(member_rating)
 # subscribers data by group
 subscribers_daily_tbl <- subscribers_tbl %>%
   rename(id = member_rating) %>%
-  mutate(
-    id = ifelse(id == 2, id, 1),
-    id = as.factor(id)
-  ) %>%
+  mutate(id = ifelse(id == 2, id, 1) %>% as.factor()) %>%
   group_by(id) %>%
   summarise_by_time(optin_time, .by = "day", optins = n()) %>%
   pad_by_time(.pad_value = 0)
@@ -81,10 +78,10 @@ data_prep_full_tbl <- subscribers_prep_tbl %>%
   # Extend each time series
   # future_frame(.data = ., optin_time, .length_out = horizon, .bind_data = TRUE) %>%
   extend_timeseries(
-    .id_var = id, 
+    .id_var = id,
     .date_var = optin_time,
     .length_future = horizon
-  ) %>% 
+  ) %>%
   group_by(id) %>%
   # Add lags
   tk_augment_lags(optins_trans, .lags = lag_period) %>%
@@ -100,11 +97,11 @@ data_prep_full_tbl <- subscribers_prep_tbl %>%
   left_join(events_daily_tbl, by = c("optin_time" = "event_date")) %>%
   mutate(event = ifelse(is.na(event), 0, event)) %>%
   # Reformat Columns
-  rename_with(.cols = contains("lag"), .fn = ~ str_c("lag_", .)) %>% 
+  rename_with(.cols = contains("lag"), .fn = ~ str_c("lag_", .)) %>%
   ungroup()
 
 data_prep_full_tbl %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   pivot_longer(cols = -c(id, optin_time)) %>%
   plot_time_series(optin_time, value, name, .smooth = FALSE)
 data_prep_full_tbl %>% group_by(id) %>% slice_tail(n = horizon + 1)
@@ -114,7 +111,7 @@ data_prep_full_tbl %>% group_by(id) %>% slice_tail(n = horizon + 1)
 
 ?nest_timeseries
 
-nested_data_tbl <- data_prep_full_tbl %>% 
+nested_data_tbl <- data_prep_full_tbl %>%
   # Split into actual data & forecast data
   nest_timeseries(.id_var = id, .length_future = horizon)
 
@@ -128,7 +125,7 @@ nested_data_tbl <- data_prep_full_tbl %>%
 ?extract_nested_test_split
 
 # splits <- time_series_split(data_prep_tbl, assess = horizon, cumulative = TRUE)
-nested_data_tbl <- nested_data_tbl %>% 
+nested_data_tbl <- nested_data_tbl %>%
   split_nested_timeseries(.length_test = horizon)
 
 extract_nested_train_split(nested_data_tbl, .row_id = 1)
@@ -141,7 +138,7 @@ extract_nested_test_split(nested_data_tbl, .row_id = 1)
 # - Time Series Signature - Adds bulk time-based features
 # - Interaction: wday.lbl:week2
 # - Fourier Features
-rcp_spec <- 
+rcp_spec <-
   # recipe(optins_trans ~ ., data = training(splits)) %>%
   recipe(optins_trans ~ ., data = extract_nested_train_split(nested_data_tbl)) %>%
   # Time Series Signature
@@ -236,17 +233,17 @@ nested_modeltime_tbl %>%
   plot_modeltime_forecast()
 
 # Error reporting
-nested_modeltime_tbl %>% 
+nested_modeltime_tbl %>%
   extract_nested_error_report()
 
 
 # Helper function to quickly calibrate, evaluate and plot
 # (to use only with few time series)
 nested_calibrate_evaluate_plot(
-  nested_data_tbl, 
+  nested_data_tbl,
   workflows = list(wrkfl_fit_lm_spline, wrkfl_fit_lm_lag),
-  id_var = "id", 
-  parallel = FALSE 
+  id_var = "id",
+  parallel = FALSE
 )
 
 
@@ -255,7 +252,7 @@ nested_calibrate_evaluate_plot(
 ?modeltime_nested_select_best
 ?modeltime_nested_refit
 
-nested_modeltime_best_tbl <- nested_modeltime_tbl %>% 
+nested_modeltime_best_tbl <- nested_modeltime_tbl %>%
   modeltime_nested_select_best(metric = "rmse")
 
 # refit_tbl <- calibration_tbl %>%
@@ -286,7 +283,7 @@ nested_best_refit_tbl %>% extract_nested_error_report()
 #   ) %>%
 #   plot_modeltime_forecast(.conf_interval_fill = "lightblue"  )
 
-nested_best_refit_tbl %>% 
+nested_best_refit_tbl %>%
   extract_nested_future_forecast()
 
 nested_forecast_tbl <- nested_best_refit_tbl %>%
@@ -398,7 +395,7 @@ model_spec_nnetar <- nnetar_reg(
 set.seed(123)
 wrkfl_fit_nnetar <- workflow() %>%
   add_model(model_spec_nnetar) %>%
-  add_recipe(rcp_spec) 
+  add_recipe(rcp_spec)
 
 
 # Calibration, Evaluation & Plotting --------------------------------------
@@ -436,14 +433,14 @@ nested_modeltime_tbl %>%
   plot_modeltime_forecast()
 
 # Error reporting
-nested_modeltime_tbl %>% 
+nested_modeltime_tbl %>%
   extract_nested_error_report()
-  
+
 
 # Refitting & Forecasting -------------------------------------------------
 
 # Select best model for each time series
-nested_modeltime_best_tbl <- nested_modeltime_tbl %>% 
+nested_modeltime_best_tbl <- nested_modeltime_tbl %>%
   modeltime_nested_select_best(metric = "rmse")
 
 parallel_start(n_cores - 1)
@@ -496,7 +493,7 @@ data_prep_full_tbl <- subscribers_prep_tbl %>%
   ungroup()
 
 data_prep_full_tbl %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   pivot_longer(cols = -c(id, optin_time)) %>%
   plot_time_series(optin_time, value, name, .smooth = FALSE)
 data_prep_full_tbl %>% group_by(id) %>% slice_tail(n = horizon + 1)
@@ -526,7 +523,7 @@ rcp_spec <- recipe(optins_trans ~ ., data = training(splits)) %>%
   step_timeseries_signature(optin_time) %>%
   step_rm(matches("(iso)|(xts)|(hour)|(minute)|(second)|(am.pm)")) %>%
   step_normalize(matches("(index.num)|(year)|(yday)")) %>%
-  step_dummy(all_nominal(), one_hot = TRUE) %>% 
+  step_dummy(all_nominal(), one_hot = TRUE) %>%
   step_rm(optin_time)
 rcp_spec %>% prep() %>% juice() %>% glimpse()
 
@@ -549,7 +546,7 @@ model_spec_lm <- linear_reg() %>%
 
 wrkfl_fit_lm <- workflow() %>%
   add_model(model_spec_lm) %>%
-  add_recipe(rcp_spec) %>% 
+  add_recipe(rcp_spec) %>%
   fit(training(splits))
 
 
@@ -571,7 +568,7 @@ calibration_tbl %>%
 
 calibration_tbl %>%
   modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl, conf_by_id = TRUE) %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
@@ -585,7 +582,7 @@ refit_tbl <- calibration_tbl %>%
 
 refit_tbl %>%
   modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl, conf_by_id  = TRUE) %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
@@ -675,7 +672,7 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_xgb,
   wrkfl_fit_lightgbm,
   wrkfl_fit_catboost
-) %>% 
+) %>%
   modeltime_calibrate(testing(splits), id = "id")
 
 # Global accuracy
@@ -688,7 +685,7 @@ calibration_tbl %>%
 
 calibration_tbl %>%
   modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl, conf_by_id = TRUE) %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   plot_modeltime_forecast(.conf_interval_show = FALSE)
 
 
@@ -704,7 +701,7 @@ refit_global_tbl <- calibration_tbl %>%
 
 refit_global_tbl %>%
   modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl, conf_by_id  = TRUE) %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
@@ -719,16 +716,16 @@ refit_local_tbl <- calibration_tbl %>%
 forecast_local_tbl <- vector("list", length(local_models_best))
 for (ts_id in as.numeric(unique(data_prep_tbl$id))) {
   forecast_local_tbl[[ts_id]] <- refit_local_tbl %>%
-    filter(.model_id == local_models_best[ts_id]) %>% 
+    filter(.model_id == local_models_best[ts_id]) %>%
     modeltime_forecast(
-      new_data = forecast_tbl %>% filter(id == ts_id), 
-      actual_data = data_prep_tbl %>% filter(id == ts_id), 
+      new_data = forecast_tbl %>% filter(id == ts_id),
+      actual_data = data_prep_tbl %>% filter(id == ts_id),
       conf_by_id  = TRUE
     )
 }
 forecast_local_tbl <- bind_rows(forecast_local_tbl)
 
 forecast_local_tbl %>%
-  group_by(id) %>% 
+  group_by(id) %>%
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
