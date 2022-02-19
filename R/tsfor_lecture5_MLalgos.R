@@ -139,12 +139,6 @@ wrkfl_fit_ridge_spline <- workflow() %>%
   add_recipe(rcp_spec_spline) %>%
   fit(training(splits))
 
-# RIDGE + Splines
-wrkfl_fit_ridge_spline <- workflow() %>%
-  add_model(model_spec_ridge) %>%
-  add_recipe(rcp_spec_spline) %>%
-  fit(training(splits))
-
 # RIDGE + Lags
 wrkfl_fit_ridge_lag <- workflow() %>%
   add_model(model_spec_ridge) %>%

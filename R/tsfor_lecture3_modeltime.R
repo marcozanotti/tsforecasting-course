@@ -170,7 +170,7 @@ calibration_tbl %>%
     conf_interval = .8
   ) %>%
   plot_modeltime_forecast(
-    .conf_interval_show = TRUE,
+    .conf_interval_show = FALSE,
     .conf_interval_alpha = .5,
     .conf_interval_fill = "lightblue",
     .title = "Subscriber Forecast"
@@ -192,7 +192,7 @@ refit_tbl %>%
     actual_data = data_prep_tbl,
     conf_interval = .8
   ) %>%
-  plot_modeltime_forecast(.conf_interval_fill = "lightblue"  )
+  plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 

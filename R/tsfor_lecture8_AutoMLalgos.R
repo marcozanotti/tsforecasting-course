@@ -126,9 +126,9 @@ wrkfl_fit_h2o <- workflow() %>%
 wrkfl_fit_h2o
 
 wrkfl_fit_h2o %>% automl_leaderboard() %>% head(20)
-gbm_name <- "GBM_2_AutoML_1_20220125_103318"
-xgb_name <- "XGBoost_3_AutoML_1_20220125_103318"
-stack_name <- "StackedEnsemble_AllModels_5_AutoML_1_20220125_103318"
+gbm_name <- "GBM_2_AutoML_1_20220219_112345"
+xgb_name <- "XGBoost_3_AutoML_1_20220219_112345"
+stack_name <- "StackedEnsemble_AllModels_5_AutoML_1_20220219_112345"
 
 # change default selected models
 wrkfl_fit_h20_gbm <- wrkfl_fit_h2o %>%
