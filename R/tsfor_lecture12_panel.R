@@ -681,7 +681,8 @@ calibration_tbl %>%
 
 # Local accuracy
 calibration_tbl %>%
-  modeltime_accuracy(acc_by_id = TRUE)
+  modeltime_accuracy(acc_by_id = TRUE) %>%
+  arrange(id)
 
 calibration_tbl %>%
   modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl, conf_by_id = TRUE) %>%

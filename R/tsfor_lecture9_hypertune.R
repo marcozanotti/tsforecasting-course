@@ -86,7 +86,7 @@ wrkfl_fit_nnetar
 
 rcp_spec_nnetar <- wrkfl_fit_nnetar %>%
   extract_preprocessor() %>%
-  step_naomit(starts_with("lag"))
+  step_rm(starts_with("lag"))
 rcp_spec_nnetar %>% prep() %>% juice() %>% glimpse()
 
 
@@ -407,6 +407,7 @@ wrkfl_fit_prophet_boost_vfcv <- wrkfl_tune_prophet_boost %>%
 
 # Re-evaluate the model on the whole test set
 calibrate_evaluate_plot(
+  wrkfl_fit_prophet_boost,
   wrkfl_fit_prophet_boost_vfcv
 )
 
