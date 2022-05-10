@@ -18,7 +18,7 @@
 source("R/utils.R")
 source("R/packages.R")
 
-devtools::install_github("AlbertoAlmuinha/boostime")
+# devtools::install_github("AlbertoAlmuinha/boostime")
 library(boostime)
 
 

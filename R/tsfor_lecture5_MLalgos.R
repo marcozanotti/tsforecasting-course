@@ -26,11 +26,11 @@ source("R/utils.R")
 source("R/packages.R")
 
 # packages treesnip and catboost have to be installed from dev versions
-remotes::install_github("curso-r/treesnip")
-devtools::install_url(
-  "https://github.com/catboost/catboost/releases/download/v1.0.0/catboost-R-Linux-1.0.0.tgz",
-  INSTALL_opts = c("--no-multiarch", "--no-test-load")
-)
+# remotes::install_github("curso-r/treesnip")
+# devtools::install_url(
+#   "https://github.com/catboost/catboost/releases/download/v1.0.0/catboost-R-Linux-1.0.0.tgz",
+#   INSTALL_opts = c("--no-multiarch", "--no-test-load")
+# )
 
 
 
@@ -500,8 +500,8 @@ model_spec_lightgbm <- boost_tree(mode = "regression") %>%
 # objective = "reg:tweedie"
 
 # CAT BOOST
-model_spec_catboost <- boost_tree(mode = "regression") %>%
-  set_engine("catboost")
+# model_spec_catboost <- boost_tree(mode = "regression") %>%
+#   set_engine("catboost")
 # loss_function = "Tweedie:variance_power=1.5"
 
 
@@ -555,29 +555,29 @@ wrkfl_fit_lightgbm_lag %>%
 
 
 # CAT BOOST + Splines
-set.seed(123)
-wrkfl_fit_catboost_spline <- workflow() %>%
-  add_model(model_spec_catboost) %>%
-  add_recipe(rcp_spec_spline) %>%
-  fit(training(splits))
-
-# CAT BOOST + Lags
-set.seed(123)
-wrkfl_fit_catboost_lag <- workflow() %>%
-  add_model(model_spec_catboost) %>%
-  add_recipe(rcp_spec_lag) %>%
-  fit(training(splits))
-
-wrkfl_fit_catboost_lag %>%
-  parsnip::extract_fit_engine() %>%
-  catboost::catboost.get_feature_importance() %>%
-  as_tibble(rownames = "feature") %>%
-  rename(value = V1) %>%
-  arrange(-value) %>%
-  mutate(feature = as_factor(feature) %>% fct_rev()) %>%
-  dplyr::slice(1:10) %>%
-  ggplot(aes(value, feature)) +
-  geom_col()
+# set.seed(123)
+# wrkfl_fit_catboost_spline <- workflow() %>%
+#   add_model(model_spec_catboost) %>%
+#   add_recipe(rcp_spec_spline) %>%
+#   fit(training(splits))
+#
+# # CAT BOOST + Lags
+# set.seed(123)
+# wrkfl_fit_catboost_lag <- workflow() %>%
+#   add_model(model_spec_catboost) %>%
+#   add_recipe(rcp_spec_lag) %>%
+#   fit(training(splits))
+#
+# wrkfl_fit_catboost_lag %>%
+#   parsnip::extract_fit_engine() %>%
+#   catboost::catboost.get_feature_importance() %>%
+#   as_tibble(rownames = "feature") %>%
+#   rename(value = V1) %>%
+#   arrange(-value) %>%
+#   mutate(feature = as_factor(feature) %>% fct_rev()) %>%
+#   dplyr::slice(1:10) %>%
+#   ggplot(aes(value, feature)) +
+#   geom_col()
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------

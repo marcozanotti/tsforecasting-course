@@ -43,7 +43,6 @@ Theoretical concepts are left to those who are interested in and
 bibliographic references are listed at the end of the course.
 
 * 10-14 hours: practical lectures on the main contents
-* 1 hour: virtual meeting with [Matt Dancho](https://github.com/mdancho84)
 * 4-8 hours: group projects
 * 2 hours: results' presentations and discussion
 

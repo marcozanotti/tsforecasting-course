@@ -247,6 +247,7 @@ resamples_vfold %>%
 submodels_resamples_tscv_sel1_tbl <- submodels_sel1_tbl %>%
   modeltime_fit_resamples(
     resamples = resamples_tscv,
+    control = control_resamples(
       verbose = TRUE,
       allow_par = TRUE,
       pkgs = c("Cubist", "rules")
