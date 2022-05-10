@@ -42,8 +42,10 @@ of the *reticulate* package.
 Theoretical concepts are left to those who are interested in and 
 bibliographic references are listed at the end of the course.
 
-* 10 hours: practical lectures on the main contents
-* 2 hours: presentation of group projects
+* 6 hours: practical lectures on the main contents
+* 3 hours: group work
+* 1.5 hours: Blogmeter tools & analysis
+* 1.5 hours: presentation of group projects
 
 
 ## Contents
@@ -52,8 +54,6 @@ bibliographic references are listed at the end of the course.
 * Time Series Features Engineering
 * Time Series Models
 * Machine Learning Models
-* Deep Learning Models
-* Automatic Machine Learning
 * Ensemble Learning
 
 
