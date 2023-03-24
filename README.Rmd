@@ -34,7 +34,7 @@ presented and used within R by means of the reticulate package.
 - [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
 
   
-## Materials:
+## Materials
 
 - [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
 - [Tutorials (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)   

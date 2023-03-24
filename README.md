@@ -26,7 +26,7 @@ the reticulate package.
   Experts)](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_business.html)  
 - [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
 
-## Materials:
+## Materials
 
 - [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
 - [Tutorials
