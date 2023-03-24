@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 2: Features Engineering & Recipes -------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:
@@ -64,6 +63,10 @@ analytics_prep_tbl <- analytics_tbl %>%
   summarise_by_time(date, .by = "day", across(pageViews:sessions, .fns = sum)) %>%
   mutate(across(pageViews:sessions, .fns = log1p)) %>%
   mutate(across(pageViews:sessions, .fns = standardize_vec))
+
+analytics_prep_tbl %>%
+  pivot_longer(-date) %>%
+  plot_time_series(date, .value = value, .facet_nrow = 3, .facet_vars = name)
 
 # events data
 events_daily_tbl <- events_tbl %>%
@@ -276,12 +279,23 @@ recipe_spec_full %>% prep() %>% juice() %>% glimpse()
 model_spec_lm <- linear_reg() %>%
   set_engine("lm")
 
+model_spec_rf <- rand_forest() %>%
+  set_engine("ranger")
+
 workflow_fit_lm <- workflow() %>%
   add_model(model_spec_lm) %>%
   add_recipe(recipe_spec_full) %>%
   fit(training(splits))
 
-calibration_tbl <- modeltime_table(workflow_fit_lm) %>%
+workflow_fit_rf <- workflow() %>%
+  add_model(model_spec_rf) %>%
+  add_recipe(recipe_spec_full) %>%
+  fit(training(splits))
+
+calibration_tbl <- modeltime_table(
+  workflow_fit_lm,
+  workflow_fit_rf
+) %>%
   modeltime_calibrate(new_data = testing(splits), quiet = FALSE)
 
 calibration_tbl %>%

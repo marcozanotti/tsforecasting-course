@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 5: Machine Learning Algorithms ----------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:
@@ -213,7 +212,7 @@ model_spec_mars <- mars(
 
 # * Workflows -------------------------------------------------------------
 
-#  MARS
+# MARS
 wrkfl_fit_mars <- workflow() %>%
   add_model(model_spec_mars) %>%
   add_formula(optins_trans ~ as.numeric(optin_time)) %>%
@@ -262,7 +261,7 @@ model_spec_svm_linear <- svm_linear(
 model_spec_svm_poly <- svm_poly(
   mode = "regression",
   cost = 10,
-  degree = 1,
+  degree = 2,
   scale_factor = 1,
   margin = 0.1
 ) %>%
@@ -587,8 +586,8 @@ calibrate_evaluate_plot(
   wrkfl_fit_xgb_lag,
   wrkfl_fit_lightgbm_spline,
   wrkfl_fit_lightgbm_lag,
-  wrkfl_fit_catboost_spline,
-  wrkfl_fit_catboost_lag,
+  # wrkfl_fit_catboost_spline,
+  # wrkfl_fit_catboost_lag,
   updated_desc = c(
     "XGB - Splines", "XGB - Lags",
     "LIGHT GBM - Splines", "LIGHT GBM - Lags",
@@ -626,7 +625,7 @@ wrkfl_fit_cubist_spline <- workflow() %>%
   add_recipe(rcp_spec_spline) %>%
   fit(training(splits))
 
-# Lag
+# CUBIST + Lag
 set.seed(123)
 wrkfl_fit_cubist_lag <- workflow() %>%
   add_model(model_spec_cubist) %>%

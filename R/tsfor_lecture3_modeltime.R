@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 3: Tidymodels & Modeltime ---------------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:

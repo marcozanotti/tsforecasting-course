@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 10: Ensemble Learning -------------------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:
@@ -81,7 +80,7 @@ model_id_sel1 <- calibration_tbl %>%
   modeltime_accuracy() %>%
   arrange(rmse) %>%
   dplyr::slice(2:10) %>%
-  dplyr::slice(-2, -4, -9) %>%
+  dplyr::slice(-2, -7, -8) %>%
   pull(.model_id)
 
 submodels_sel1_tbl <- calibration_tbl %>%

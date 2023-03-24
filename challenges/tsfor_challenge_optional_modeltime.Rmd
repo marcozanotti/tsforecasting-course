@@ -1,7 +1,7 @@
 ---
 title: "Challenge (Optional) - Modeltime"
 author: "Marco Zanotti"
-date: "2021-2022"
+date: ""
 output:
   rmdformats::downcute:
     highlight: tango

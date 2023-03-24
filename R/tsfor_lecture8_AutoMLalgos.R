@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 8: Automatic Machine Learning Algorithms ------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:
@@ -81,9 +80,9 @@ rcp_spec %>% prep() %>% juice() %>% glimpse()
 # Sys.getenv('JAVA_HOME')
 # Sys.setenv(JAVA_HOME="/usr/lib/jvm/jdk-17/")
 # Sys.getenv('JAVA_HOME')
-
+library(h2o)
 Sys.setenv(JAVA_HOME = "/usr/lib/jvm/jdk-17/")
-h2o.init(nthreads = -1)
+h2o.init()
 
 
 # * Engines ---------------------------------------------------------------
@@ -125,10 +124,10 @@ wrkfl_fit_h2o <- workflow() %>%
   fit(training(splits))
 wrkfl_fit_h2o
 
-wrkfl_fit_h2o %>% automl_leaderboard() %>% head(20)
-gbm_name <- "GBM_2_AutoML_1_20220219_112345"
-xgb_name <- "XGBoost_3_AutoML_1_20220219_112345"
-stack_name <- "StackedEnsemble_AllModels_5_AutoML_1_20220219_112345"
+wrkfl_fit_h2o %>% automl_leaderboard() %>% head(21) %>% View()
+gbm_name <- "GBM_2_AutoML_3_20220511_184506"
+xgb_name <- "XGBoost_3_AutoML_3_20220511_184506"
+stack_name <- "StackedEnsemble_AllModels_5_AutoML_3_20220511_184506"
 
 # change default selected models
 wrkfl_fit_h20_gbm <- wrkfl_fit_h2o %>%

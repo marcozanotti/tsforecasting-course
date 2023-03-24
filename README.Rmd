@@ -11,9 +11,7 @@ knitr::opts_chunk$set(
 
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python
 
-2021-2022
-
-[MSc Data Science for Economics, University of Milan](https://dse.cdl.unimi.it/en)
+`r strtrim(Sys.Date(), 4)`
 
 *Overview*
 
@@ -33,15 +31,15 @@ presented and used within R by means of the reticulate package.
 
 ## General Information
 
-- [Course Description](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
-- [Course Description - Master](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_master.html)  
+- [for Students](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+- [for Business Experts](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_business.html)  
 - [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)  
 
   
 ## Materials:
 
 - [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
-- [R Tutorials (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)   
+- [Tutorials (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)   
 - [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)  
 
 
@@ -57,6 +55,6 @@ presented and used within R by means of the reticulate package.
 
 ## Hackathon
 
-[Hackathon Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html) 
+- [Hackathon Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html) 
 
 

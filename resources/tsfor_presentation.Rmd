@@ -2,8 +2,8 @@
 title: "Time Series Forecasting:<br/> Machine Learning and Deep Learning<br/> with<br/> R & Python"
 subtitle: ""
 author: "Marco Zanotti"
-institute: "University of Milan"
-date: "2021/2022"
+institute: ""
+date: ""
 output:
   xaringan::moon_reader:
     css: ["default", "css/custom.css"]
@@ -21,8 +21,6 @@ background-color: black
 
 # Time Series Forecasting:<br/> Machine Learning and Deep Learning<br/> with<br/> R & Python
 ### Marco Zanotti
-### University of Milan
-### 2021/2022
 
 
 ---
@@ -30,7 +28,7 @@ class: separator, right, middle
 background-color: black
 
 # Part I
-# Time Series Forecasting in 2022
+# Time Series Forecasting in `r strtrim(Sys.Date(), 4)`
 <!-- Separator -->
 
 

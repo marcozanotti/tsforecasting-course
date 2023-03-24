@@ -1,10 +1,7 @@
 
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python
 
-2021-2022
-
-[MSc Data Science for Economics, University of
-Milan](https://dse.cdl.unimi.it/en)
+2023
 
 *Overview*
 
@@ -25,33 +22,33 @@ the reticulate package.
 
 ## General Information
 
--   [Course
-    Description](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
--   [Course Description -
-    Master](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_master.html)  
--   [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
+- [for
+  Students](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+- [for Business
+  Experts](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_business.html)  
+- [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
 
 ## Materials:
 
--   [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
--   [R Tutorials
-    (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)  
--   [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)
+- [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
+- [Tutorials
+  (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)  
+- [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)
 
 ## Challenges
 
--   [Jumpstart](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge0_jumpstart.html)  
--   [Feature
-    Engineering](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge1_feateng.html)  
--   [New
-    Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge2_newalgos.html)  
--   [Tuning](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge3_tuning.html)  
--   [Testing
-    Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge4_algos.html)  
--   [Modeltime
-    (optional)](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge_optional_modeltime.html)
+- [Jumpstart](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge0_jumpstart.html)  
+- [Feature
+  Engineering](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge1_feateng.html)  
+- [New
+  Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge2_newalgos.html)  
+- [Tuning](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge3_tuning.html)  
+- [Testing
+  Algos](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge4_algos.html)  
+- [Modeltime
+  (optional)](https://marcozanotti.github.io/tsforecasting-course/challenges/tsfor_challenge_optional_modeltime.html)
 
 ## Hackathon
 
-[Hackathon
-Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)
+- [Hackathon
+  Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)

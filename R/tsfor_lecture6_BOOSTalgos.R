@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 6: Boosted Time Series Algorithms -------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:
@@ -336,7 +335,7 @@ calibrate_evaluate_plot(
 
 
 
-# PROPHETLIGHT GBM ---------------------------------------------------------
+# PROPHET LIGHT GBM -------------------------------------------------------
 
 ?boost_arima()
 # does not work, there is a bug
@@ -379,7 +378,7 @@ model_spec_prophet_lgbm <- boost_prophet(
 
 
 
-# PROPHETCAT BOOST ---------------------------------------------------------
+# PROPHET CAT BOOST -------------------------------------------------------
 
 ?boost_arima()
 

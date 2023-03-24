@@ -2,7 +2,7 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 author: "Marco Zanotti"
-date: "2021-2022"
+date: ""
 output:
   pdf_document: default
   rmdformats::downcute:
@@ -85,15 +85,14 @@ The evaluation will take into consideration:
 
 The course earns 3 ECTS for a total of 20 hours, divided into 5 lectures (4 hours each).
 
-1. Saturday 2022-01-29, 9.00 - 13.00
-2. Saturday 2022-02-12, 9.00 - 13.00
-3. Saturday 2022-02-19, 9.00 - 13.00
-4. Saturday 2022-02-26, 9.00 - 13.00
-5. Saturday 2022-03-12, 9.00 - 13.00
+1. Day yyyy-mm-29, 9.00 - 13.00
+2. Day yyyy-mm-dd, 9.00 - 13.00
+3. Day yyyy-mm-dd, 9.00 - 13.00
+4. Day yyyy-mm-dd, 9.00 - 13.00
+5. Day yyyy-mm-dd, 9.00 - 13.00
 
-Lectures take place at University of Milan, Via Conservatorio 7.   
+Lectures take place at ...   
 
-The 1 hour virtual meeting with Matt Dancho will take place during the week after 18pm.
 
 
 ## Eligible Students & Requirements
@@ -112,9 +111,9 @@ Requirements:
 
 ## Application
 
-Motivation letter has to be sent to dse@unimi.it  
+Motivation letter has to be sent to ...  
 
-**Application deadline: 2022-01-09**
+**Application deadline: yyyy-mm-dd**
 
 For more information about the course contact zanottimarco17@gmail.com
 or look at the 

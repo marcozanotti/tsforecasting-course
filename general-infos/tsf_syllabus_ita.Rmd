@@ -1,0 +1,185 @@
+---
+title: "Time Series Forecasting  \n  with  \n  Machine Learning & Deep Learning  \n  - Programma del Corso -"
+author: "Marco Zanotti"
+date: ""
+output:
+  pdf_document: default
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Time Series Manipulations, Transformations & Visualizations
+
+**Manipulations**:  
+- aggregazioni nel tempo    
+- riempimenti nel tempo    
+- filtri nel tempo    
+- modifiche nel tempo    
+- combinazioni nel tempo    
+
+**Transformations**:   
+- riduzione di varianza  
+- riduzione di ampiezza    
+- smoothing  
+- medie mobili    
+- imputazione valori mancanti  
+- individuazione e rimozione anomalie  
+- ritardi e differenziazione  
+- trasformate di Fourier  
+- intervalli con limiti  
+
+**Visualizations**:  
+- serie storica  
+- autocorrelazione  
+- cross-correlazione  
+- smoothing  
+- stagionalità    
+- scomposizione della serie storica    
+- inividuazione anomalie    
+- regressione temporale    
+
+
+## Time Series Features Engineering
+
+**Feature Engineering**:  
+- feature calendario    
+- feature trend  
+- feature stagionali  
+- interazioni      
+- medie mobili    
+- ritardi    
+- Fourier  
+- eventi  
+- feature esterne    
+
+
+## Tidymodel & Modeltime
+
+**Tidymodel**:  
+- librerie di riferimento    
+- recipe  
+- workflow  
+
+**Modeltime**:  
+- librerie di riferimento    
+- specificazione degli algoritmi    
+- workflow   
+- calibrazione    
+- valitazione  
+- (ri)stima    
+- previsione    
+
+
+## Time Series Models
+
+**Metodi di Previsione**:  
+- Naive / Seasonal Naive  
+- Window Functions  
+- S-ARIMA-X  
+- Exponential Smoothing  
+- TBATS  
+- STLM (Decomposition models)  
+- Facebook's Prophet  
+
+
+## Machine Learning Models
+
+**Metodi di Previsione**:  
+- Linear Regression  
+- Elastic Net  
+- MARS  
+- SVM  
+- KNN  
+- Random Forest  
+- Boosting  
+- Cubist  
+- Neural Network  
+
+
+## Boosting Time Series Models
+
+**Metodi di Previsione**:  
+- ARIMA Boost  
+- Prophet Boost  
+
+
+## Deep Learning Models
+
+**Metodi di Previsione**:    
+- GluonTS Deep AR   
+- GluonTS NBEATS    
+- GluonTS GP Forecaster  
+- GluonTS Deep State  
+- Torch Deep AR   
+
+
+## Automatic Machine Learning
+
+**Metodi di Previsione**:  
+- H2O  
+
+
+<!--
+###  9: Bayesian Modelling
+
+**Metodi di Previsione**:  
+- 
+
+
+###  10: GAMs Modelling
+
+**Metodi di Previsione**:  
+- 
+-->
+
+
+## Hyperparameter Tuning
+
+**Metodi**:    
+- Sequential  
+- Non-Sequential  
+
+**Cross Validation**:  
+- Time Series Cross Validation  
+- V-Fold Cross Validation  
+- Grid Searches  
+
+
+## Ensemble Learning & Stacking
+
+**Metodi di Previsione**:  
+- Simple Averaging Ensemble  
+- Weight Averaging Ensemble  
+- Stacking and Metalearning  
+- Multi-level Ensemble  
+
+
+## Recursive Machine Learning Forecasting
+
+**ML Recursivity**:  
+- single series recursive modelling  
+- panel data recursive modelling
+
+
+## Panel Data Forecasting
+
+**Metodi di Previsione**:  
+- Nested Forecasting  
+- Global Modelling  
+<!--- Hierarchical Time Series Forecasting-->
+
+
+<!--
+###  13: Spark Backend
+
+**Sparlyr**:  
+- single time series Spark workflow
+- panel data Spark workflow
+-->
+

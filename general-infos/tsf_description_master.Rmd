@@ -2,7 +2,7 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n"
 author: "Marco Zanotti"
-date: "2021-2022"
+date: ""
 output:
   pdf_document: default
   rmdformats::downcute:
@@ -42,10 +42,8 @@ of the *reticulate* package.
 Theoretical concepts are left to those who are interested in and 
 bibliographic references are listed at the end of the course.
 
-* 6 hours: practical lectures on the main contents
-* 3 hours: group work
-* 1.5 hours: Blogmeter tools & analysis
-* 1.5 hours: presentation of group projects
+* 10 hours: practical lectures on the main contents
+* 2 hours: presentation of group projects
 
 
 ## Contents
@@ -54,6 +52,7 @@ bibliographic references are listed at the end of the course.
 * Time Series Features Engineering
 * Time Series Models
 * Machine Learning Models
+* Automatic Machine Learning
 * Ensemble Learning
 
 

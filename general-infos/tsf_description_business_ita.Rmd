@@ -1,0 +1,82 @@
+---
+title: "Time Series Forecasting con Machine Learning & Deep Learning\n"
+author: "Marco Zanotti"
+date: ""
+output:
+  pdf_document: default
+  rmdformats::downcute:
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+&nbsp; 
+
+## Introduzione
+
+Negli ultimi 15 anni, le richieste aziendali legate alla previsione di
+serie temporali sono drasticamente cambiate. I bisogni aziendali si sono
+evoluti passando dalla previsione di al massimo 100 serie storiche con 
+bassa frequenza (principalmente mensile o trimestrale), alla previsone 
+di 10.000 serie ad alta frequenza (solitamente giornaliera).
+Purtroppo però, gli strumenti che venivano ampiamente utilizzati in 
+passato per risolvere questo genere di problemi, oggi non sono più i 
+migliori, sia in termini di efficienza, che di efficacia. 
+Inoltre, lo studio delle M-Series Forecasting Competitions suggerisce che
+i nuovi approcci basati su Machine Learning, Deep Learning e Stacking sono
+veramente molto performanti se confrontati con le "vecchie" metodologie.  
+
+Per queste ragioni, oggigiorno le figure aziendali che si occupano di 
+previsioni devono essere in grado di fornire soluzioni aziendali scalabili
+e accurate, tenendosi costantemente aggiornati rispetto alle nuove 
+tecnologie e algoritmi.  
+
+
+## Obiettivi
+
+L'obiettivo del corso è apprendere come i problemi di forecasting
+con dati temporali possono essere risolti in pratica.  
+I metodi e le tecnologie passate e attuali sono presentati da un
+punto di vista estremamente pratico attraverso la programmazione R.
+Anche numerosi algoritmi Python sono presentati e utilizzati.  
+
+
+## Contenuti
+
+* Time Series Manipulations, Transformations & Visualizations
+* Time Series Features Engineering
+* Time Series Models
+* Machine Learning Models
+* Deep Learning Models
+* Automatic Machine Learning
+* Hyperparameter Tuning
+* Ensemble Learning & Stacking
+* Recursivity of ML Models
+* Nested (Iterative) Forecasting
+* Global Modelling
+
+Eventuali esigenze aziendali riguardo a tematiche di interesse
+possono essere valutate insieme al docente per rimodulare il 
+corso sulla base dei desiderata del cliente.  
+
+
+## Durata
+
+Il corso ha una durata complessiva di 20 ore.   
+
+
+## Destinatari
+
+I destinatari di questo corso sono data scientist, data analyst, 
+statistici, professionisti IT, sviluppatori, capi progetto che 
+vogliono acquisire know how sui metodi e sulle applicazioni riguardanti 
+il forecasting di dati temporali e la tecnologie più in voga per risolvere 
+tali problematiche aziendali.  
+
+
+## Requisiti
+
+Sono richieste conoscenze di base della statistica e della programmazione.  
+

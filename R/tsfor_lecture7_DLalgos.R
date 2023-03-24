@@ -1,7 +1,6 @@
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python ----
 
 # Lecture 7: Deep Learning Algorithms -------------------------------------
-# 2021/2022
 # Marco Zanotti
 
 # Goals:

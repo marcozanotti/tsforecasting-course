@@ -1,7 +1,7 @@
 ---
 title: "Challenge 2 - Testing New Forecasting Algorithms"
 author: "Marco Zanotti"
-date: "2021-2022"
+date: ""
 output: 
   rmdformats::downcute:
     highlight: tango

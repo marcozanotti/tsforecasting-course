@@ -2,7 +2,7 @@
 title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
   and Python\n- Hackathon -"
 author: "Marco Zanotti"
-date: "2021-2022"
+date: ""
 output: 
   rmdformats::downcute:
     highlight: tango
