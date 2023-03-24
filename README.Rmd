@@ -11,8 +11,6 @@ knitr::opts_chunk$set(
 
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python
 
-`r strtrim(Sys.Date(), 4)`
-
 *Overview*
 
 In the last 15 years, business requests related to time series forecasting changed 
