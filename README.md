@@ -1,8 +1,6 @@
 
 # Time Series Forecasting: Machine Learning and Deep Learning with R & Python
 
-2023
-
 *Overview*
 
 In the last 15 years, business requests related to time series
@@ -22,10 +20,10 @@ the reticulate package.
 
 ## General Information
 
-- [for
-  Students](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
-- [for Business
-  Experts](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_business.html)  
+- [Course Descriprion (for
+  Students)](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description.html)  
+- [Course Descriprion (for Business
+  Experts)](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_description_business.html)  
 - [Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
 
 ## Materials:
