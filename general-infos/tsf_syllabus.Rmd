@@ -170,7 +170,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - panel data recursive modelling
 
 
-### Lecture 12: Panel Data Forecasting
+## Lecture 12: Panel Data Forecasting
 
 **Forecasting Methods**:  
 - Nested Forecasting  
