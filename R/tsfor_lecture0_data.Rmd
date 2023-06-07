@@ -1,6 +1,8 @@
 ---
-title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
-  and Python\n- Lecture 0: Packages & Data -"
+title: |
+  | Time Series Forecasting: 
+  | Machine Learning and Deep Learning with R and Python 
+  | Lecture 0: Packages & Data
 author: "Marco Zanotti"
 date: ""
 output: 
@@ -92,7 +94,7 @@ analytics tools.
 
 &nbsp;  
 
-![](../presentations/imgs/tsf_data.png)
+![](../resources/imgs/tsf_data.png)
 
 &nbsp;  
 

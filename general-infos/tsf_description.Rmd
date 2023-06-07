@@ -1,120 +1,119 @@
 ---
-title: "| Time Series Forecasting:  \n| Machine Learning and Deep Learning with R
-  and Python\n"
+title: | 
+  | Time Series Forecasting:
+  | Machine Learning and Deep Learning with R and Python
 author: "Marco Zanotti"
 date: ""
 output:
   pdf_document: default
   rmdformats::downcute:
     highlight: tango
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-&nbsp;  
-
-In the last 15 years, business requests related to time series forecasting
-changed dramatically. Business needs evolved from predicting at most
-100, low frequency (mainly monthly or quarterly) data, to forecasting 
-10.000, high frequency (mainly daily data) time series. 
-Unfortunately, the classical tools that were highly used in the past years 
-may not be the best anymore, both in terms of accuracy and computationally.  
-Moreover, the review of M-Series Forecasting Competitions suggests that 
-newer ML and DL models, or stacking ensemble techniques may be very accurate 
-compared to easier solutions. 
+In the last 15 years, business requests related to time series
+forecasting changed dramatically. Business needs evolved from predicting
+at most 100, low frequency (mainly monthly or quarterly) data, to
+forecasting 10.000, high frequency (mainly daily data) time series.
+Unfortunately, the classical tools that were highly used in the past
+years may not be the best anymore, both in terms of accuracy and
+computationally.
+Moreover, the review of M-Series Forecasting Competitions suggests that
+newer ML and DL models, or stacking ensemble techniques may be very
+accurate compared to easier solutions.
 
 For these reasons, nowadays the "time series forecasting" data scientist
 is required to be capable of providing business forecasting solutions
 tackling both scalability and accuracy, constantly keeping up-to-date
-with new methods.  
-
+with new methods.
 
 ## Course Structure
 
-The aim of the course is to teach the students how time series 
-forecasting problems can be solved in practice.  
-The state-of-the-art techniques are presented from a very practical 
-point of view, throughout R tutorials on each main topic. 
-Python algorithms are also presented and used within R by means 
-of the *reticulate* package.
-Theoretical concepts are left to those who are interested in and 
-bibliographic references are listed at the end of the course.
+The aim of the course is to teach the students how time series
+forecasting problems can be solved in practice.
+The state-of-the-art techniques are presented from a very practical
+point of view, throughout R tutorials on each main topic. Python
+algorithms are also presented and used within R by means of the
+*reticulate* package. Theoretical concepts are left to those who are
+interested in and bibliographic references are listed at the end of the
+course.
 
-* 10-14 hours: practical lectures on the main contents
-* 4-8 hours: group projects
-* 2 hours: results' presentations and discussion
-
+-   12 hours: practical lectures on the main contents
+-   6 hours: group projects
+-   2 hours: results' presentations and discussion
 
 ## Contents
 
-* Time Series Manipulations, Transformations & Visualizations
-* Time Series Features Engineering
-* Time Series Models
-* Machine Learning Models
-* Deep Learning Models
-* Automatic Machine Learning
-* Hyperparameter Tuning
-* Ensemble Learning
-* Recursivity of ML Models
-* Nested (Iterative) Forecasting
-* Global Modelling
+-   Time Series Manipulations, Transformations & Visualizations
+-   Time Series Features Engineering
+-   Time Series Models
+-   Machine Learning Models
+-   Deep Learning Models
+-   Automatic Machine Learning
+-   Hyperparameter Tuning
+-   Ensemble Learning
+-   Recursivity of ML Models
+-   Nested (Iterative) Forecasting
+-   Global Modelling
 
 \pagebreak
 
-
 ## Evaluation
 
-Students will be divided into 5 groups (3 students each) and 
-will be asked to compete on a Time Series Forecasting challenge. 
-They are expected to provide a fully reproducible project showing 
-the statistical methods used to solve the forecasting problem at hand.  
+Students will be divided into 5 groups and will be asked to compete on a
+Time Series Forecasting challenge. They are expected to provide a fully
+reproducible project showing the statistical methods used to solve the
+forecasting problem at hand.
 
-The evaluation will take into consideration:  
+The evaluation will take into consideration:
 
-* the correctness of the methods used (10pt)
-* the final average forecasting performance (5pt)
-* the total time spent on developing the project (5pt)
-* the total computation time (1pt)
-* the originality of the approach (5pt) 
-* the presentation of results (4pt)
-
+-   the correctness of the methods used (10pt)
+-   the final average forecasting performance (9pt)
+-   the total time spent on developing the project (1pt)
+-   the total computation time (1pt)
+-   the originality of the approach (5pt)
+-   the presentation of results (4pt)
 
 ## Duration & Calendar
 
-The course earns 3 ECTS for a total of 20 hours, divided into 5 lectures (4 hours each).
+The course earns 3 ECTS for a total of 20 hours, divided into 7
+lectures.
 
-1. Day yyyy-mm-29, 9.00 - 13.00
-2. Day yyyy-mm-dd, 9.00 - 13.00
-3. Day yyyy-mm-dd, 9.00 - 13.00
-4. Day yyyy-mm-dd, 9.00 - 13.00
-5. Day yyyy-mm-dd, 9.00 - 13.00
+1.  Day 2023-07-24, 17.00 - 20.00
+2.  Day 2023-07-25, 17.00 - 20.00
+3.  Day 2023-07-26, 17.00 - 20.00
+4.  Day 2023-07-31, 17.00 - 20.00
+5.  Day 2023-08-01, 17.00 - 20.00
+6.  Day 2023-08-02, 17.00 - 20.00
+7.  Day 2023-08-03, 17.00 - 19.00
 
-Lectures take place at ...   
+Lectures take place at: online.
 
-
-
+<!--#  
 ## Eligible Students & Requirements
 
-15 students  
-  
+15 students
+
 Requirements:
 
-* Knowledge of R / Python
-* Basic knowledge of RMarkdown / Jupiter Notebook
-* Personal laptop
-* Knowledge of the theoretical framework related to ML/DL models
-* Strong interest in time series domain analysis
-* Competitiveness
-
+-   Knowledge of R / Python
+-   Basic knowledge of RMarkdown / Jupiter Notebook
+-   Personal laptop
+-   Knowledge of the theoretical framework related to ML/DL models
+-   Strong interest in time series domain analysis
+-   Competitiveness
 
 ## Application
 
-Motivation letter has to be sent to ...  
+Motivation letter has to be sent to ...
 
-**Application deadline: yyyy-mm-dd**
+**Application deadline: yyyy-mm-dd** 
 
-For more information about the course contact zanottimarco17@gmail.com
-or look at the 
+-->
+For more information about the course contact
+[zanottimarco17\@gmail.com](mailto:zanottimarco17@gmail.com){.email} or look at the 
 [Course Syllabus](https://marcozanotti.github.io/tsforecasting-course/general-infos/tsf_syllabus.html)
