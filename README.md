@@ -48,5 +48,7 @@ the reticulate package.
 
 ## Hackathon
 
-- [Hackathon
-  Guidelines](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_exam_guidelines.html)
+- [Hackathon: M4
+  Competition](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_hackaton1.html)
+- [Hackathon: Wind
+  Forecast](https://marcozanotti.github.io/tsforecasting-course/exam/tsf_hackaton2.html)

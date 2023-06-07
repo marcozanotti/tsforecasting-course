@@ -1,0 +1,104 @@
+---
+title: | 
+  | Time Series Forecasting:  
+  | Machine Learning and Deep Learning with R and Python
+  | - Hackathon: Wind Forecast -
+author: "Marco Zanotti"
+date: ""
+output: 
+  rmdformats::downcute:
+    highlight: tango
+    toc_depth: 2
+---
+
+## Content
+
+The topic for the wind forecasting track is focused on mimicking the operation 
+48-hour ahead prediction of hourly power generation at 7 wind farms, based on 
+historical measurements and additional wind forecast information (48-hour 
+ahead predictions of wind speed and direction at the sites). The data is 
+available from the 1st hour of 2009/7/1 to the 12th hour of 2012/6/28.
+
+You are free to use the tool you prefer to estimate models and produce forecasts.  
+
+
+## Timeline
+
+The competition will take place by the end of the course lectures and you
+will have 3 weeks to complete the requirements.  
+
+The full dataset will be made available by the Professor.  
+
+The last lecture of the course will be dedicated to the presentations of the 
+results.  
+
+
+## Requirements
+
+This is a team competition. 
+
+You are required to produce a notebook to present your whole project, from
+methodologies used to the results obtained, carefully explaining your
+approaches.  
+
+In particular, you have to report:  
+- list of forecasting methods used  
+- accuracy results on test set for each time series and each method using RMSE  
+- best accuracy results on test set for each time series using RMSE  
+- average accuracy result on test set (Average RMSE)  
+- total computation time required to make the computations with system information  
+- total time spent on developing the project  
+
+The evaluation part is aimed at mimicking real operational conditions. 
+For that, a number of 48-hour periods with missing power observations were 
+defined. All these power observations are to be predicted. These periods are 
+defined as follows. The first period with missing observations is from 
+2011/1/1 at 01:00 until 2011/1/3 at 00:00. The second period with missing 
+observations is from 2011/1/4 at 13:00 until 2011/1/6 at 12:00. 
+
+Note that to be consistent, only the meteorological forecasts for that period 
+that would actually be available in practice are given. These two periods then 
+repeat every 7 days until the end of the dataset. In between periods with 
+missing data, power observations are available for updating the models.
+
+Finally, you are required to submit a "groupname_submission.csv" at least two 
+days before the presentation.  
+
+You need to score an RMSE <= 0.9 on the test data to pass this assignment.
+
+
+## Data
+
+The period between 2009/7/1 and 2010/12/31 is a model identification and 
+training period, while the remainder of the dataset, from 2011/1/1 to 2012/6/28, 
+is there for evaluation. The training period will be used for designing and 
+estimating models permitting predicting wind power generation at lead times 
+from 1 to 48 hours ahead, based on past power observations and/or available 
+meteorological wind forecasts for that period. 
+
+The file "train.csv" contains the training data:
+- the first column ("date") is a timestamp giving the date and time of the 
+hourly wind power measurements in the following columns. For instance 
+"2009070812" is for the 8th of July 2009 at 12:00  
+- the following 7 columns ("wp1" to "wp7") gather the normalized wind power 
+measurements for the 7 wind farms. They are normalized so as to take values 
+between 0 and 1 in order for the wind farms not to be recognizable.  
+
+In parallel, files with explanatory variables (wind forecasts) are also 
+provided for those who may want to use them. For example, the file 
+"windforecasts_wf1.csv" contains the wind forecasts for the wind farm 1. 
+In these files:  
+- the first column ("date") is a timestamp giving the date and time at which 
+the forecasts are issued. For instance "2009070812" is for the 8th of July 
+2009 at 12:00  
+- the second column ("hors") is for the lead time of the forecast. For 
+instance if "date" = 2009070812 and "hors" = 1, the forecast is for the 8th 
+of July 2009 at 13:00  
+- the following 4 columns ("u", "v", "ws" and "wd") are the forecasts 
+themselves, the first two being the zonal and meridional wind components, 
+while the following two are corresponding wind speed and direction.  
+
+Finally, the file "template.csv" provide example forecast results from a 
+forecast method. This file gives a template for the submission of results 
+that should be strictly followed. 
+
