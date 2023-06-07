@@ -33,8 +33,6 @@ You are free to use the tool you prefer to estimate models and produce forecasts
 The competition will take place by the end of the course lectures and you
 will have 3 weeks to complete the requirements.  
 
-The full dataset will be made available by the Professor.  
-
 The last lecture of the course will be dedicated to the presentations of the 
 results.  
 
@@ -68,9 +66,11 @@ The "M" competitions have had an enormous influence on the field of forecasting.
 the mathematical properties of those models." Professor Rob J. Hyndman
 
 The dataset of the M-Competitions are publicly available and downloadable from
-the International [Institute of Forecasters](https://forecasters.org/resources/time-series-data/).
+the International [Institute of Forecasters](https://forecasters.org/resources/time-series-data/).  
+
 In particular, the exam data is taken sampling the 120 different time series 
-from the M4-Competition at various periodicities.   
+from the M4-Competition at various periodicities (hackaton_m4_info.csv and hackaton_m4.csv, 
+or the rds version if you are using R).      
 
 You are encouraged to read about the main results of this competition:  
 - [The M4 Competition: 100,000 time series and 61 forecasting methods](https://www.sciencedirect.com/science/article/pii/S0169207019301128?via%3Dihub)  
