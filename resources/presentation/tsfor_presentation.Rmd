@@ -13,8 +13,8 @@ output:
       highlightLines: true
       countIncrementalSlides: false
     seal: false
-    
-    
+
+
 ---
 class: inverse, center, middle
 background-color: black
