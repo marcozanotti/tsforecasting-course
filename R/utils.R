@@ -21,7 +21,7 @@ install_and_load <- function(pkgs, repos = getOption("repos")) {
   pkgs_inst <- pkgs[!pkgs %in% installed.packages()]
 
   if (length(pkgs_inst) == 0) {
-    lapply(pkgs, library, character.only = TRUE, quietly = TRUE)
+    suppressMessages(lapply(pkgs, library, character.only = TRUE, quietly = TRUE))
     check_res <- check_namespace(pkgs)
     if (is.null(check_res)) {
       res <- "All packages correctly installed and loaded."
@@ -50,7 +50,7 @@ install_and_load <- function(pkgs, repos = getOption("repos")) {
 
     pkgs_err <- pkgs_inst[!inst_res == ""]
     if (length(pkgs_err) == 0) {
-      lapply(pkgs, library, character.only = TRUE, quietly = TRUE)
+      suppressMessages(lapply(pkgs, library, character.only = TRUE, quietly = TRUE))
       check_res <- check_namespace(pkgs)
       if (is.null(check_res)) {
         res <- "All packages correctly installed and loaded."
@@ -63,7 +63,7 @@ install_and_load <- function(pkgs, repos = getOption("repos")) {
       }
     } else {
       pkgs_noerr <- pkgs[!pkgs %in% pkgs_err]
-      lapply(pkgs_noerr, library, character.only = TRUE, quietly = TRUE)
+      suppressMessages(lapply(pkgs_noerr, library, character.only = TRUE, quietly = TRUE))
       check_res <- check_namespace(pkgs_noerr)
       if (is.null(check_res)) {
         res <- paste0(
@@ -139,20 +139,20 @@ calibrate_evaluate_plot <- function(..., type = "testing", updated_desc = NULL) 
 
 # Function to extract the .model_id of the "best" model according to a metric
 select_best_id <- function(calibration, n = 1, metric = "rmse", by_id = FALSE, id_var = NULL) {
-  
+
   model_best_id <- calibration %>%
     modeltime_accuracy(acc_by_id = by_id)
-  
+
   if (by_id) {
     if (is.null(id_var)) {
       stop("Specify the id variable name.")
     }
-    model_best_id <- model_best_id %>% 
+    model_best_id <- model_best_id %>%
       group_by(!!rlang::sym(id_var))
   }
-  
+
   if (metric == "rsq") {
-    model_best_id <- model_best_id %>% 
+    model_best_id <- model_best_id %>%
       slice_max(!!rlang::sym(metric), n = n) %>%
       pull(.model_id)
   } else {
@@ -160,9 +160,9 @@ select_best_id <- function(calibration, n = 1, metric = "rmse", by_id = FALSE, i
       slice_min(!!rlang::sym(metric), n = n) %>%
       pull(.model_id)
   }
-  
+
   return(model_best_id)
-  
+
 }
 
 
@@ -186,8 +186,8 @@ lag_transf_grouped <- function(data){
 
 # Function to calibrate models, evaluate their accuracy and plot results on nested data
 nested_calibrate_evaluate_plot <- function(nested_data, workflows, id_var, parallel = FALSE) {
-  
-  nested_calibration_tbl <- nested_data %>% 
+
+  nested_calibration_tbl <- nested_data %>%
     modeltime_nested_fit(
       model_list = workflows,
       control = control_nested_fit(
@@ -195,16 +195,16 @@ nested_calibrate_evaluate_plot <- function(nested_data, workflows, id_var, paral
         allow_par = parallel
       )
     )
-  
+
   print(nested_calibration_tbl %>% extract_nested_test_accuracy())
-  
+
   print(
     nested_calibration_tbl %>%
       extract_nested_test_forecast() %>%
-      group_by(!!rlang::sym(id_var)) %>% 
+      group_by(!!rlang::sym(id_var)) %>%
       plot_modeltime_forecast(.conf_interval_show = FALSE)
   )
-  
+
   return(invisible(nested_calibration_tbl))
-  
+
 }
