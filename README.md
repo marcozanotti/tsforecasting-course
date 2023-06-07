@@ -28,7 +28,7 @@ the reticulate package.
 
 ## Materials
 
-- [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/tsfor_presentation.html)  
+- [Presentation](https://marcozanotti.github.io/tsforecasting-course/resources/presentation/tsfor_presentation.html)  
 - [Tutorials
   (lectures)](https://github.com/marcozanotti/tsforecasting-course/tree/master/R)  
 - [Data](https://marcozanotti.github.io/tsforecasting-course/R/tsfor_lecture0_data.html)
