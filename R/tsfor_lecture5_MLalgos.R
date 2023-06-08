@@ -193,7 +193,6 @@ calibrate_evaluate_plot(
 
 ?mars()
 
-
 # - Strengths: Best algorithm for modeling trend
 # - Weaknesses:
 #   - Not good for complex patterns (i.e. seasonality)
@@ -568,13 +567,13 @@ wrkfl_fit_lightgbm_lag |>
 #   fit(training(splits))
 #
 # wrkfl_fit_catboost_lag |>
-#   parsnip::extract_fit_engine() %>%
-#   catboost::catboost.get_feature_importance() %>%
-#   as_tibble(rownames = "feature") %>%
-#   rename(value = V1) %>%
-#   arrange(-value) %>%
-#   mutate(feature = as_factor(feature) %>% fct_rev()) %>%
-#   dplyr::slice(1:10) %>%
+#   parsnip::extract_fit_engine() |>
+#   catboost::catboost.get_feature_importance() |>
+#   as_tibble(rownames = "feature") |>
+#   rename(value = V1) |>
+#   arrange(-value) |>
+#   mutate(feature = as_factor(feature) |> fct_rev()) |>
+#   dplyr::slice(1:10) |>
 #   ggplot(aes(value, feature)) +
 #   geom_col()
 
@@ -612,7 +611,7 @@ model_spec_cubist <- cubist_rules(
   committees = 50,
   neighbors = 7,
   max_rules = 100
-) %>%
+) |>
   set_engine("Cubist")
 
 
@@ -620,16 +619,16 @@ model_spec_cubist <- cubist_rules(
 
 # CUBIST + Splines
 set.seed(123)
-wrkfl_fit_cubist_spline <- workflow() %>%
-  add_model(model_spec_cubist) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_cubist_spline <- workflow() |>
+  add_model(model_spec_cubist) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # CUBIST + Lag
 set.seed(123)
-wrkfl_fit_cubist_lag <- workflow() %>%
-  add_model(model_spec_cubist) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_cubist_lag <- workflow() |>
+  add_model(model_spec_cubist) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -665,7 +664,7 @@ model_spec_nnet <- mlp(
   hidden_units = 10,
   penalty = 1,
   epochs = 100
-) %>%
+) |>
   set_engine("nnet")
 
 # NNETAR
@@ -676,7 +675,7 @@ model_spec_nnetar <- nnetar_reg(
   penalty = 10,
   num_networks = 10,
   epochs = 50
-) %>%
+) |>
   set_engine("nnetar")
 
 
@@ -684,24 +683,24 @@ model_spec_nnetar <- nnetar_reg(
 
 # NNET + Splines
 set.seed(123)
-wrkfl_fit_nnet_spline <- workflow() %>%
-  add_model(model_spec_nnet) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_nnet_spline <- workflow() |>
+  add_model(model_spec_nnet) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # NNET + Lags
 set.seed(123)
-wrkfl_fit_nnet_lag <-  workflow() %>%
-  add_model(model_spec_nnet) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_nnet_lag <-  workflow() |>
+  add_model(model_spec_nnet) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 # NNETAR
 set.seed(123)
-wrkfl_fit_nnetar <- workflow() %>%
-  add_model(model_spec_nnetar) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits) %>% drop_na())
+wrkfl_fit_nnetar <- workflow() |>
+  add_model(model_spec_nnetar) |>
+  add_recipe(rcp_spec) |>
+  fit(training(splits) |> drop_na())
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------
@@ -757,24 +756,24 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_nnet_spline,
   wrkfl_fit_nnet_lag,
   wrkfl_fit_nnetar
-) %>%
-  update_modeltime_description(.model_id = 3, .new_model_desc = "RIDGE") %>%
-  update_modeltime_description(.model_id = 4, .new_model_desc = "RIDGE") %>%
-  update_modeltime_description(.model_id = 5, .new_model_desc = "LASSO") %>%
-  update_modeltime_description(.model_id = 6, .new_model_desc = "LASSO") %>%
-  update_modeltime_description(.model_id = 7, .new_model_desc = "ELANET") %>%
-  update_modeltime_description(.model_id = 8, .new_model_desc = "ELANET") %>%
-  update_modeltime_description(.model_id = 9, .new_model_desc = "MARS") %>%
-  update_modeltime_description(.model_id = 10, .new_model_desc = "MARS") %>%
-  update_modeltime_description(.model_id = 11, .new_model_desc = "SVM Linear") %>%
-  update_modeltime_description(.model_id = 12, .new_model_desc = "SVM Linear") %>%
-  update_modeltime_description(.model_id = 13, .new_model_desc = "SVM Poly") %>%
-  update_modeltime_description(.model_id = 14, .new_model_desc = "SVM Poly") %>%
-  update_modeltime_description(.model_id = 15, .new_model_desc = "SVM RBF") %>%
-  update_modeltime_description(.model_id = 16, .new_model_desc = "SVM RBF") %>%
-  mutate(.model_desc_2 = str_c(.model_desc, rep_along(.model_desc, c(" - Spline", " - Lag")))) %>%
-  mutate(.model_desc = ifelse(.model_id == 27, .model_desc, .model_desc_2)) %>%
-  select(-.model_desc_2) %>%
+) |>
+  update_modeltime_description(.model_id = 3, .new_model_desc = "RIDGE") |>
+  update_modeltime_description(.model_id = 4, .new_model_desc = "RIDGE") |>
+  update_modeltime_description(.model_id = 5, .new_model_desc = "LASSO") |>
+  update_modeltime_description(.model_id = 6, .new_model_desc = "LASSO") |>
+  update_modeltime_description(.model_id = 7, .new_model_desc = "ELANET") |>
+  update_modeltime_description(.model_id = 8, .new_model_desc = "ELANET") |>
+  update_modeltime_description(.model_id = 9, .new_model_desc = "MARS") |>
+  update_modeltime_description(.model_id = 10, .new_model_desc = "MARS") |>
+  update_modeltime_description(.model_id = 11, .new_model_desc = "SVM Linear") |>
+  update_modeltime_description(.model_id = 12, .new_model_desc = "SVM Linear") |>
+  update_modeltime_description(.model_id = 13, .new_model_desc = "SVM Poly") |>
+  update_modeltime_description(.model_id = 14, .new_model_desc = "SVM Poly") |>
+  update_modeltime_description(.model_id = 15, .new_model_desc = "SVM RBF") |>
+  update_modeltime_description(.model_id = 16, .new_model_desc = "SVM RBF") |>
+  mutate(.model_desc_2 = str_c(.model_desc, rep_along(.model_desc, c(" - Spline", " - Lag")))) |>
+  mutate(.model_desc = ifelse(.model_id == 27, .model_desc, .model_desc_2)) |>
+  select(-.model_desc_2) |>
   modeltime_calibrate(testing(splits))
 
 # * Calibration (best)
@@ -788,43 +787,43 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_xgb_lag,
   wrkfl_fit_cubist_lag,
   wrkfl_fit_nnetar
-) %>%
-  update_modeltime_description(.model_id = 1, .new_model_desc = "LM - Lag") %>%
-  update_modeltime_description(.model_id = 2, .new_model_desc = "RIDGE - Lag") %>%
-  update_modeltime_description(.model_id = 3, .new_model_desc = "MARS - Lag") %>%
-  update_modeltime_description(.model_id = 4, .new_model_desc = "SVM RBF - Spline") %>%
-  update_modeltime_description(.model_id = 5, .new_model_desc = "KNN - Spline") %>%
-  update_modeltime_description(.model_id = 6, .new_model_desc = "RF - Lag") %>%
-  update_modeltime_description(.model_id = 7, .new_model_desc = "XGB - Lag") %>%
-  update_modeltime_description(.model_id = 8, .new_model_desc = "CUBIST - Lag") %>%
+) |>
+  update_modeltime_description(.model_id = 1, .new_model_desc = "LM - Lag") |>
+  update_modeltime_description(.model_id = 2, .new_model_desc = "RIDGE - Lag") |>
+  update_modeltime_description(.model_id = 3, .new_model_desc = "MARS - Lag") |>
+  update_modeltime_description(.model_id = 4, .new_model_desc = "SVM RBF - Spline") |>
+  update_modeltime_description(.model_id = 5, .new_model_desc = "KNN - Spline") |>
+  update_modeltime_description(.model_id = 6, .new_model_desc = "RF - Lag") |>
+  update_modeltime_description(.model_id = 7, .new_model_desc = "XGB - Lag") |>
+  update_modeltime_description(.model_id = 8, .new_model_desc = "CUBIST - Lag") |>
   modeltime_calibrate(testing(splits))
 
 # * Evaluation
-calibration_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(.interactive = TRUE, bordered = TRUE, resizable = TRUE)
 
-calibration_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 # * Refitting & Forecasting
 
 # Best by RMSE
-model_ml_best <- calibration_tbl %>%
+model_ml_best <- calibration_tbl |>
   select_best_id(n = 3)
 
-refit_tbl <- calibration_tbl %>%
-  filter(.model_id %in% model_ml_best) %>%
+refit_tbl <- calibration_tbl |>
+  filter(.model_id %in% model_ml_best) |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_tbl %>%
-  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) %>%
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 # * Save Artifacts --------------------------------------------------------
 
-# calibration_tbl %>%
-#   write_rds("artifacts/calibration_ml.rds")
+calibration_tbl |>
+  write_rds("artifacts/calibration_ml.rds")
 

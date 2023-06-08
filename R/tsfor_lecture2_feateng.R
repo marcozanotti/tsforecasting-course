@@ -577,6 +577,6 @@ feature_engineering_artifacts_list <- list(
   )
 )
 
-# feature_engineering_artifacts_list |>
-#   write_rds("artifacts/feature_engineering_artifacts_list.rds")
+feature_engineering_artifacts_list |>
+  write_rds("artifacts/feature_engineering_artifacts_list.rds")
 

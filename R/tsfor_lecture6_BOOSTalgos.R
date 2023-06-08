@@ -32,8 +32,8 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 # * Train / Test Sets -----------------------------------------------------
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
@@ -42,11 +42,11 @@ splits %>%
 rcp_spec_fourier <- recipe(
   optins_trans ~ optin_time + .,
   data = training(splits)
-) %>%
+) |>
   step_fourier(optin_time, period = c(7, 14, 30, 90), K = 1)
 # recipe for the ARIMA model
 
-rcp_spec <- artifacts_list$recipes$rcp_spec %>%
+rcp_spec <- artifacts_list$recipes$rcp_spec |>
   step_rm(starts_with("lag"))
 
 
@@ -67,12 +67,12 @@ model_fit_arima <- arima_reg(
   seasonal_ar = 1,
   seasonal_differences = 1,
   seasonal_ma = 1
-) %>%
-  set_engine("arima") %>%
+) |>
+  set_engine("arima") |>
   fit(optins_trans ~ optin_time, training(splits))
 
 # Auto-SARIMA with XREG
-model_spec_auto_sarima_xregs <- arima_reg() %>%
+model_spec_auto_sarima_xregs <- arima_reg() |>
   set_engine("auto_arima")
 
 # ARIMA with XGBoost
@@ -88,7 +88,7 @@ model_spec_arima_xgb <- arima_boost(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine(
     "arima_xgboost",
     counts = FALSE
@@ -105,7 +105,7 @@ model_spec_auto_arima_xgb <- arima_boost(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine(
     "auto_arima_xgboost",
     counts = FALSE # painful to discover, explain why! (mtry as counts)
@@ -119,23 +119,23 @@ model_spec_auto_arima_xgb <- arima_boost(
 
 # Auto-SARIMA with XREG
 set.seed(123)
-wrkfl_fit_auto_sarima_xregs <- workflow() %>%
-  add_model(model_spec_auto_sarima_xregs) %>%
-  add_recipe(rcp_spec_fourier) %>%
+wrkfl_fit_auto_sarima_xregs <- workflow() |>
+  add_model(model_spec_auto_sarima_xregs) |>
+  add_recipe(rcp_spec_fourier) |>
   fit(training(splits))
 
 # ARIMA with XGBoost + base recipe
 set.seed(123)
-wrkfl_fit_arima_xgb <- workflow() %>%
-  add_model(model_spec_arima_xgb) %>%
-  add_recipe(rcp_spec) %>%
+wrkfl_fit_arima_xgb <- workflow() |>
+  add_model(model_spec_arima_xgb) |>
+  add_recipe(rcp_spec) |>
   fit(training(splits))
 
 # Auto-ARIMA with XGBoost + base recipe
 set.seed(123)
-wrkfl_fit_auto_arima_xgb <- workflow() %>%
-  add_model(model_spec_auto_arima_xgb) %>%
-  add_recipe(rcp_spec) %>%
+wrkfl_fit_auto_arima_xgb <- workflow() |>
+  add_model(model_spec_auto_arima_xgb) |>
+  add_recipe(rcp_spec) |>
   fit(training(splits))
 
 
@@ -171,7 +171,7 @@ model_spec_arima_lgbm <- boost_arima(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("arima_lightgbm")
 
 # Auto-ARIMA with Light GBM
@@ -185,7 +185,7 @@ model_spec_auto_arima_lgbm <- boost_arima(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("auto_arima_lightgbm")
 
 
@@ -193,16 +193,16 @@ model_spec_auto_arima_lgbm <- boost_arima(
 
 # ARIMA with Light GBM + base recipe
 # set.seed(123)
-# wrkfl_fit_arima_lgbm <- workflow() %>%
-#   add_model(model_spec_arima_lgbm) %>%
-#   add_recipe(rcp_spec) %>%
+# wrkfl_fit_arima_lgbm <- workflow() |>
+#   add_model(model_spec_arima_lgbm) |>
+#   add_recipe(rcp_spec) |>
 #   fit(training(splits))
 
 # Auto-ARIMA with Light GBM + base recipe
 # set.seed(123)
-# wrkfl_fit_auto_arima_lgbm <- workflow() %>%
-#   add_model(model_spec_auto_arima_lgbm) %>%
-#   add_recipe(rcp_spec) %>%
+# wrkfl_fit_auto_arima_lgbm <- workflow() |>
+#   add_model(model_spec_auto_arima_lgbm) |>
+#   add_recipe(rcp_spec) |>
 #   fit(training(splits))
 
 
@@ -235,7 +235,7 @@ model_spec_arima_catboost <- boost_arima(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("arima_catboost")
 
 # Auto-ARIMA with CAT Boost
@@ -249,33 +249,33 @@ model_spec_auto_arima_catboost <- boost_arima(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("auto_arima_catboost")
 
 
 # * Workflows -------------------------------------------------------------
 
 # ARIMA with CAT Boost + base recipe
-set.seed(123)
-wrkfl_fit_arima_catboost <- workflow() %>%
-  add_model(model_spec_arima_catboost) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_arima_catboost <- workflow() |>
+#   add_model(model_spec_arima_catboost) |>
+#   add_recipe(rcp_spec) |>
+#   fit(training(splits))
 
 # Auto-ARIMA with CAT Boost + base recipe
-set.seed(123)
-wrkfl_fit_auto_arima_catboost <- workflow() %>%
-  add_model(model_spec_auto_arima_catboost) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_auto_arima_catboost <- workflow() |>
+#   add_model(model_spec_auto_arima_catboost) |>
+#   add_recipe(rcp_spec) |>
+#   fit(training(splits))
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
-calibrate_evaluate_plot(
-  wrkfl_fit_arima_catboost,
-  wrkfl_fit_auto_arima_catboost
-)
+# calibrate_evaluate_plot(
+#   wrkfl_fit_arima_catboost,
+#   wrkfl_fit_auto_arima_catboost
+# )
 
 
 
@@ -290,8 +290,8 @@ calibrate_evaluate_plot(
 model_fit_prophet_xregs <- prophet_reg(
   seasonality_weekly = TRUE,
   seasonality_yearly = TRUE
-) %>%
-  set_engine("prophet") %>%
+) |>
+  set_engine("prophet") |>
   fit(optins_trans ~ optin_time + event, data = training(splits))
 
 # PROPHET with boosting
@@ -309,7 +309,7 @@ model_spec_prophet_xgb <- prophet_boost(
   learn_rate = 0.2,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine(
     "prophet_xgboost",
     counts = FALSE
@@ -320,9 +320,9 @@ model_spec_prophet_xgb <- prophet_boost(
 
 # PROPHET with boosting + base recipe
 set.seed(123)
-wrkfl_fit_prophet_xgb <- workflow() %>%
-  add_model(model_spec_prophet_xgb) %>%
-  add_recipe(rcp_spec) %>%
+wrkfl_fit_prophet_xgb <- workflow() |>
+  add_model(model_spec_prophet_xgb) |>
+  add_recipe(rcp_spec) |>
   fit(training(splits))
 
 
@@ -337,13 +337,13 @@ calibrate_evaluate_plot(
 
 # PROPHET LIGHT GBM -------------------------------------------------------
 
-?boost_arima()
+?boost_prophet()
 # does not work, there is a bug
 
 
 # * Engines ---------------------------------------------------------------
 
-# PROPHETwith Light GBM
+# PROPHET with Light GBM
 model_spec_prophet_lgbm <- boost_prophet(
   # PROPHET params
   changepoint_num = 25,
@@ -358,7 +358,7 @@ model_spec_prophet_lgbm <- boost_prophet(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("prophet_lightgbm")
 
 
@@ -366,9 +366,9 @@ model_spec_prophet_lgbm <- boost_prophet(
 
 # PROPHET with Light GBM + base recipe
 # set.seed(123)
-# wrkfl_fit_prophet_lgbm <- workflow() %>%
-#   add_model(model_spec_prophet_lgbm) %>%
-#   add_recipe(rcp_spec) %>%
+# wrkfl_fit_prophet_lgbm <- workflow() |>
+#   add_model(model_spec_prophet_lgbm) |>
+#   add_recipe(rcp_spec) |>
 #   fit(training(splits))
 
 
@@ -380,7 +380,7 @@ model_spec_prophet_lgbm <- boost_prophet(
 
 # PROPHET CAT BOOST -------------------------------------------------------
 
-?boost_arima()
+?boost_prophet()
 
 
 # * Engines ---------------------------------------------------------------
@@ -400,23 +400,23 @@ model_spec_prophet_catboost <- boost_prophet(
   learn_rate = 0.25,
   loss_reduction = 0.15,
   trees = 300
-) %>%
+) |>
   set_engine("prophet_catboost")
 
 
 # * Workflows -------------------------------------------------------------
 
 # PROPHET with CAT Boost + base recipe
-set.seed(123)
-wrkfl_fit_prophet_catboost <- workflow() %>%
-  add_model(model_spec_prophet_catboost) %>%
-  add_recipe(rcp_spec) %>%
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_prophet_catboost <- workflow() |>
+#   add_model(model_spec_prophet_catboost) |>
+#   add_recipe(rcp_spec) |>
+#   fit(training(splits))
 
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
-calibrate_evaluate_plot(wrkfl_fit_prophet_catboost)
+# calibrate_evaluate_plot(wrkfl_fit_prophet_catboost)
 
 
 
@@ -432,41 +432,42 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_auto_arima_xgb,
   # wrkfl_fit_arima_lgbm,
   # wrkfl_fit_auto_arima_lgbm,
-  wrkfl_fit_arima_catboost,
-  wrkfl_fit_auto_arima_catboost,
+  # wrkfl_fit_arima_catboost,
+  # wrkfl_fit_auto_arima_catboost,
   model_fit_prophet_xregs,
-  wrkfl_fit_prophet_xgb,
+  wrkfl_fit_prophet_xgb
   # wrkfl_fit_prophet_lgbm,
-  wrkfl_fit_prophet_catboost
-  ) %>%
+  # wrkfl_fit_prophet_catboost
+  ) |>
   modeltime_calibrate(testing(splits))
 
 # * Evaluation
-calibration_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(.interactive = TRUE, bordered = TRUE, resizable = TRUE)
 
-calibration_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 # * Refitting & Forecasting
 
 # Best by RMSE
-model_boost_best <- calibration_tbl %>%
+model_boost_best <- calibration_tbl |>
   select_best_id(n = 3)
 
-refit_tbl <- calibration_tbl %>%
-  filter(.model_id %in% model_boost_best) %>%
+refit_tbl <- calibration_tbl |>
+  filter(.model_id %in% model_boost_best) |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_tbl %>%
-  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) %>%
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 # * Save Artifacts --------------------------------------------------------
 
-# calibration_tbl %>%
-#   write_rds("artifacts/calibration_boost.rds")
+calibration_tbl |>
+  filter(str_detect(.model_desc, "BOOST")) |>
+  write_rds("artifacts/calibration_boost.rds")
 

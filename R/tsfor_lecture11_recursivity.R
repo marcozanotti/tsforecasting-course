@@ -66,7 +66,7 @@ horizon <- 7 * 8
 lags <- c(1, 2, 7, 14, 30)
 
 data_prep_full_tbl <- subscribers_prep_tbl |>
-  future_frame(.data = ., optin_time, .length_out = horizon, .bind_data = TRUE) |>
+  future_frame(.data = _, optin_time, .length_out = horizon, .bind_data = TRUE) |>
   lag_transf() |>
   tk_augment_lags(optins_trans, .lags = c(horizon, 90)) |>
   left_join(events_daily_tbl, by = c("optin_time" = "event_date")) |>
@@ -81,7 +81,7 @@ data_prep_full_tbl |> slice_tail(n = horizon + 1)
 # * Modelling & Forecast Data ---------------------------------------------
 
 data_prep_tbl <- data_prep_full_tbl |>
-  slice_head(n = nrow(.) - horizon) |>
+  slice_head(n = nrow(data_prep_full_tbl) - horizon) |>
   drop_na()
 forecast_tbl <- data_prep_full_tbl |>
   slice_tail(n = horizon)
@@ -337,7 +337,7 @@ horizon <- 7 * 8
 lags <- c(1, 2, 7, 14, 30)
 
 data_prep_full_tbl <- subscribers_prep_tbl |>
-  future_frame(.data = ., optin_time, .length_out = horizon, .bind_data = TRUE) |>
+  future_frame(.data = _, optin_time, .length_out = horizon, .bind_data = TRUE) |>
   lag_transf_grouped() |>
   group_by(id) |>
   tk_augment_lags(optins_trans, .lags = c(horizon, 90)) |>
@@ -353,7 +353,7 @@ data_prep_full_tbl |> slice_tail(n = horizon + 1)
 # * Modelling & Forecast Data ---------------------------------------------
 
 data_prep_tbl <- data_prep_full_tbl |>
-  slice_head(n = nrow(.) - horizon) |>
+  slice_head(n = nrow(data_prep_full_tbl) - horizon) |>
   drop_na() |>
   ungroup()
 forecast_tbl <- data_prep_full_tbl |>
