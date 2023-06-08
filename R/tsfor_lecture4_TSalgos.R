@@ -225,6 +225,10 @@ model_fit_auto_ets <- exp_smoothing() |>
   set_engine("ets") |>
   fit(optins_trans ~ optin_time, data = training(splits))
 
+model_fit_auto_smooth <- exp_smoothing() |>
+  set_engine("smooth_es") |>
+  fit(optins_trans ~ optin_time, data = training(splits))
+
 # ThetaF
 model_fit_theta <- exp_smoothing() |>
   set_engine("theta") |>
@@ -235,13 +239,45 @@ model_fit_theta <- exp_smoothing() |>
 #   set_engine("croston") |>
 #   fit(optins_trans ~ optin_time, data = training(splits))
 
+# Auto-ETS with XREG
+model_spec_auto_smooth_xreg <- exp_smoothing() |>
+  set_engine("smooth_es")
+
+# Auto-ADAM
+model_fit_auto_adam <- adam_reg() |>
+  set_engine("auto_adam") |>
+  fit(optins_trans ~ optin_time, data = training(splits))
+
+# Auto-ADAM with XREG
+model_spec_auto_adam_xreg <- adam_reg() |>
+  set_engine("auto_adam")
+
+
+# * Workflows -------------------------------------------------------------
+
+# Auto-ETS with XREG
+wrkfl_fit_auto_smooth_xreg <- workflow() |>
+  add_recipe(rcp_spec_fourier) |>
+  add_model(model_spec_auto_smooth_xreg) |>
+  fit(training(splits))
+
+# Auto-ADAM with XREG
+wrkfl_fit_auto_adam_xreg <- workflow() |>
+  add_recipe(rcp_spec_fourier) |>
+  add_model(model_spec_auto_adam_xreg) |>
+  fit(training(splits))
+
 
 # * Calibration, Evaluation & Plotting ------------------------------------
 
 calibrate_evaluate_plot(
   model_fit_ets,
   model_fit_auto_ets,
-  model_fit_theta
+  model_fit_auto_smooth,
+  model_fit_theta,
+  wrkfl_fit_auto_smooth_xreg,
+  model_fit_auto_adam,
+  wrkfl_fit_auto_adam_xreg
 )
 
 
@@ -438,6 +474,8 @@ calibration_tbl <- modeltime_table(
   model_fit_ets,
   model_fit_auto_ets,
   model_fit_theta,
+  wrkfl_fit_auto_smooth_xreg,
+  wrkfl_fit_auto_adam_xreg,
   # TBATS
   model_fit_tbats,
   model_fit_auto_tbats,
@@ -455,7 +493,7 @@ calibration_tbl <- modeltime_table(
   update_modeltime_description(.model_id = 3, .new_model_desc = "MEAN [7]") |>
   update_modeltime_description(.model_id = 4, .new_model_desc = "WMEAN [7]") |>
   update_modeltime_description(.model_id = 5, .new_model_desc = "MEDIAN [7]") |>
-  update_model_description(.model_id = 20, .new_model_desc = "Auto-PROPHET") |>
+  update_model_description(.model_id = 22, .new_model_desc = "Auto-PROPHET") |>
   modeltime_calibrate(testing(splits))
 
 # * Calibration (best)

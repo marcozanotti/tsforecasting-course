@@ -349,7 +349,7 @@ horizon <- 7 * 8
 lag_period <- 7 * 8
 rolling_periods <- c(30, 60, 90)
 
-data_prep_full_tbl <- subscribers_prep_tbl |>
+data_prep_full_tbl <- subscribers_prep_tbl %>%
   # Add future window
   bind_rows(future_frame(.data = ., optin_time, .length_out = horizon)) |>
   # Add Autocorrelated Lags
@@ -476,9 +476,56 @@ calibration_tbl |>
 # Accuracy
 calibration_tbl |> modeltime_accuracy()
 
-# Refitting
+# convert back to original scale
+calibration_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ standardize_inv_vec(x = ., mean = std_mean, sd = std_sd)
+    )
+  ) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ log_interval_inv_vec(
+        x = ., limit_lower = limit_lower, limit_upper = limit_upper, offset = offset
+      )
+    )
+  ) |>
+  plot_modeltime_forecast()
+
+# Refitting (problem in refitting !!!!!)
 refit_tbl <- calibration_tbl |>
   modeltime_refit(data = data_prep_tbl)
+
+
+refit_tbl |>
+  modeltime_forecast(new_data = data_prep_tbl, actual_data = data_prep_tbl) |>
+  plot_modeltime_forecast()
+
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
+  plot_modeltime_forecast()
+
+
+refit_tbl |>
+  modeltime_forecast(new_data = data_prep_tbl, actual_data = data_prep_tbl) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ standardize_inv_vec(x = ., mean = std_mean, sd = std_sd)
+    )
+  ) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ log_interval_inv_vec(
+        x = ., limit_lower = limit_lower, limit_upper = limit_upper, offset = offset
+      )
+    )
+  ) |>
+  plot_modeltime_forecast()
 
 refit_tbl |>
   modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
