@@ -94,7 +94,7 @@ analytics tools.
 
 &nbsp;  
 
-![](../resources/imgs/tsf_data.png)
+![](../resources/presentation/imgs/tsf_data.png)
 
 &nbsp;  
 
@@ -119,7 +119,7 @@ of top 20 pages.
 
 ```{r, echo=FALSE}
 analytics_tbl <- read_rds("../data/analytics_hourly.rds")
-analytics_tbl %>% dplyr::slice(1:50) %>% DT::datatable()
+analytics_tbl |> dplyr::slice(1:50) |> DT::datatable()
 ```
 
 
@@ -129,7 +129,7 @@ Mailchimp dataset of email subscriptions.
 
 ```{r, echo=FALSE}
 subscribers_tbl <- read_rds("../data/subscribers.rds")
-subscribers_tbl %>% dplyr::slice(1:50) %>% DT::datatable()
+subscribers_tbl |> dplyr::slice(1:50) |> DT::datatable()
 ```
 
 
@@ -139,7 +139,7 @@ Sales and Product launch events dataset.
 
 ```{r, echo=FALSE}
 events_tbl <- read_rds("../data/events.rds")
-events_tbl %>% DT::datatable()
+events_tbl |> DT::datatable()
 ```
 
 

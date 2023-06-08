@@ -24,8 +24,8 @@ m4_info <- read_csv(info_path)
 # Function to sample info ids
 m4_sample_info <- function(data, type, n, seed = 123) {
 
-  data_sampled <- data %>%
-      filter(SP == type) %>%
+  data_sampled <- data |>
+      filter(SP == type) |>
       mutate(
         date = dmy_hm(StartingDate),
         date = ifelse(
@@ -34,13 +34,13 @@ m4_sample_info <- function(data, type, n, seed = 123) {
           as.character(date)
         ),
         date = ymd_hms(date)
-      ) %>%
-      select(-StartingDate) %>%
+      ) |>
+      select(-StartingDate) |>
       drop_na(date)
 
   set.seed(seed)
-  data_sampled <- data_sampled %>%
-    slice_sample(n = n_sample) %>%
+  data_sampled <- data_sampled |>
+    slice_sample(n = n_sample) |>
     set_names(c("id", "category", "freq", "horizon", "period", "start_date"))
 
   return(data_sampled)
@@ -66,11 +66,11 @@ m4_sample_data <- function(train, test, ids) {
 
   # function to sample train and test data
   sampling_ids <- function(data, ids) {
-    data <- data %>%
-      rename("id" = "V1") %>%
-      filter(id %in% ids) %>%
-      pivot_longer(-id, names_to = "date") %>%
-      drop_na() %>%
+    data <- data |>
+      rename("id" = "V1") |>
+      filter(id %in% ids) |>
+      pivot_longer(-id, names_to = "date") |>
+      drop_na() |>
       mutate(date = as.numeric(str_remove_all(date, "V")) - 1)
     return(data)
   }
@@ -79,18 +79,18 @@ m4_sample_data <- function(train, test, ids) {
   train_sampled <- map_df(
     seq_along(train),
     ~ sampling_ids(train[[.]], ids = ids)
-  ) %>%
+  ) |>
     mutate("type" = "train", .after = "id")
 
   # sampling test
   test_sampled <- map_df(
     seq_along(test),
     ~ sampling_ids(test[[.]], ids = ids)
-  ) %>%
+  ) |>
     mutate("type" = "test", .after = "id")
 
   # combining train and test
-  data_sampled <- bind_rows(train_sampled, test_sampled) %>%
+  data_sampled <- bind_rows(train_sampled, test_sampled) |>
     arrange(id, desc(type), date)
 
   return(data_sampled)
@@ -99,22 +99,22 @@ m4_sample_data <- function(train, test, ids) {
 
 m4_data_sampled <- m4_sample_data(train, test, ids = unique(m4_info_sampled$id))
 unique(m4_data_sampled$id) # n_sample time series for each period
-m4_data_sampled %>% count(id) %>% View() # length of each time series
+m4_data_sampled |> count(id) |> View() # length of each time series
 
 
 
 # Data cleaning -----------------------------------------------------------
 
-m4_data_sampled_cleaned <- m4_data_sampled %>%
-  left_join(m4_info_sampled) %>%
+m4_data_sampled_cleaned <- m4_data_sampled |>
+  left_join(m4_info_sampled) |>
   left_join(
-    m4_data_sampled %>%
-      count(id, type) %>%
-      filter(type == "train") %>%
+    m4_data_sampled |>
+      count(id, type) |>
+      filter(type == "train") |>
       select(-type)
-  ) %>%
-  mutate(date = ifelse(type == "test", date + n, date)) %>%
-  select(-n) %>%
+  ) |>
+  mutate(date = ifelse(type == "test", date + n, date)) |>
+  select(-n) |>
   mutate(
     date = case_when(
       period == "Hourly" ~ start_date + hours(date - 1),
@@ -125,7 +125,7 @@ m4_data_sampled_cleaned <- m4_data_sampled %>%
       period == "Yearly" ~ start_date + years(date - 1),
       TRUE ~ NA_POSIXct_
     )
-  ) %>%
+  ) |>
   select(id, date, value, type, period)
 
 

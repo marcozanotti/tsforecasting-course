@@ -44,8 +44,8 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
@@ -66,22 +66,22 @@ rcp_spec_lag <- artifacts_list$recipes$rcp_spec_lag
 
 # * Engines ---------------------------------------------------------------
 
-model_spec_lm <- linear_reg() %>%
+model_spec_lm <- linear_reg() |>
   set_engine("lm")
 
 
 # * Workflows -------------------------------------------------------------
 
 # LM + Splines
-wrkfl_fit_lm_spline <- workflow() %>%
-  add_model(model_spec_lm) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_lm_spline <- workflow() |>
+  add_model(model_spec_lm) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # LM + Lags
-wrkfl_fit_lm_lag <- workflow() %>%
-  add_model(model_spec_lm) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_lm_lag <- workflow() |>
+  add_model(model_spec_lm) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -110,7 +110,7 @@ model_spec_ridge <- linear_reg(
   mode = "regression",
   penalty = 0.01,
   mixture = 0
-) %>%
+) |>
   set_engine("glmnet")
 
 # LASSO
@@ -118,7 +118,7 @@ model_spec_lasso <- linear_reg(
   mode = "regression",
   penalty = 0.01,
   mixture = 1
-) %>%
+) |>
   set_engine("glmnet")
 
 # MIXED
@@ -126,46 +126,46 @@ model_spec_elanet <- linear_reg(
   mode = "regression",
   penalty = 0.01,
   mixture = 0.5
-) %>%
+) |>
   set_engine("glmnet")
 
 
 # * Workflows -------------------------------------------------------------
 
 # RIDGE + Splines
-wrkfl_fit_ridge_spline <- workflow() %>%
-  add_model(model_spec_ridge) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_ridge_spline <- workflow() |>
+  add_model(model_spec_ridge) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # RIDGE + Lags
-wrkfl_fit_ridge_lag <- workflow() %>%
-  add_model(model_spec_ridge) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_ridge_lag <- workflow() |>
+  add_model(model_spec_ridge) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 # LASSO + Splines
-wrkfl_fit_lasso_spline <- workflow() %>%
-  add_model(model_spec_lasso) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_lasso_spline <- workflow() |>
+  add_model(model_spec_lasso) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # LASSO + Lags
-wrkfl_fit_lasso_lag <- workflow() %>%
-  add_model(model_spec_lasso) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_lasso_lag <- workflow() |>
+  add_model(model_spec_lasso) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 # MIXED + Splines
-wrkfl_fit_elanet_spline <- workflow() %>%
-  add_model(model_spec_elanet) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_elanet_spline <- workflow() |>
+  add_model(model_spec_elanet) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # MIXED + Lags
-wrkfl_fit_elanet_lag <- workflow() %>%
-  add_model(model_spec_elanet) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_elanet_lag <- workflow() |>
+  add_model(model_spec_elanet) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -206,22 +206,22 @@ calibrate_evaluate_plot(
 model_spec_mars <- mars(
   mode = "regression",
   num_terms = 20
-) %>%
+) |>
   set_engine("earth", endspan = 100)
 
 
 # * Workflows -------------------------------------------------------------
 
 # MARS
-wrkfl_fit_mars <- workflow() %>%
-  add_model(model_spec_mars) %>%
-  add_formula(optins_trans ~ as.numeric(optin_time)) %>%
+wrkfl_fit_mars <- workflow() |>
+  add_model(model_spec_mars) |>
+  add_formula(optins_trans ~ as.numeric(optin_time)) |>
   fit(training(splits))
 
 # MARS + Lags
-wrkfl_fit_mars_lag <- workflow() %>%
-  add_model(model_spec_mars) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_mars_lag <- workflow() |>
+  add_model(model_spec_mars) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -254,7 +254,7 @@ model_spec_svm_linear <- svm_linear(
   mode = "regression",
   cost = 10,
   margin = 0.1
-) %>%
+) |>
   set_engine("kernlab")
 
 # SVM Polynomial
@@ -264,7 +264,7 @@ model_spec_svm_poly <- svm_poly(
   degree = 2,
   scale_factor = 1,
   margin = 0.1
-) %>%
+) |>
   set_engine("kernlab")
 
 # SVM Radial
@@ -273,7 +273,7 @@ model_spec_svm_rbf <- svm_rbf(
   cost = 1,
   rbf_sigma = 0.01,
   margin = 0.1
-) %>%
+) |>
   set_engine("kernlab")
 
 
@@ -281,44 +281,44 @@ model_spec_svm_rbf <- svm_rbf(
 
 # SVM Linear + Splines
 set.seed(123)
-wrkfl_fit_svm_linear_spline <- workflow() %>%
-  add_model(model_spec_svm_linear) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_svm_linear_spline <- workflow() |>
+  add_model(model_spec_svm_linear) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # SVM Linear + Lags
 set.seed(123)
-wrkfl_fit_svm_linear_lag <- workflow() %>%
-  add_model(model_spec_svm_linear) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_svm_linear_lag <- workflow() |>
+  add_model(model_spec_svm_linear) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 # SVM Poly + Splines
 set.seed(123)
-wrkfl_fit_svm_poly_spline <- workflow() %>%
-  add_model(model_spec_svm_poly) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_svm_poly_spline <- workflow() |>
+  add_model(model_spec_svm_poly) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # SVM Poly + Lags
 set.seed(123)
-wrkfl_fit_svm_poly_lag <- workflow() %>%
-  add_model(model_spec_svm_poly) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_svm_poly_lag <- workflow() |>
+  add_model(model_spec_svm_poly) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 # SVM Radial + Splines
 set.seed(123)
-wrkfl_fit_svm_rbf_spline <- workflow() %>%
-  add_model(model_spec_svm_rbf) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_svm_rbf_spline <- workflow() |>
+  add_model(model_spec_svm_rbf) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # SVM Radial + Lags
 set.seed(123)
-wrkfl_fit_svm_rbf_lag <- workflow() %>%
-  add_model(model_spec_svm_rbf) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_svm_rbf_lag <- workflow() |>
+  add_model(model_spec_svm_rbf) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -356,18 +356,18 @@ calibrate_evaluate_plot(
 #   date = tk_make_timeseries("2021", by = "quarter", length_out = 20),
 #   value = 1:20
 # )
-# sample_data_tbl %>% plot_time_series(date, value, .smooth = FALSE)
-# model_fit_knn <- nearest_neighbor(mode = "regression") %>%
-#   set_engine("kknn") %>%
+# sample_data_tbl |> plot_time_series(date, value, .smooth = FALSE)
+# model_fit_knn <- nearest_neighbor(mode = "regression") |>
+#   set_engine("kknn") |>
 #   fit(value ~ as.numeric(date), sample_data_tbl)
-# modeltime_table(model_fit_knn) %>%
+# modeltime_table(model_fit_knn) |>
 #   modeltime_forecast(
 #     new_data = bind_rows(
 #       sample_data_tbl,
 #       future_frame(sample_data_tbl, .length_out = "2 years")
 #     ),
 #     actual_data = sample_data_tbl
-#   ) %>%
+#   ) |>
 #   plot_modeltime_forecast()
 
 
@@ -378,7 +378,7 @@ model_spec_knn <- nearest_neighbor(
   neighbors = 50,
   dist_power = 10,
   weight_func = "optimal"
-) %>%
+) |>
   set_engine("kknn")
 
 
@@ -386,16 +386,16 @@ model_spec_knn <- nearest_neighbor(
 
 # KNN + Splines
 set.seed(123)
-wrkfl_fit_knn_spline <- workflow() %>%
-  add_model(model_spec_knn) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_knn_spline <- workflow() |>
+  add_model(model_spec_knn) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # KNN + Lags
 set.seed(123)
-wrkfl_fit_knn_lag <- workflow() %>%
-  add_model(model_spec_knn) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_knn_lag <- workflow() |>
+  add_model(model_spec_knn) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -427,7 +427,7 @@ model_spec_rf <- rand_forest(
   mtry = 25,
   trees = 1000,
   min_n = 25
-) %>%
+) |>
   set_engine("randomForest")
 # set_engine("ranger") # faster implementation
 
@@ -436,16 +436,16 @@ model_spec_rf <- rand_forest(
 
 # RF + Splines
 set.seed(123)
-wrkfl_fit_rf_spline <- workflow() %>%
-  add_model(model_spec_rf) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_rf_spline <- workflow() |>
+  add_model(model_spec_rf) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # RF + Lags
 set.seed(123)
-wrkfl_fit_rf_lag <- workflow() %>%
-  add_model(model_spec_rf) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_rf_lag <- workflow() |>
+  add_model(model_spec_rf) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
 
@@ -490,16 +490,16 @@ model_spec_xgb <- boost_tree(
   tree_depth = 12,
   learn_rate = 0.3,
   loss_reduction = 0
-) %>%
+) |>
   set_engine("xgboost")
 
 # LIGHT GBM
-model_spec_lightgbm <- boost_tree(mode = "regression") %>%
+model_spec_lightgbm <- boost_tree(mode = "regression") |>
   set_engine("lightgbm")
 # objective = "reg:tweedie"
 
 # CAT BOOST
-# model_spec_catboost <- boost_tree(mode = "regression") %>%
+# model_spec_catboost <- boost_tree(mode = "regression") |>
 #   set_engine("catboost")
 # loss_function = "Tweedie:variance_power=1.5"
 
@@ -508,66 +508,66 @@ model_spec_lightgbm <- boost_tree(mode = "regression") %>%
 
 # XGBOOST + Splines
 set.seed(123)
-wrkfl_fit_xgb_spline <- workflow() %>%
-  add_model(model_spec_xgb) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_xgb_spline <- workflow() |>
+  add_model(model_spec_xgb) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
-wrkfl_fit_xgb_spline %>%
-  extract_fit_parsnip() %>%
-  pluck("fit") %>%
-  xgboost::xgb.importance(model = .) %>%
+wrkfl_fit_xgb_spline |>
+  extract_fit_parsnip() |>
+  pluck("fit") |>
+  xgboost::xgb.importance(model = _) |>
   xgboost::xgb.plot.importance()
 
 # XGBOOST + Lags
 set.seed(123)
-wrkfl_fit_xgb_lag <- workflow() %>%
-  add_model(model_spec_xgb) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_xgb_lag <- workflow() |>
+  add_model(model_spec_xgb) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
-wrkfl_fit_xgb_lag %>%
-  extract_fit_parsnip() %>%
-  pluck("fit") %>%
-  xgboost::xgb.importance(model = .) %>%
+wrkfl_fit_xgb_lag |>
+  extract_fit_parsnip() |>
+  pluck("fit") |>
+  xgboost::xgb.importance(model = _) |>
   xgboost::xgb.plot.importance()
 
 
 # LIGHT GBM + Splines
 set.seed(123)
-wrkfl_fit_lightgbm_spline <- workflow() %>%
-  add_model(model_spec_lightgbm) %>%
-  add_recipe(rcp_spec_spline) %>%
+wrkfl_fit_lightgbm_spline <- workflow() |>
+  add_model(model_spec_lightgbm) |>
+  add_recipe(rcp_spec_spline) |>
   fit(training(splits))
 
 # LIGHT GBM + Lags
 set.seed(123)
-wrkfl_fit_lightgbm_lag <- workflow() %>%
-  add_model(model_spec_lightgbm) %>%
-  add_recipe(rcp_spec_lag) %>%
+wrkfl_fit_lightgbm_lag <- workflow() |>
+  add_model(model_spec_lightgbm) |>
+  add_recipe(rcp_spec_lag) |>
   fit(training(splits))
 
-wrkfl_fit_lightgbm_lag %>%
-  parsnip::extract_fit_engine() %>%
-  lightgbm::lgb.importance() %>%
+wrkfl_fit_lightgbm_lag |>
+  parsnip::extract_fit_engine() |>
+  lightgbm::lgb.importance() |>
   lightgbm::lgb.plot.importance()
 
 
 # CAT BOOST + Splines
 # set.seed(123)
-# wrkfl_fit_catboost_spline <- workflow() %>%
-#   add_model(model_spec_catboost) %>%
-#   add_recipe(rcp_spec_spline) %>%
+# wrkfl_fit_catboost_spline <- workflow() |>
+#   add_model(model_spec_catboost) |>
+#   add_recipe(rcp_spec_spline) |>
 #   fit(training(splits))
 #
 # # CAT BOOST + Lags
 # set.seed(123)
-# wrkfl_fit_catboost_lag <- workflow() %>%
-#   add_model(model_spec_catboost) %>%
-#   add_recipe(rcp_spec_lag) %>%
+# wrkfl_fit_catboost_lag <- workflow() |>
+#   add_model(model_spec_catboost) |>
+#   add_recipe(rcp_spec_lag) |>
 #   fit(training(splits))
 #
-# wrkfl_fit_catboost_lag %>%
+# wrkfl_fit_catboost_lag |>
 #   parsnip::extract_fit_engine() %>%
 #   catboost::catboost.get_feature_importance() %>%
 #   as_tibble(rownames = "feature") %>%
@@ -825,6 +825,6 @@ refit_tbl %>%
 
 # * Save Artifacts --------------------------------------------------------
 
-calibration_tbl %>%
-  write_rds("artifacts/calibration_ml.rds")
+# calibration_tbl %>%
+#   write_rds("artifacts/calibration_ml.rds")
 

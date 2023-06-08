@@ -35,8 +35,8 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
@@ -64,38 +64,38 @@ model_tbl <- combine_modeltime_tables(
 )
 
 # calibrate models again
-calibration_tbl <- model_tbl %>%
-  modeltime_refit(training(splits)) %>% # refitting helps solving errors from saved models
+calibration_tbl <- model_tbl |>
+  modeltime_refit(training(splits)) |> # refitting helps solving errors from saved models
   modeltime_calibrate(testing(splits))
 
-calibration_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(defaultPageSize = 40, bordered = TRUE, resizable = TRUE)
 
 
 # * Sub-Models Selections -------------------------------------------------
 
 # try to beat the tier 1 (PROPHET W/ XGBOOST ERRORS)
-model_id_sel1 <- calibration_tbl %>%
-  modeltime_accuracy() %>%
-  arrange(rmse) %>%
-  dplyr::slice(2:10) %>%
-  dplyr::slice(-2, -7, -8) %>%
+model_id_sel1 <- calibration_tbl |>
+  modeltime_accuracy() |>
+  arrange(rmse) |>
+  dplyr::slice(2:10) |>
+  dplyr::slice(-2, -7, -8) |>
   pull(.model_id)
 
-submodels_sel1_tbl <- calibration_tbl %>%
+submodels_sel1_tbl <- calibration_tbl |>
   filter(.model_id %in% model_id_sel1)
 submodels_sel1_tbl
 
 # try to improve bad models
-model_id_sel2 <- calibration_tbl %>%
-  modeltime_accuracy() %>%
-  arrange(rmse) %>%
-  dplyr::slice_tail(n = 10) %>%
-  dplyr::slice(-3, -4, -5, -10) %>%
+model_id_sel2 <- calibration_tbl |>
+  modeltime_accuracy() |>
+  arrange(rmse) |>
+  dplyr::slice_tail(n = 10) |>
+  dplyr::slice(-3, -4, -5, -10) |>
   pull(.model_id)
 
-submodels_sel2_tbl <- calibration_tbl %>%
+submodels_sel2_tbl <- calibration_tbl |>
   filter(.model_id %in% model_id_sel2)
 submodels_sel2_tbl
 
@@ -113,9 +113,9 @@ submodels_sel2_tbl
 # * Mean Ensemble ---------------------------------------------------------
 
 # Fitting
-ensemble_fit_mean_sel1 <- submodels_sel1_tbl %>%
+ensemble_fit_mean_sel1 <- submodels_sel1_tbl |>
   ensemble_average(type = "mean")
-ensemble_fit_mean_sel2 <- submodels_sel2_tbl %>%
+ensemble_fit_mean_sel2 <- submodels_sel2_tbl |>
   ensemble_average(type = "mean")
 
 # Evaluating
@@ -129,9 +129,9 @@ calibrate_evaluate_plot(
 # * Median Ensemble -------------------------------------------------------
 
 # Fitting
-ensemble_fit_median_sel1 <- submodels_sel1_tbl %>%
+ensemble_fit_median_sel1 <- submodels_sel1_tbl |>
   ensemble_average(type = "median")
-ensemble_fit_median_sel2 <- submodels_sel2_tbl %>%
+ensemble_fit_median_sel2 <- submodels_sel2_tbl |>
   ensemble_average(type = "median")
 
 # Evaluating
@@ -158,22 +158,22 @@ calibrate_evaluate_plot(
 # * Simple Ranking Ensemble -----------------------------------------------
 
 # Loadings
-loadings_sel1_tbl <- submodels_sel1_tbl %>%
-  modeltime_accuracy() %>%
-  mutate(rank = min_rank(-rmse)) %>%
+loadings_sel1_tbl <- submodels_sel1_tbl |>
+  modeltime_accuracy() |>
+  mutate(rank = min_rank(-rmse)) |>
   select(.model_id, rank)
 
-loadings_sel2_tbl <- submodels_sel2_tbl %>%
-  modeltime_accuracy() %>%
-  mutate(rank = min_rank(-rmse)) %>%
+loadings_sel2_tbl <- submodels_sel2_tbl |>
+  modeltime_accuracy() |>
+  mutate(rank = min_rank(-rmse)) |>
   select(.model_id, rank)
 
 # Fitting
-ensemble_fit_wt_sel1 <- submodels_sel1_tbl %>%
+ensemble_fit_wt_sel1 <- submodels_sel1_tbl |>
   ensemble_weighted(loadings = loadings_sel1_tbl$rank)
 ensemble_fit_wt_sel1$fit$loadings_tbl
 
-ensemble_fit_wt_sel2 <- submodels_sel2_tbl %>%
+ensemble_fit_wt_sel2 <- submodels_sel2_tbl |>
   ensemble_weighted(loadings = loadings_sel2_tbl$rank)
 ensemble_fit_wt_sel2$fit$loadings_tbl
 
@@ -184,9 +184,9 @@ calibrate_evaluate_plot(
   updated_desc = c("ENSEMBLE (WEIGHTED) - TOP", "ENSEMBLE (WEIGHTED) - DOWN")
 )
 
-calibration_tbl %>%
-  modeltime_accuracy() %>%
-  arrange(rmse) %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
+  arrange(rmse) |>
   dplyr::slice(1)
 # almost reached our best model
 
@@ -216,8 +216,8 @@ plan(strategy = cluster, workers = parallel::makeCluster(n_cores))
 ?vfold_cv()
 
 # TSCV
-resamples_tscv <- training(splits) %>%
-  drop_na() %>%
+resamples_tscv <- training(splits) |>
+  drop_na() |>
   time_series_cv(
     cumulative = TRUE,
     initial = "6 months",
@@ -225,15 +225,15 @@ resamples_tscv <- training(splits) %>%
     skip = "4 weeks",
     slice_limit = 6
   )
-resamples_tscv %>%
-  tk_time_series_cv_plan() %>%
+resamples_tscv |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 # VFCV
 set.seed(123)
 resamples_vfold <- vfold_cv(training(splits), v = 10)
-resamples_vfold %>%
-  tk_time_series_cv_plan() %>%
+resamples_vfold |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans, .facet_ncol = 2)
 
 
@@ -243,7 +243,7 @@ resamples_vfold %>%
 ?modeltime_fit_resamples()
 
 # Resampling with TSCV
-submodels_resamples_tscv_sel1_tbl <- submodels_sel1_tbl %>%
+submodels_resamples_tscv_sel1_tbl <- submodels_sel1_tbl |>
   modeltime_fit_resamples(
     resamples = resamples_tscv,
     control = control_resamples(
@@ -254,7 +254,7 @@ submodels_resamples_tscv_sel1_tbl <- submodels_sel1_tbl %>%
   )
 submodels_resamples_tscv_sel1_tbl$.resample_results[[1]]$.predictions
 
-submodels_resamples_tscv_sel2_tbl <- submodels_sel2_tbl %>%
+submodels_resamples_tscv_sel2_tbl <- submodels_sel2_tbl |>
   modeltime_fit_resamples(
     resamples = resamples_tscv,
     control = control_resamples(
@@ -265,7 +265,7 @@ submodels_resamples_tscv_sel2_tbl <- submodels_sel2_tbl %>%
   )
 
 # Resampling with VFCV
-submodels_resamples_vfold_sel1_tbl <- submodels_sel1_tbl %>%
+submodels_resamples_vfold_sel1_tbl <- submodels_sel1_tbl |>
   modeltime_fit_resamples(
     resamples = resamples_vfold,
     control = control_resamples(
@@ -275,7 +275,7 @@ submodels_resamples_vfold_sel1_tbl <- submodels_sel1_tbl %>%
     )
   )
 
-submodels_resamples_vfold_sel2_tbl <- submodels_sel2_tbl %>%
+submodels_resamples_vfold_sel2_tbl <- submodels_sel2_tbl |>
   modeltime_fit_resamples(
     resamples = resamples_vfold,
     control = control_resamples(
@@ -290,31 +290,31 @@ submodels_resamples_vfold_sel2_tbl <- submodels_sel2_tbl %>%
 
 # LM with TSCV
 set.seed(123)
-ensemble_fit_lm_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_lm_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
-    model_spec = linear_reg() %>% set_engine("lm"),
+    model_spec = linear_reg() |> set_engine("lm"),
     control = control_grid(verbose = TRUE)
   )
 
 set.seed(123)
-ensemble_fit_lm_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_lm_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
-    model_spec = linear_reg() %>% set_engine("lm"),
+    model_spec = linear_reg() |> set_engine("lm"),
     control = control_grid(verbose = TRUE)
   )
 
 # LM with VFCV
 set.seed(123)
-ensemble_fit_lm_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_lm_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
-    model_spec = linear_reg() %>% set_engine("lm"),
+    model_spec = linear_reg() |> set_engine("lm"),
     control = control_grid(verbose = TRUE)
   )
 
 set.seed(123)
-ensemble_fit_lm_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_lm_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
-    model_spec = linear_reg() %>% set_engine("lm"),
+    model_spec = linear_reg() |> set_engine("lm"),
     control = control_grid(verbose = TRUE)
   )
 
@@ -335,12 +335,12 @@ calibrate_evaluate_plot(
 
 # ELASTIC NET with TSCV
 set.seed(123)
-ensemble_fit_elanet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_elanet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = linear_reg(
       penalty = tune(),
       mixture = tune()
-    ) %>%
+    ) |>
       set_engine("glmnet"),
     kfolds = 10,
     grid = 10,
@@ -351,12 +351,12 @@ ensemble_fit_elanet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_elanet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_elanet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = linear_reg(
       penalty = tune(),
       mixture = tune()
-    ) %>%
+    ) |>
       set_engine("glmnet"),
     kfolds = 10,
     grid = 10,
@@ -368,12 +368,12 @@ ensemble_fit_elanet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # ELASTIC NET with VFCV
 set.seed(123)
-ensemble_fit_elanet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_elanet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = linear_reg(
       penalty = tune(),
       mixture = tune()
-    ) %>%
+    ) |>
       set_engine("glmnet"),
     kfolds = 10,
     grid = 10,
@@ -384,12 +384,12 @@ ensemble_fit_elanet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_elanet_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_elanet_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = linear_reg(
       penalty = tune(),
       mixture = tune()
-    ) %>%
+    ) |>
       set_engine("glmnet"),
     kfolds = 10,
     grid = 10,
@@ -416,14 +416,14 @@ calibrate_evaluate_plot(
 
 # SVM with TSCV
 set.seed(123)
-ensemble_fit_svm_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_svm_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = svm_rbf(
       mode = "regression",
       cost = tune(),
       rbf_sigma = tune(),
       margin = tune()
-    ) %>%
+    ) |>
       set_engine("kernlab"),
     kfolds = 10,
     grid = 10,
@@ -434,14 +434,14 @@ ensemble_fit_svm_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_svm_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_svm_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = svm_rbf(
       mode = "regression",
       cost = tune(),
       rbf_sigma = tune(),
       margin = tune()
-    ) %>%
+    ) |>
       set_engine("kernlab"),
     kfolds = 10,
     grid = 10,
@@ -453,14 +453,14 @@ ensemble_fit_svm_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # SVM with VFCV
 set.seed(123)
-ensemble_fit_svm_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_svm_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = svm_rbf(
       mode = "regression",
       cost = tune(),
       rbf_sigma = tune(),
       margin = tune()
-    ) %>%
+    ) |>
       set_engine("kernlab"),
     kfolds = 10,
     grid = 10,
@@ -471,14 +471,14 @@ ensemble_fit_svm_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_svm_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_svm_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = svm_rbf(
       mode = "regression",
       cost = tune(),
       rbf_sigma = tune(),
       margin = tune()
-    ) %>%
+    ) |>
       set_engine("kernlab"),
     kfolds = 10,
     grid = 10,
@@ -505,12 +505,12 @@ calibrate_evaluate_plot(
 
 # RF with TSCV
 set.seed(123)
-ensemble_fit_rf_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_rf_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = rand_forest(
       trees = tune(),
       min_n = tune()
-    ) %>%
+    ) |>
       set_engine("ranger"),
     kfolds = 10,
     grid = 10,
@@ -521,12 +521,12 @@ ensemble_fit_rf_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_rf_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_rf_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = rand_forest(
       trees = tune(),
       min_n = tune()
-    ) %>%
+    ) |>
       set_engine("ranger"),
     kfolds = 10,
     grid = 10,
@@ -538,12 +538,12 @@ ensemble_fit_rf_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # RF with VFCV
 set.seed(123)
-ensemble_fit_rf_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_rf_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = rand_forest(
       trees = tune(),
       min_n = tune()
-    ) %>%
+    ) |>
       set_engine("ranger"),
     kfolds = 10,
     grid = 10,
@@ -554,12 +554,12 @@ ensemble_fit_rf_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_rf_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_rf_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = rand_forest(
       trees = tune(),
       min_n = tune()
-    ) %>%
+    ) |>
       set_engine("ranger"),
     kfolds = 10,
     grid = 10,
@@ -586,14 +586,14 @@ calibrate_evaluate_plot(
 
 # XGBOOST with TSCV
 set.seed(123)
-ensemble_fit_xgb_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_xgb_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = boost_tree(
       trees = tune(),
       tree_depth = tune(),
       learn_rate = tune(),
       loss_reduction = tune()
-    ) %>%
+    ) |>
       set_engine("xgboost"),
     kfolds = 10,
     grid = 10,
@@ -604,14 +604,14 @@ ensemble_fit_xgb_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_xgb_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_xgb_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = boost_tree(
       trees = tune(),
       tree_depth = tune(),
       learn_rate = tune(),
       loss_reduction = tune()
-    ) %>%
+    ) |>
       set_engine("xgboost"),
     kfolds = 10,
     grid = 10,
@@ -623,14 +623,14 @@ ensemble_fit_xgb_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # XGBOOST with VFCV
 set.seed(123)
-ensemble_fit_xgb_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_xgb_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = boost_tree(
       trees = tune(),
       tree_depth = tune(),
       learn_rate = tune(),
       loss_reduction = tune()
-    ) %>%
+    ) |>
       set_engine("xgboost"),
     kfolds = 10,
     grid = 10,
@@ -641,14 +641,14 @@ ensemble_fit_xgb_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_xgb_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_xgb_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = boost_tree(
       trees = tune(),
       tree_depth = tune(),
       learn_rate = tune(),
       loss_reduction = tune()
-    ) %>%
+    ) |>
       set_engine("xgboost"),
     kfolds = 10,
     grid = 10,
@@ -675,13 +675,13 @@ calibrate_evaluate_plot(
 
 # CUBIST with TSCV
 set.seed(123)
-ensemble_fit_cubist_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_cubist_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = cubist_rules(
       committees = tune(),
       neighbors = tune(),
       max_rules = tune()
-    ) %>%
+    ) |>
       set_engine("Cubist"),
     kfolds = 10,
     grid = 10,
@@ -692,13 +692,13 @@ ensemble_fit_cubist_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_cubist_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_cubist_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = cubist_rules(
       committees = tune(),
       neighbors = tune(),
       max_rules = tune()
-    ) %>%
+    ) |>
       set_engine("Cubist"),
     kfolds = 10,
     grid = 10,
@@ -710,13 +710,13 @@ ensemble_fit_cubist_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # CUBIST with VFCV
 set.seed(123)
-ensemble_fit_cubist_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_cubist_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = cubist_rules(
       committees = tune(),
       neighbors = tune(),
       max_rules = tune()
-    ) %>%
+    ) |>
       set_engine("Cubist"),
     kfolds = 10,
     grid = 10,
@@ -727,13 +727,13 @@ ensemble_fit_cubist_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_cubist_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_cubist_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = cubist_rules(
       committees = tune(),
       neighbors = tune(),
       max_rules = tune()
-    ) %>%
+    ) |>
       set_engine("Cubist"),
     kfolds = 10,
     grid = 10,
@@ -760,13 +760,13 @@ calibrate_evaluate_plot(
 
 # NNET with TSCV
 set.seed(123)
-ensemble_fit_nnet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
+ensemble_fit_nnet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
   ensemble_model_spec(
     model_spec = mlp(
       hidden_units = tune(),
       penalty = tune(),
       epochs = tune()
-    ) %>%
+    ) |>
       set_engine("nnet"),
     kfolds = 10,
     grid = 10,
@@ -777,13 +777,13 @@ ensemble_fit_nnet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_nnet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
+ensemble_fit_nnet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
   ensemble_model_spec(
     model_spec = mlp(
       hidden_units = tune(),
       penalty = tune(),
       epochs = tune()
-    ) %>%
+    ) |>
       set_engine("nnet"),
     kfolds = 10,
     grid = 10,
@@ -795,13 +795,13 @@ ensemble_fit_nnet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl %>%
 
 # NNET with VFCV
 set.seed(123)
-ensemble_fit_nnet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
+ensemble_fit_nnet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
   ensemble_model_spec(
     model_spec = mlp(
       hidden_units = tune(),
       penalty = tune(),
       epochs = tune()
-    ) %>%
+    ) |>
       set_engine("nnet"),
     kfolds = 10,
     grid = 10,
@@ -812,13 +812,13 @@ ensemble_fit_nnet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl %>%
   )
 
 set.seed(123)
-ensemble_fit_nnet_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl %>%
+ensemble_fit_nnet_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
   ensemble_model_spec(
     model_spec = mlp(
       hidden_units = tune(),
       penalty = tune(),
       epochs = tune()
-    ) %>%
+    ) |>
       set_engine("nnet"),
     kfolds = 10,
     grid = 10,
@@ -859,32 +859,32 @@ calibration_stack_sel1_tbl <- modeltime_table(
   ensemble_fit_cubist_vfold_sel1,
   ensemble_fit_nnet_tscv_sel1,
   ensemble_fit_nnet_vfold_sel1
-) %>%
-  update_model_description(.model_id = 1, .new_model_desc = "ENSEMBLE (LM STACK TSCV)") %>%
-  update_model_description(.model_id = 2, .new_model_desc = "ENSEMBLE (LM STACK VFCV)") %>%
-  update_model_description(.model_id = 3, .new_model_desc = "ENSEMBLE (ELANET STACK TSCV)") %>%
-  update_model_description(.model_id = 4, .new_model_desc = "ENSEMBLE (ELANET STACK VFCV)") %>%
-  update_model_description(.model_id = 5, .new_model_desc = "ENSEMBLE (SVM STACK TSCV)") %>%
-  update_model_description(.model_id = 6, .new_model_desc = "ENSEMBLE (SVM STACK VFCV)") %>%
-  update_model_description(.model_id = 7, .new_model_desc = "ENSEMBLE (RF STACK TSCV)") %>%
-  update_model_description(.model_id = 8, .new_model_desc = "ENSEMBLE (RF STACK VFCV)") %>%
-  update_model_description(.model_id = 9, .new_model_desc = "ENSEMBLE (XGB STACK TSCV)") %>%
-  update_model_description(.model_id = 10, .new_model_desc = "ENSEMBLE (XGB STACK VFCV)") %>%
-  update_model_description(.model_id = 11, .new_model_desc = "ENSEMBLE (CUBIST STACK TSCV)") %>%
-  update_model_description(.model_id = 12, .new_model_desc = "ENSEMBLE (CUBIST STACK VFCV)") %>%
-  update_model_description(.model_id = 13, .new_model_desc = "ENSEMBLE (NNET STACK TSCV)") %>%
-  update_model_description(.model_id = 14, .new_model_desc = "ENSEMBLE (NNET STACK VFCV)") %>%
+) |>
+  update_model_description(.model_id = 1, .new_model_desc = "ENSEMBLE (LM STACK TSCV)") |>
+  update_model_description(.model_id = 2, .new_model_desc = "ENSEMBLE (LM STACK VFCV)") |>
+  update_model_description(.model_id = 3, .new_model_desc = "ENSEMBLE (ELANET STACK TSCV)") |>
+  update_model_description(.model_id = 4, .new_model_desc = "ENSEMBLE (ELANET STACK VFCV)") |>
+  update_model_description(.model_id = 5, .new_model_desc = "ENSEMBLE (SVM STACK TSCV)") |>
+  update_model_description(.model_id = 6, .new_model_desc = "ENSEMBLE (SVM STACK VFCV)") |>
+  update_model_description(.model_id = 7, .new_model_desc = "ENSEMBLE (RF STACK TSCV)") |>
+  update_model_description(.model_id = 8, .new_model_desc = "ENSEMBLE (RF STACK VFCV)") |>
+  update_model_description(.model_id = 9, .new_model_desc = "ENSEMBLE (XGB STACK TSCV)") |>
+  update_model_description(.model_id = 10, .new_model_desc = "ENSEMBLE (XGB STACK VFCV)") |>
+  update_model_description(.model_id = 11, .new_model_desc = "ENSEMBLE (CUBIST STACK TSCV)") |>
+  update_model_description(.model_id = 12, .new_model_desc = "ENSEMBLE (CUBIST STACK VFCV)") |>
+  update_model_description(.model_id = 13, .new_model_desc = "ENSEMBLE (NNET STACK TSCV)") |>
+  update_model_description(.model_id = 14, .new_model_desc = "ENSEMBLE (NNET STACK VFCV)") |>
   modeltime_calibrate(testing(splits))
 
 # Best Model
-calibration_tbl %>% modeltime_accuracy() %>% arrange(rmse) %>% dplyr::slice(1)
+calibration_tbl |> modeltime_accuracy() |> arrange(rmse) |> dplyr::slice(1)
 # Selected Models
-submodels_sel1_tbl %>% modeltime_accuracy() %>% arrange(rmse)
+submodels_sel1_tbl |> modeltime_accuracy() |> arrange(rmse)
 # Stack Models
-calibration_stack_sel1_tbl %>% modeltime_accuracy() %>% arrange(rmse)
+calibration_stack_sel1_tbl |> modeltime_accuracy() |> arrange(rmse)
 
-calibration_stack_sel1_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_stack_sel1_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 
@@ -904,32 +904,32 @@ calibration_stack_sel2_tbl <- modeltime_table(
   ensemble_fit_cubist_vfold_sel2,
   ensemble_fit_nnet_tscv_sel2,
   ensemble_fit_nnet_vfold_sel2
-) %>%
-  update_model_description(.model_id = 1, .new_model_desc = "ENSEMBLE (LM STACK TSCV)") %>%
-  update_model_description(.model_id = 2, .new_model_desc = "ENSEMBLE (LM STACK VFCV)") %>%
-  update_model_description(.model_id = 3, .new_model_desc = "ENSEMBLE (ELANET STACK TSCV)") %>%
-  update_model_description(.model_id = 4, .new_model_desc = "ENSEMBLE (ELANET STACK VFCV)") %>%
-  update_model_description(.model_id = 5, .new_model_desc = "ENSEMBLE (SVM STACK TSCV)") %>%
-  update_model_description(.model_id = 6, .new_model_desc = "ENSEMBLE (SVM STACK VFCV)") %>%
-  update_model_description(.model_id = 7, .new_model_desc = "ENSEMBLE (RF STACK TSCV)") %>%
-  update_model_description(.model_id = 8, .new_model_desc = "ENSEMBLE (RF STACK VFCV)") %>%
-  update_model_description(.model_id = 9, .new_model_desc = "ENSEMBLE (XGB STACK TSCV)") %>%
-  update_model_description(.model_id = 10, .new_model_desc = "ENSEMBLE (XGB STACK VFCV)") %>%
-  update_model_description(.model_id = 11, .new_model_desc = "ENSEMBLE (CUBIST STACK TSCV)") %>%
-  update_model_description(.model_id = 12, .new_model_desc = "ENSEMBLE (CUBIST STACK VFCV)") %>%
-  update_model_description(.model_id = 13, .new_model_desc = "ENSEMBLE (NNET STACK TSCV)") %>%
-  update_model_description(.model_id = 14, .new_model_desc = "ENSEMBLE (NNET STACK VFCV)") %>%
+) |>
+  update_model_description(.model_id = 1, .new_model_desc = "ENSEMBLE (LM STACK TSCV)") |>
+  update_model_description(.model_id = 2, .new_model_desc = "ENSEMBLE (LM STACK VFCV)") |>
+  update_model_description(.model_id = 3, .new_model_desc = "ENSEMBLE (ELANET STACK TSCV)") |>
+  update_model_description(.model_id = 4, .new_model_desc = "ENSEMBLE (ELANET STACK VFCV)") |>
+  update_model_description(.model_id = 5, .new_model_desc = "ENSEMBLE (SVM STACK TSCV)") |>
+  update_model_description(.model_id = 6, .new_model_desc = "ENSEMBLE (SVM STACK VFCV)") |>
+  update_model_description(.model_id = 7, .new_model_desc = "ENSEMBLE (RF STACK TSCV)") |>
+  update_model_description(.model_id = 8, .new_model_desc = "ENSEMBLE (RF STACK VFCV)") |>
+  update_model_description(.model_id = 9, .new_model_desc = "ENSEMBLE (XGB STACK TSCV)") |>
+  update_model_description(.model_id = 10, .new_model_desc = "ENSEMBLE (XGB STACK VFCV)") |>
+  update_model_description(.model_id = 11, .new_model_desc = "ENSEMBLE (CUBIST STACK TSCV)") |>
+  update_model_description(.model_id = 12, .new_model_desc = "ENSEMBLE (CUBIST STACK VFCV)") |>
+  update_model_description(.model_id = 13, .new_model_desc = "ENSEMBLE (NNET STACK TSCV)") |>
+  update_model_description(.model_id = 14, .new_model_desc = "ENSEMBLE (NNET STACK VFCV)") |>
   modeltime_calibrate(testing(splits))
 
 # Best Model
-calibration_tbl %>% modeltime_accuracy() %>% arrange(rmse) %>% dplyr::slice_tail(n = 1)
+calibration_tbl |> modeltime_accuracy() |> arrange(rmse) |> dplyr::slice_tail(n = 1)
 # Selected Models
-submodels_sel2_tbl %>% modeltime_accuracy() %>% arrange(rmse)
+submodels_sel2_tbl |> modeltime_accuracy() |> arrange(rmse)
 # Stack Models
-calibration_stack_sel2_tbl %>% modeltime_accuracy() %>% arrange(rmse)
+calibration_stack_sel2_tbl |> modeltime_accuracy() |> arrange(rmse)
 
-calibration_stack_sel2_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_stack_sel2_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 
@@ -941,11 +941,11 @@ model_stack_lvl3_sel1_tbl <- modeltime_table(
   ensemble_fit_nnet_vfold_sel1,
   ensemble_fit_rf_vfold_sel1,
   ensemble_fit_svm_vfold_sel1
-) %>%
-  ensemble_weighted(loadings = c(5, 3, 1)) %>%
+) |>
+  ensemble_weighted(loadings = c(5, 3, 1)) |>
   modeltime_table()
 
-model_stack_lvl3_sel1_tbl  %>%
+model_stack_lvl3_sel1_tbl  |>
   modeltime_accuracy(testing(splits))
 
 
@@ -954,46 +954,46 @@ model_stack_lvl3_sel2_tbl <- modeltime_table(
   ensemble_fit_lm_tscv_sel2,
   ensemble_fit_elanet_tscv_sel2,
   ensemble_fit_nnet_tscv_sel2
-) %>%
-  ensemble_weighted(loadings = c(5, 3, 1)) %>%
+) |>
+  ensemble_weighted(loadings = c(5, 3, 1)) |>
   modeltime_table()
 
-model_stack_lvl3_sel2_tbl  %>%
+model_stack_lvl3_sel2_tbl  |>
   modeltime_accuracy(testing(splits))
 
 
 
 # Refitting & Forecasting -------------------------------------------------
 
-calibration_ensemble_tbl <- model_stack_lvl3_sel1_tbl %>%
+calibration_ensemble_tbl <- model_stack_lvl3_sel1_tbl |>
   modeltime_calibrate(testing(splits))
 
 
 # Updating submodels only
-refit_ensemble_submodel_tbl <- calibration_ensemble_tbl %>%
+refit_ensemble_submodel_tbl <- calibration_ensemble_tbl |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_ensemble_submodel_tbl %>%
+refit_ensemble_submodel_tbl |>
   modeltime_forecast(
     new_data = artifacts_list$data$forecast_tbl,
     actual_data = data_prep_tbl
-  ) %>%
+  ) |>
   plot_modeltime_forecast()
 
 
 # Updating submodels and superlerner (takes time)
 set.seed(123)
-refit_ensemble_superlearner_tbl <- calibration_ensemble_tbl %>%
+refit_ensemble_superlearner_tbl <- calibration_ensemble_tbl |>
   modeltime_refit(
     data = data_prep_tbl,
-    resamples = data_prep_tbl %>% drop_na() %>% vfold_cv(v = 10)
+    resamples = data_prep_tbl |> drop_na() |> vfold_cv(v = 10)
   )
 
-refit_ensemble_superlearner_tbl %>%
+refit_ensemble_superlearner_tbl |>
   modeltime_forecast(
     new_data = artifacts_list$data$forecast_tbl,
     actual_data = data_prep_tbl
-  ) %>%
+  ) |>
   plot_modeltime_forecast()
 
 
@@ -1003,7 +1003,7 @@ plan(sequential)
 
 # * Save Artifacts --------------------------------------------------------
 
-model_stack_lvl3_sel1_tbl %>%
+model_stack_lvl3_sel1_tbl |>
   write_rds("artifacts/model_stack_lvl3_tbl.rds")
 
 model_stack_lvl3_sel1_tbl$.model[[1]]$model_tbl$.model[[2]]$model_tbl
