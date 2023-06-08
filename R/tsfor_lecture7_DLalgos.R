@@ -60,8 +60,8 @@ reticulate::py_module_available("gluonts")
 # step 5: restart R session (close RStudio!)
 # step 6: set GLUONTS_PYTHON env variable
 Sys.getenv("GLUONTS_PYTHON")
-env_path <- conda_list() %>%
-  filter(name == "r-gluonts") %>%
+env_path <- conda_list() |>
+  filter(name == "r-gluonts") |>
   pull("python")
 Sys.setenv(GLUONTS_PYTHON = env_path)
 Sys.getenv("GLUONTS_PYTHON")
@@ -96,20 +96,20 @@ conda_list()
 library(timetk)
 library(tidymodels)
 df <- tibble(id = "X", date = tk_make_timeseries("2016", "2020", by = "month"), y = 1:60)
-splits <- df %>% time_series_split(assess = 12, cumulative = TRUE)
+splits <- df |> time_series_split(assess = 12, cumulative = TRUE)
 
 model_fit_deepar <- deep_ar(
   id = "id",
   freq = "M",
   prediction_length = 12,
   lookback_length = 36
-) %>%
-  set_engine("gluonts_deepar") %>%
+) |>
+  set_engine("gluonts_deepar") |>
   fit(y ~ ., data = training(splits))
 
-modeltime_table(model_fit_deepar) %>%
-  modeltime_calibrate(testing(splits)) %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = df) %>%
+modeltime_table(model_fit_deepar) |>
+  modeltime_calibrate(testing(splits)) |>
+  modeltime_forecast(new_data = testing(splits), actual_data = df) |>
   plot_modeltime_forecast()
 
 
@@ -136,24 +136,24 @@ data_prep_tbl <- artifacts_list$data$data_prep_tbl
 forecast_tbl <- artifacts_list$data$forecast_tbl
 
 # Add ID column required by GluonTS Algos
-data_prep_tbl <- data_prep_tbl %>% mutate(id = "subscribers", .before = everything())
-forecast_tbl <- forecast_tbl %>% mutate(id = "subscribers", .before = everything())
+data_prep_tbl <- data_prep_tbl |> mutate(id = "subscribers", .before = everything())
+forecast_tbl <- forecast_tbl |> mutate(id = "subscribers", .before = everything())
 
 
 # * Train / Test Sets -----------------------------------------------------
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
 # * Recipes ---------------------------------------------------------------
 
 rcp_spec_gluon <- recipe(optins_trans ~ optin_time + id, data = training(splits))
-rcp_spec_gluon %>% prep() %>% juice()
-rcp_spec_gluon %>% prep() %>% summary()
+rcp_spec_gluon |> prep() |> juice()
+rcp_spec_gluon |> prep() |> summary()
 
 
 
@@ -178,7 +178,7 @@ model_spec_deepar_0 <- deep_ar(
   learn_rate = 10 ^ (-3),
   learn_rate_decay_factor = 0.5,
   penalty = 10 ^ (-8)
-) %>%
+) |>
   set_engine("gluonts_deepar")
 
 # GluonTS DeepAR - LSTM
@@ -189,7 +189,7 @@ model_spec_deepar_1 <- deep_ar(
   cell_type = "lstm",
   epochs = 10,
   num_batches_per_epoch = 25
-) %>%
+) |>
   set_engine("gluonts_deepar")
 
 # GluonTS DeepAR - GRU
@@ -200,28 +200,28 @@ model_spec_deepar_2 <- deep_ar(
   cell_type = "gru",
   epochs = 10,
   num_batches_per_epoch = 25
-) %>%
+) |>
   set_engine("gluonts_deepar")
 
 
 # * Workflows -------------------------------------------------------------
 
 # GluonTS DeepAR default
-wrkfl_fit_deepar_0 <- workflow() %>%
-  add_model(model_spec_deepar_0) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_0 <- workflow() |>
+  add_model(model_spec_deepar_0) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS DeepAR - LSTM
-wrkfl_fit_deepar_1 <- workflow() %>%
-  add_model(model_spec_deepar_1) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_1 <- workflow() |>
+  add_model(model_spec_deepar_1) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS DeepAR - GRU
-wrkfl_fit_deepar_2 <- workflow() %>%
-  add_model(model_spec_deepar_2) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_2 <- workflow() |>
+  add_model(model_spec_deepar_2) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 
@@ -257,7 +257,7 @@ model_spec_nbeats_0 <- nbeats(
   learn_rate = 10 ^ (-3),
   learn_rate_decay_factor = 0.5,
   penalty = 10 ^ (-8)
-) %>%
+) |>
   set_engine("gluonts_nbeats")
 
 # GluonTS NBeats +
@@ -267,7 +267,7 @@ model_spec_nbeats_1 <- nbeats(
   prediction_length = 56,
   epochs = 10,
   num_batches_per_epoch = 25
-) %>%
+) |>
   set_engine("gluonts_nbeats")
 
 # GluonTS NBeats Ensemble
@@ -279,28 +279,28 @@ model_spec_nbeats_2 <- nbeats(
   num_batches_per_epoch = 50,
   lookback_length = c(56, 56 * 2),
   bagging_size = 1
-) %>%
+) |>
   set_engine("gluonts_nbeats_ensemble")
 
 
 # * Workflows -------------------------------------------------------------
 
 # GluonTS NBeats default
-wrkfl_fit_nbeats_0 <- workflow() %>%
-  add_model(model_spec_nbeats_0) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_nbeats_0 <- workflow() |>
+  add_model(model_spec_nbeats_0) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS NBeats +
-wrkfl_fit_nbeats_1 <- workflow() %>%
-  add_model(model_spec_nbeats_1) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_nbeats_1 <- workflow() |>
+  add_model(model_spec_nbeats_1) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS NBeats Ensemble
-wrkfl_fit_nbeats_2 <- workflow() %>%
-  add_model(model_spec_nbeats_2) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_nbeats_2 <- workflow() |>
+  add_model(model_spec_nbeats_2) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 
@@ -333,7 +333,7 @@ model_spec_gpfor_0 <- gp_forecaster(
   learn_rate = 10 ^ (-3),
   learn_rate_decay_factor = 0.5,
   penalty = 10 ^ (-8)
-) %>%
+) |>
   set_engine("gluonts_gp_forecaster")
 
 # GluonTS GPForecaster +
@@ -343,22 +343,22 @@ model_spec_gpfor_1 <- gp_forecaster(
   prediction_length = 56,
   epochs = 10,
   num_batches_per_epoch = 25
-) %>%
+) |>
   set_engine("gluonts_gp_forecaster")
 
 
 # * Workflows -------------------------------------------------------------
 
 # GluonTS GPForecaster default
-wrkfl_fit_gpfor_0 <- workflow() %>%
-  add_model(model_spec_gpfor_0) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_gpfor_0 <- workflow() |>
+  add_model(model_spec_gpfor_0) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS GPForecaster +
-wrkfl_fit_gpfor_1 <- workflow() %>%
-  add_model(model_spec_gpfor_1) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_gpfor_1 <- workflow() |>
+  add_model(model_spec_gpfor_1) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 
@@ -391,7 +391,7 @@ model_spec_deepst_0 <- deep_state(
   learn_rate = 10 ^ (-3),
   learn_rate_decay_factor = 0.5,
   penalty = 10 ^ (-8)
-) %>%
+) |>
   set_engine("gluonts_deepstate")
 
 # GluonTS DeepState +
@@ -402,22 +402,22 @@ model_spec_deepst_1 <- deep_state(
   add_trend = TRUE,
   epochs = 10,
   num_batches_per_epoch = 25
-) %>%
+) |>
   set_engine("gluonts_deepstate")
 
 
 # * Workflows -------------------------------------------------------------
 
 # GluonTS DeepState default
-wrkfl_fit_deepst_0 <- workflow() %>%
-  add_model(model_spec_deepst_0) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepst_0 <- workflow() |>
+  add_model(model_spec_deepst_0) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # GluonTS DeepState +
-wrkfl_fit_deepst_1 <- workflow() %>%
-  add_model(model_spec_deepst_1) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepst_1 <- workflow() |>
+  add_model(model_spec_deepst_1) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 
@@ -452,7 +452,7 @@ model_spec_deepar_torch_0 <- deep_ar(
   epochs = 5, # Torch default to max_epochs
   batch_size = 32,
   num_cells = 40
-) %>%
+) |>
   set_engine("torch")
 
 # Torch DeepAR +
@@ -461,7 +461,7 @@ model_spec_deepar_torch_1 <- deep_ar(
   freq = "D",
   prediction_length = 56,
   epochs = 10
-) %>%
+) |>
   set_engine("torch")
 
 # Torch DeepAR ++
@@ -471,28 +471,28 @@ model_spec_deepar_torch_2 <- deep_ar(
   prediction_length = 56,
   lookback_length = 56 * 4, # takes more time to train
   epochs = 10
-) %>%
+) |>
   set_engine("torch")
 
 
 # * Workflows -------------------------------------------------------------
 
 # Torch DeepAR default
-wrkfl_fit_deepar_torch_0 <- workflow() %>%
-  add_model(model_spec_deepar_torch_0) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_torch_0 <- workflow() |>
+  add_model(model_spec_deepar_torch_0) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # Torch DeepAR +
-wrkfl_fit_deepar_torch_1 <- workflow() %>%
-  add_model(model_spec_deepar_torch_1) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_torch_1 <- workflow() |>
+  add_model(model_spec_deepar_torch_1) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 # Torch DeepAR ++
-wrkfl_fit_deepar_torch_2 <- workflow() %>%
-  add_model(model_spec_deepar_torch_2) %>%
-  add_recipe(rcp_spec_gluon) %>%
+wrkfl_fit_deepar_torch_2 <- workflow() |>
+  add_model(model_spec_deepar_torch_2) |>
+  add_recipe(rcp_spec_gluon) |>
   fit(data = training(splits))
 
 
@@ -531,49 +531,49 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_deepar_torch_0,
   wrkfl_fit_deepar_torch_1,
   wrkfl_fit_deepar_torch_2
-) %>%
-  update_modeltime_description(.model_id = 1, .new_model_desc = "Glu DAR") %>%
-  update_modeltime_description(.model_id = 2, .new_model_desc = "Glu DAR - LSTM") %>%
-  update_modeltime_description(.model_id = 3, .new_model_desc = "Glu DAR - GRU") %>%
-  update_modeltime_description(.model_id = 4, .new_model_desc = "Glu NBE") %>%
-  update_modeltime_description(.model_id = 5, .new_model_desc = "Glu NBE +") %>%
-  update_modeltime_description(.model_id = 6, .new_model_desc = "Glu NBE ++") %>%
-  update_modeltime_description(.model_id = 7, .new_model_desc = "Glu GPF") %>%
-  update_modeltime_description(.model_id = 8, .new_model_desc = "Glu GPF +") %>%
-  update_modeltime_description(.model_id = 9, .new_model_desc = "Glu DST") %>%
-  update_modeltime_description(.model_id = 10, .new_model_desc = "Glu DST +") %>%
-  update_modeltime_description(.model_id = 11, .new_model_desc = "Tor DAR") %>%
-  update_modeltime_description(.model_id = 12, .new_model_desc = "Tor DAR +") %>%
-  update_modeltime_description(.model_id = 13, .new_model_desc = "Tor DAR ++") %>%
+) |>
+  update_modeltime_description(.model_id = 1, .new_model_desc = "Glu DAR") |>
+  update_modeltime_description(.model_id = 2, .new_model_desc = "Glu DAR - LSTM") |>
+  update_modeltime_description(.model_id = 3, .new_model_desc = "Glu DAR - GRU") |>
+  update_modeltime_description(.model_id = 4, .new_model_desc = "Glu NBE") |>
+  update_modeltime_description(.model_id = 5, .new_model_desc = "Glu NBE +") |>
+  update_modeltime_description(.model_id = 6, .new_model_desc = "Glu NBE ++") |>
+  update_modeltime_description(.model_id = 7, .new_model_desc = "Glu GPF") |>
+  update_modeltime_description(.model_id = 8, .new_model_desc = "Glu GPF +") |>
+  update_modeltime_description(.model_id = 9, .new_model_desc = "Glu DST") |>
+  update_modeltime_description(.model_id = 10, .new_model_desc = "Glu DST +") |>
+  update_modeltime_description(.model_id = 11, .new_model_desc = "Tor DAR") |>
+  update_modeltime_description(.model_id = 12, .new_model_desc = "Tor DAR +") |>
+  update_modeltime_description(.model_id = 13, .new_model_desc = "Tor DAR ++") |>
   modeltime_calibrate(testing(splits))
 
 # * Evaluation
-calibration_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(.interactive = TRUE, bordered = TRUE, resizable = TRUE)
 
-calibration_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 # * Refitting & Forecasting
 
 # Best by RMSE
-model_dl_best <- calibration_tbl %>%
+model_dl_best <- calibration_tbl |>
   select_best_id(n = 1)
 
-refit_tbl <- calibration_tbl %>%
-  filter(.model_id %in% model_dl_best) %>%
+refit_tbl <- calibration_tbl |>
+  filter(.model_id %in% model_dl_best) |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_tbl %>%
-  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) %>%
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 # * Save Artifacts --------------------------------------------------------
 
-wrkfl_fit_deepar_0 %>%
+wrkfl_fit_deepar_0 |>
   save_gluonts_model(path = "artifacts/gluonts_deepar")
 
 wrkfl_fit_deepar_0 <- load_gluonts_model("artifacts/gluonts_deepar")
@@ -590,9 +590,9 @@ dl_ensemble_tbl <- modeltime_table(
 )
 
 # Fitting
-ensemble_fit_mean <- dl_ensemble_tbl %>%
+ensemble_fit_mean <- dl_ensemble_tbl |>
   ensemble_average(type = "mean")
-ensemble_fit_median <- dl_ensemble_tbl %>%
+ensemble_fit_median <- dl_ensemble_tbl |>
   ensemble_average(type = "median")
 
 # Evaluating

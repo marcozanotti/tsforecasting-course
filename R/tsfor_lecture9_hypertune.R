@@ -32,8 +32,8 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
@@ -52,12 +52,12 @@ model_tbl <- combine_modeltime_tables(
 )
 
 # calibrate models again
-calibration_tbl <- model_tbl %>%
-  modeltime_refit(training(splits)) %>% # refitting helps solving errors from saved models
+calibration_tbl <- model_tbl |>
+  modeltime_refit(training(splits)) |> # refitting helps solving errors from saved models
   modeltime_calibrate(testing(splits))
 
-calibration_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(defaultPageSize = 40, bordered = TRUE, resizable = TRUE)
 
 
@@ -76,22 +76,22 @@ calibration_tbl %>%
 
 # NNETAR ------------------------------------------------------------------
 
-wrkfl_fit_nnetar <- calibration_tbl %>%
+wrkfl_fit_nnetar <- calibration_tbl |>
   pluck_modeltime_model(33)
 wrkfl_fit_nnetar
 
 
 # * Recipes ---------------------------------------------------------------
 
-rcp_spec_nnetar <- wrkfl_fit_nnetar %>%
-  extract_preprocessor() %>%
+rcp_spec_nnetar <- wrkfl_fit_nnetar |>
+  extract_preprocessor() |>
   step_rm(starts_with("lag"))
-rcp_spec_nnetar %>% prep() %>% juice() %>% glimpse()
+rcp_spec_nnetar |> prep() |> juice() |> glimpse()
 
 
 # * Engines ---------------------------------------------------------------
 
-wrkfl_fit_nnetar %>% extract_spec_parsnip()
+wrkfl_fit_nnetar |> extract_spec_parsnip()
 
 model_spec_nnetar <- nnetar_reg(
   non_seasonal_ar = tune(id = "non_seasonal_ar"),
@@ -101,14 +101,14 @@ model_spec_nnetar <- nnetar_reg(
   num_networks = 10,
   penalty = tune(),
   epochs = 50
-) %>%
+) |>
   set_engine("nnetar")
 
 
 # * Workflows -------------------------------------------------------------
 
-wrkfl_tune_nnetar <- wrkfl_fit_nnetar %>%
-  update_recipe(rcp_spec_nnetar) %>%
+wrkfl_tune_nnetar <- wrkfl_fit_nnetar |>
+  update_recipe(rcp_spec_nnetar) |>
   update_model(model_spec_nnetar)
 
 
@@ -118,7 +118,7 @@ wrkfl_tune_nnetar <- wrkfl_fit_nnetar %>%
 ?time_series_cv
 
 resamples_tscv_lag <- time_series_cv(
-  data = training(splits) %>% drop_na(),
+  data = training(splits) |> drop_na(),
   cumulative = TRUE, # expanding window
   initial = "6 months",
   assess = "8 weeks",
@@ -126,8 +126,8 @@ resamples_tscv_lag <- time_series_cv(
   slice_limit = 6
 )
 
-resamples_tscv_lag %>%
-  tk_time_series_cv_plan() %>%
+resamples_tscv_lag |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
@@ -183,7 +183,7 @@ plan(strategy = cluster, workers = parallel::makeCluster(n_cores))
 # Tuning 1 with TSCV
 tic()
 set.seed(123)
-tune_res_nnetar_lh1 <- wrkfl_tune_nnetar %>%
+tune_res_nnetar_lh1 <- wrkfl_tune_nnetar |>
   tune_grid(
     resamples = resamples_tscv_lag,
     grid = grid_spec_nnetar_lh1,
@@ -195,7 +195,7 @@ toc()
 # Tuning 2 with TSCV
 tic()
 set.seed(123)
-tune_res_nnetar_lh2 <- wrkfl_tune_nnetar %>%
+tune_res_nnetar_lh2 <- wrkfl_tune_nnetar |>
   tune_grid(
     resamples = resamples_tscv_lag,
     grid = grid_spec_nnetar_lh2,
@@ -210,13 +210,13 @@ plan(strategy = sequential)
 
 
 # Inspect Results (LH2 better)
-tune_res_nnetar_lh1 %>% show_best(metric = "rmse", n = Inf)
-tune_res_nnetar_lh1 %>%
+tune_res_nnetar_lh1 |> show_best(metric = "rmse", n = Inf)
+tune_res_nnetar_lh1 |>
   autoplot() +
   geom_smooth(se = FALSE)
 
-tune_res_nnetar_lh2 %>% show_best(metric = "rmse", n = Inf)
-tune_res_nnetar_lh2 %>%
+tune_res_nnetar_lh2 |> show_best(metric = "rmse", n = Inf)
+tune_res_nnetar_lh2 |>
   autoplot() +
   geom_smooth(se = FALSE)
 
@@ -225,12 +225,12 @@ tune_res_nnetar_lh2 %>%
 
 # Re-train the model on the whole training set
 set.seed(123)
-wrkfl_fit_nnetar_tscv <- wrkfl_tune_nnetar %>%
+wrkfl_fit_nnetar_tscv <- wrkfl_tune_nnetar |>
   finalize_workflow(
-    tune_res_nnetar_lh2 %>%
-      show_best(metric = "rmse", n = Inf) %>%
+    tune_res_nnetar_lh2 |>
+      show_best(metric = "rmse", n = Inf) |>
       slice_min(mean)
-  ) %>%
+  ) |>
   fit(training(splits))
 
 # Re-evaluate the model on the whole test set
@@ -255,19 +255,19 @@ calibrate_evaluate_plot(
 
 # PROPHET BOOST -----------------------------------------------------------
 
-wrkfl_fit_prophet_boost <- calibration_tbl %>%
+wrkfl_fit_prophet_boost <- calibration_tbl |>
   pluck_modeltime_model(35)
 wrkfl_fit_prophet_boost
 
 
 # * Recipes ---------------------------------------------------------------
 
-wrkfl_fit_prophet_boost %>% extract_preprocessor() %>% prep() %>% juice() %>% glimpse()
+wrkfl_fit_prophet_boost |> extract_preprocessor() |> prep() |> juice() |> glimpse()
 
 
 # * Engines ---------------------------------------------------------------
 
-wrkfl_fit_prophet_boost %>% extract_spec_parsnip()
+wrkfl_fit_prophet_boost |> extract_spec_parsnip()
 
 model_spec_prophet_boost <- prophet_boost(
   changepoint_num = 25,
@@ -281,13 +281,13 @@ model_spec_prophet_boost <- prophet_boost(
   tree_depth = tune(),
   learn_rate = tune(),
   loss_reduction = tune()
-) %>%
+) |>
   set_engine("prophet_xgboost")
 
 
 # * Workflows -------------------------------------------------------------
 
-wrkfl_tune_prophet_boost <- wrkfl_fit_prophet_boost %>%
+wrkfl_tune_prophet_boost <- wrkfl_fit_prophet_boost |>
   update_model(model_spec_prophet_boost)
 
 
@@ -299,8 +299,8 @@ wrkfl_tune_prophet_boost <- wrkfl_fit_prophet_boost %>%
 set.seed(123)
 resamples_vfold <- vfold_cv(training(splits), v = 10)
 
-resamples_vfold %>%
-  tk_time_series_cv_plan() %>%
+resamples_vfold |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans, .facet_ncol = 2)
 
 
@@ -321,7 +321,7 @@ loss_reduction()
 
 set.seed(123)
 grid_spec_prophet_boost_lh1 <- grid_latin_hypercube(
-  parameters(model_spec_prophet_boost) %>%
+  parameters(model_spec_prophet_boost) |>
     update(mtry = mtry(range = c(1, 65))), # update a single parameter
   size = 15
 )
@@ -354,7 +354,7 @@ plan(strategy = cluster, workers = parallel::makeCluster(n_cores))
 # Tuning 1 with VFCV
 tic()
 set.seed(123)
-tune_res_prophet_boost_lh1 <- wrkfl_tune_prophet_boost %>%
+tune_res_prophet_boost_lh1 <- wrkfl_tune_prophet_boost |>
   tune_grid(
     resamples = resamples_vfold,
     grid = grid_spec_prophet_boost_lh1,
@@ -366,7 +366,7 @@ toc()
 # Tuning 2 with VFCV
 tic()
 set.seed(123)
-tune_res_prophet_boost_lh2 <- wrkfl_tune_prophet_boost %>%
+tune_res_prophet_boost_lh2 <- wrkfl_tune_prophet_boost |>
   tune_grid(
     resamples = resamples_vfold,
     grid = grid_spec_prophet_boost_lh2,
@@ -381,13 +381,13 @@ plan(strategy = sequential)
 
 
 # Inspect Results (LH2 better)
-tune_res_prophet_boost_lh1 %>% show_best(metric = "rmse", n = Inf)
-tune_res_prophet_boost_lh1 %>%
+tune_res_prophet_boost_lh1 |> show_best(metric = "rmse", n = Inf)
+tune_res_prophet_boost_lh1 |>
   autoplot() +
   geom_smooth(se = FALSE)
 
-tune_res_prophet_boost_lh2 %>% show_best(metric = "rmse", n = Inf)
-tune_res_prophet_boost_lh2 %>%
+tune_res_prophet_boost_lh2 |> show_best(metric = "rmse", n = Inf)
+tune_res_prophet_boost_lh2 |>
   autoplot() +
   geom_smooth(se = FALSE)
 
@@ -396,12 +396,12 @@ tune_res_prophet_boost_lh2 %>%
 
 # Re-train the model on the whole training set
 set.seed(123)
-wrkfl_fit_prophet_boost_vfcv <- wrkfl_tune_prophet_boost %>%
+wrkfl_fit_prophet_boost_vfcv <- wrkfl_tune_prophet_boost |>
   finalize_workflow(
-    tune_res_prophet_boost_lh2 %>%
-      show_best(metric = "rmse", n = Inf) %>%
+    tune_res_prophet_boost_lh2 |>
+      show_best(metric = "rmse", n = Inf) |>
       slice_min(mean)
-  ) %>%
+  ) |>
   fit(training(splits))
 
 # Re-evaluate the model on the whole test set
@@ -422,39 +422,39 @@ calibration_tune_tbl <- modeltime_table(
   wrkfl_fit_nnetar_tscv,
   wrkfl_fit_prophet_boost,
   wrkfl_fit_prophet_boost_vfcv
-) %>%
-  update_modeltime_description(.model_id = 1, .new_model_desc = "NNETAR") %>%
-  update_modeltime_description(.model_id = 2, .new_model_desc = "NNETAR - TUNED") %>%
-  update_modeltime_description(.model_id = 3, .new_model_desc = "PROPHET BOOST") %>%
-  update_modeltime_description(.model_id = 4, .new_model_desc = "PROPHET BOOST - TUNED") %>%
+) |>
+  update_modeltime_description(.model_id = 1, .new_model_desc = "NNETAR") |>
+  update_modeltime_description(.model_id = 2, .new_model_desc = "NNETAR - TUNED") |>
+  update_modeltime_description(.model_id = 3, .new_model_desc = "PROPHET BOOST") |>
+  update_modeltime_description(.model_id = 4, .new_model_desc = "PROPHET BOOST - TUNED") |>
   modeltime_calibrate(testing(splits))
 
 # * Evaluation
-calibration_tune_tbl %>%
-  modeltime_accuracy() %>%
+calibration_tune_tbl |>
+  modeltime_accuracy() |>
   table_modeltime_accuracy(.interactive = TRUE, bordered = TRUE, resizable = TRUE)
 
-calibration_tune_tbl %>%
-  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) %>%
+calibration_tune_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
   plot_modeltime_forecast()
 
 # * Refitting & Forecasting
 
 # Best by RMSE
-model_ml_best <- calibration_tbl %>%
+model_ml_best <- calibration_tbl |>
   select_best_id(n = 1)
 
-refit_tbl <- calibration_tbl %>%
-  filter(.model_id %in% model_ml_best) %>%
+refit_tbl <- calibration_tbl |>
+  filter(.model_id %in% model_ml_best) |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_tbl %>%
-  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) %>%
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 # * Save Artifacts --------------------------------------------------------
 
-calibration_tune_tbl %>%
+calibration_tune_tbl |>
   write_rds("artifacts/calibration_tune.rds")
 

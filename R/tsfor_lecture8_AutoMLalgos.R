@@ -26,20 +26,20 @@ forecast_tbl <- artifacts_list$data$forecast_tbl
 
 splits <- time_series_split(data_prep_tbl, assess = "8 weeks", cumulative = TRUE)
 
-splits %>%
-  tk_time_series_cv_plan() %>%
+splits |>
+  tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans)
 
 
 # * Recipes ---------------------------------------------------------------
 
-rcp_spec <- recipe(optins_trans ~ ., data = training(splits)) %>%
-  step_timeseries_signature(optin_time) %>%
-  step_rm(matches("(iso)|(xts)|(hour)|(minute)|(second)|(am.pm)")) %>%
-  step_normalize(matches("(index.num)|(year)|(yday)")) %>%
+rcp_spec <- recipe(optins_trans ~ ., data = training(splits)) |>
+  step_timeseries_signature(optin_time) |>
+  step_rm(matches("(iso)|(xts)|(hour)|(minute)|(second)|(am.pm)")) |>
+  step_normalize(matches("(index.num)|(year)|(yday)")) |>
   step_rm(starts_with("lag_"))
 
-rcp_spec %>% prep() %>% juice() %>% glimpse()
+rcp_spec |> prep() |> juice() |> glimpse()
 
 
 
@@ -99,7 +99,7 @@ h2o.init()
 # - StackedEnsemble (Stacked Ensembles, includes an ensemble of all the
 #   base models and ensembles using subsets of the base models)
 
-model_spec_h2o <- automl_reg(mode = 'regression') %>%
+model_spec_h2o <- automl_reg(mode = "regression") |>
   set_engine(
     engine = "h2o",
     max_runtime_secs = 30,
@@ -118,23 +118,23 @@ model_spec_h2o
 # * Workflows -------------------------------------------------------------
 
 # - This step will take some time depending on your engine specifications
-wrkfl_fit_h2o <- workflow() %>%
-  add_model(model_spec_h2o) %>%
-  add_recipe(rcp_spec) %>%
+wrkfl_fit_h2o <- workflow() |>
+  add_model(model_spec_h2o) |>
+  add_recipe(rcp_spec) |>
   fit(training(splits))
 wrkfl_fit_h2o
 
-wrkfl_fit_h2o %>% automl_leaderboard() %>% head(21) %>% View()
-gbm_name <- "GBM_2_AutoML_3_20220511_184506"
-xgb_name <- "XGBoost_3_AutoML_3_20220511_184506"
-stack_name <- "StackedEnsemble_AllModels_5_AutoML_3_20220511_184506"
+wrkfl_fit_h2o |> automl_leaderboard() |> head(20)
+gbm_name <- "GBM_3_AutoML_1_20230608_170827"
+xgb_name <- "XGBoost_3_AutoML_1_20230608_170827"
+stack_name <- "StackedEnsemble_BestOfFamily_1_AutoML_1_20230608_170827"
 
 # change default selected models
-wrkfl_fit_h20_gbm <- wrkfl_fit_h2o %>%
+wrkfl_fit_h20_gbm <- wrkfl_fit_h2o |>
   automl_update_model(gbm_name)
-wrkfl_fit_h20_xgb <- wrkfl_fit_h2o %>%
+wrkfl_fit_h20_xgb <- wrkfl_fit_h2o |>
   automl_update_model(xgb_name)
-wrkfl_fit_h20_stack <- wrkfl_fit_h2o %>%
+wrkfl_fit_h20_stack <- wrkfl_fit_h2o |>
   automl_update_model(stack_name)
 
 
@@ -153,24 +153,24 @@ calibrate_evaluate_plot(
 
 # by the moment re-train all AutoML (see roadmap)
 calibration_tbl <- modeltime_table(
-  wrkfl_fit_h20_gbm
-) %>%
+  wrkfl_fit_h20_stack
+) |>
   modeltime_calibrate(testing(splits))
 
-refit_tbl <- calibration_tbl %>%
+refit_tbl <- calibration_tbl |>
   modeltime_refit(data = data_prep_tbl)
 
-refit_tbl %>%
-  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) %>%
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
 
 
 # * Save Artifacts --------------------------------------------------------
 
-wrkfl_fit_h20_gbm %>%
-  save_h2o_model(path = "artifacts/h2o_models/h2o_gbm")
-
-load_h2o_model("artifacts/h2o_models/h2o_gbm/")
+# wrkfl_fit_h20_gbm |>
+#   save_h2o_model(path = "artifacts/h2o_models/h2o_stack")
+#
+# load_h2o_model("artifacts/h2o_models/h2o_stack/")
 
 
 # * Shout-down H2O --------------------------------------------------------
