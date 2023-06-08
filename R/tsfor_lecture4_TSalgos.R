@@ -454,6 +454,35 @@ calibrate_evaluate_plot(
 
 
 
+# THIEF -------------------------------------------------------------------
+
+# Temporal Hierarchical Forecasting
+
+?temporal_hierarchy
+
+
+# * Engines ---------------------------------------------------------------
+
+# THIEF
+model_fit_thief <- temporal_hierarchy() |> # use_model = "arima"
+  set_engine("thief") |>
+  fit(optins_trans ~ optin_time, data = training(splits))
+
+# THIEF with NNFOR
+model_fit_thief_nnfor <- temporal_hierarchy() |>
+  set_engine("thief", forecastfunction = nnfor::elm.thief) |>
+  fit(optins_trans ~ optin_time, data = training(splits))
+
+
+# * Calibration, Evaluation & Plotting ------------------------------------
+
+calibrate_evaluate_plot(
+  model_fit_thief,
+  model_fit_thief_nnfor
+)
+
+
+
 # TS Models' Performance --------------------------------------------------
 
 # * Comparison ------------------------------------------------------------
@@ -488,7 +517,9 @@ calibration_tbl <- modeltime_table(
   # PROPHET
   model_fit_prophet,
   model_fit_auto_prophet,
-  model_fit_prophet_xregs
+  model_fit_prophet_xregs,
+  # THIEF
+  model_fit_thief
 ) |>
   update_modeltime_description(.model_id = 3, .new_model_desc = "MEAN [7]") |>
   update_modeltime_description(.model_id = 4, .new_model_desc = "WMEAN [7]") |>
