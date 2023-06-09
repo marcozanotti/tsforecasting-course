@@ -280,7 +280,7 @@ nested_best_refit_tbl |> extract_nested_error_report()
 #     actual_data = data_prep_tbl,
 #     conf_interval = .8
 #   ) |>
-#   plot_modeltime_forecast(.conf_interval_fill = "lightblue"  )
+#   plot_modeltime_forecast(.conf_interval_fill = "lightblue" )
 
 nested_best_refit_tbl |>
   extract_nested_future_forecast()
@@ -296,6 +296,7 @@ nested_forecast_tbl <- nested_best_refit_tbl |>
 nested_forecast_tbl |>
   group_by(id) |>
   plot_modeltime_forecast()
+# problem with refitting of LM models
 
 
 
@@ -399,8 +400,11 @@ wrkfl_fit_nnetar <- workflow() |>
 
 # Calibration, Evaluation & Plotting --------------------------------------
 
-n_cores <- parallel::detectCores()
-parallel_start(n_cores - 1)
+# Setup Parallel Processing
+# registerDoFuture()
+# plan(strategy = multisession, workers = parallelly::availableCores())
+# message("Number of parallel workers: ", nbrOfWorkers())
+parallel_start(parallelly::availableCores())
 
 set.seed(123)
 nested_modeltime_tbl <- nested_data_tbl |>
@@ -419,6 +423,7 @@ nested_modeltime_tbl <- nested_data_tbl |>
   )
 
 parallel_stop()
+# plan(sequential)
 
 # Accuracy
 nested_modeltime_tbl |>
@@ -442,7 +447,7 @@ nested_modeltime_tbl |>
 nested_modeltime_best_tbl <- nested_modeltime_tbl |>
   modeltime_nested_select_best(metric = "rmse")
 
-parallel_start(n_cores - 1)
+parallel_start(8)
 
 # Refitting
 nested_best_refit_tbl <- nested_modeltime_best_tbl |>
@@ -485,7 +490,7 @@ horizon <- 7 * 8
 
 data_prep_full_tbl <- subscribers_prep_tbl |>
   group_by(id) |>
-  future_frame(.data = ., optin_time, .length_out = horizon, .bind_data = TRUE) |>
+  future_frame(.data = _, optin_time, .length_out = horizon, .bind_data = TRUE) |>
   # Add Events
   left_join(events_daily_tbl, by = c("optin_time" = "event_date")) |>
   mutate(event = ifelse(is.na(event), 0, event)) |>
@@ -583,7 +588,7 @@ refit_tbl |>
   modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl, conf_by_id  = TRUE) |>
   group_by(id) |>
   plot_modeltime_forecast(.conf_interval_fill = "lightblue")
-
+# problem with refitting linear models
 
 
 # Global Multiple Models Workflow -----------------------------------------
@@ -652,14 +657,14 @@ wrkfl_fit_lightgbm <- workflow() |>
   fit(training(splits))
 
 # CAT BOOST
-model_spec_catboost <- boost_tree(mode = "regression") |>
-  set_engine("catboost")
+# model_spec_catboost <- boost_tree(mode = "regression") |>
+#   set_engine("catboost")
 
-set.seed(123)
-wrkfl_fit_catboost <- workflow() |>
-  add_model(model_spec_catboost) |>
-  add_recipe(rcp_spec) |>
-  fit(training(splits))
+# set.seed(123)
+# wrkfl_fit_catboost <- workflow() |>
+#   add_model(model_spec_catboost) |>
+#   add_recipe(rcp_spec) |>
+#   fit(training(splits))
 
 
 # Calibration, Evaluation & Plotting --------------------------------------
@@ -669,8 +674,8 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_elanet,
   wrkfl_fit_svm_rbf,
   wrkfl_fit_xgb,
-  wrkfl_fit_lightgbm,
-  wrkfl_fit_catboost
+  wrkfl_fit_lightgbm
+  # wrkfl_fit_catboost
 ) |>
   modeltime_calibrate(testing(splits), id = "id")
 
