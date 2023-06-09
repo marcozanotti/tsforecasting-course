@@ -77,7 +77,7 @@ calibration_tbl |>
 # NNETAR ------------------------------------------------------------------
 
 wrkfl_fit_nnetar <- calibration_tbl |>
-  pluck_modeltime_model(33)
+  pluck_modeltime_model(15)
 wrkfl_fit_nnetar
 
 
@@ -134,7 +134,7 @@ resamples_tscv_lag |>
 # * Grids -----------------------------------------------------------------
 
 # Parameters
-parameters(model_spec_nnetar)
+extract_parameter_set_dials(model_spec_nnetar)
 
 non_seasonal_ar()
 seasonal_ar()
@@ -173,11 +173,10 @@ grid_spec_nnetar_lh2 <- grid_latin_hypercube(
 ?tune_grid()
 ?plan() # remember: show the difference between parallel and sequential!
 
-
 # Setup Parallel Processing
 registerDoFuture()
-n_cores <- parallel::detectCores()
-plan(strategy = cluster, workers = parallel::makeCluster(n_cores))
+plan(strategy = multisession, workers = parallelly::availableCores())
+message("Number of parallel workers: ", nbrOfWorkers())
 
 
 # Tuning 1 with TSCV
@@ -256,7 +255,7 @@ calibrate_evaluate_plot(
 # PROPHET BOOST -----------------------------------------------------------
 
 wrkfl_fit_prophet_boost <- calibration_tbl |>
-  pluck_modeltime_model(35)
+  pluck_modeltime_model(18)
 wrkfl_fit_prophet_boost
 
 
@@ -307,7 +306,7 @@ resamples_vfold |>
 # * Grids -----------------------------------------------------------------
 
 # Parameters
-parameters(model_spec_prophet_boost)
+extract_parameter_set_dials(model_spec_prophet_boost)
 
 mtry()
 min_n()
@@ -344,11 +343,10 @@ grid_spec_prophet_boost_lh2 <- grid_latin_hypercube(
 
 ?plan() # remember: show the difference between parallel and sequential!
 
-
 # Setup Parallel Processing
 registerDoFuture()
-n_cores <- parallel::detectCores()
-plan(strategy = cluster, workers = parallel::makeCluster(n_cores))
+plan(strategy = multisession, workers = parallelly::availableCores())
+message("Number of parallel workers: ", nbrOfWorkers())
 
 
 # Tuning 1 with VFCV
@@ -441,11 +439,17 @@ calibration_tune_tbl |>
 # * Refitting & Forecasting
 
 # Best by RMSE
-model_ml_best <- calibration_tbl |>
+model_best <- calibration_tbl |>
+  select_best_id(n = 1)
+model_tune_best <- calibration_tune_tbl |>
   select_best_id(n = 1)
 
-refit_tbl <- calibration_tbl |>
-  filter(.model_id %in% model_ml_best) |>
+refit_tbl <- bind_rows(
+  calibration_tbl |>
+    filter(.model_id %in% model_best),
+  calibration_tune_tbl |>
+    filter(.model_id %in% model_tune_best)
+) |>
   modeltime_refit(data = data_prep_tbl)
 
 refit_tbl |>
