@@ -53,19 +53,21 @@ library(modeltime.gluonts)
 # step 3: install the Python env (only the first time!)
 install_gluonts(fresh_install = TRUE, include_pytorch = TRUE)
 # step 4: check the r-gluonts env exists
-conda_list()
+reticulate::conda_list()
 # step 4: check the r-gluonts env
-system2(conda_binary(), args = "list -n r-gluonts")
+system2(reticulate::conda_binary(), args = "list -n r-gluonts")
+reticulate::py_module_available("gluonts")
+reticulate::py_install("gluonts[mxnet,pro]")
 reticulate::py_module_available("gluonts")
 # step 5: restart R session (close RStudio!)
 # step 6: set GLUONTS_PYTHON env variable
 Sys.getenv("GLUONTS_PYTHON")
-env_path <- conda_list() |>
-  filter(name == "r-gluonts") |>
-  pull("python")
+env_path <- reticulate::conda_list() |>
+  dplyr::filter(name == "r-gluonts") |>
+  dplyr::pull("python")
 Sys.setenv(GLUONTS_PYTHON = env_path)
 Sys.getenv("GLUONTS_PYTHON")
-# use_condaenv("r-gluonts", required = TRUE)
+reticulate::use_condaenv("r-gluonts", required = TRUE)
 # step 7: reload
 library(modeltime.gluonts)
 
@@ -116,10 +118,11 @@ modeltime_table(model_fit_deepar) |>
 
 # Packages ----------------------------------------------------------------
 
-# reticulate::conda_list()
-# env_path <- reticulate::conda_list()[reticulate::conda_list()$name == "r-gluonts", "python"]
-# Sys.setenv(GLUONTS_PYTHON = env_path)
-# Sys.getenv("GLUONTS_PYTHON")
+reticulate::conda_list()
+env_path <- reticulate::conda_list()[reticulate::conda_list()$name == "r-gluonts", "python"]
+Sys.setenv(GLUONTS_PYTHON = env_path)
+Sys.getenv("GLUONTS_PYTHON")
+reticulate::use_python(python = Sys.getenv("GLUONTS_PYTHON"), required = TRUE)
 library(modeltime.gluonts)
 reticulate::py_config()
 
