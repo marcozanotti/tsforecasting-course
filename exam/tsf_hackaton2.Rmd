@@ -17,7 +17,9 @@ The topic for the wind forecasting track is focused on mimicking the operation
 48-hour ahead prediction of hourly power generation at 7 wind farms, based on 
 historical measurements and additional wind forecast information (48-hour 
 ahead predictions of wind speed and direction at the sites). The data is 
-available from the 1st hour of 2009/7/1 to the 12th hour of 2012/6/28.
+available from the 1st hour of 2009/7/1 to the 12th hour of 2012/6/28.  
+
+This is based on [GEF2012 - Wind Forecasting](https://www.kaggle.com/competitions/GEF2012-wind-forecasting).  
 
 You are free to use the tool you prefer to estimate models and produce forecasts.  
 
