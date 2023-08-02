@@ -223,7 +223,7 @@ resamples_tscv <- training(splits) |>
     initial = "6 months",
     assess = "8 weeks",
     skip = "4 weeks",
-    slice_limit = 6
+    slice_limit = 3
   )
 resamples_tscv |>
   tk_time_series_cv_plan() |>
@@ -231,7 +231,7 @@ resamples_tscv |>
 
 # VFCV
 set.seed(123)
-resamples_vfold <- vfold_cv(training(splits), v = 10)
+resamples_vfold <- vfold_cv(training(splits), v = 3)
 resamples_vfold |>
   tk_time_series_cv_plan() |>
   plot_time_series_cv_plan(optin_time, optins_trans, .facet_ncol = 2)
@@ -341,10 +341,10 @@ ensemble_fit_elanet_tscv_sel1 <- submodels_resamples_tscv_sel1_tbl |>
       mixture = tune()
     ) |>
       set_engine("glmnet"),
-    kfolds = 10,
-    grid = 10,
+    kfolds = 3,
+    grid = 3,
     control = control_grid(
-      verbose   = TRUE,
+      verbose = TRUE,
       allow_par = TRUE
     )
   )
@@ -357,8 +357,8 @@ ensemble_fit_elanet_tscv_sel2 <- submodels_resamples_tscv_sel2_tbl |>
       mixture = tune()
     ) |>
       set_engine("glmnet"),
-    kfolds = 10,
-    grid = 10,
+    kfolds = 3,
+    grid = 3,
     control = control_grid(
       verbose   = TRUE,
       allow_par = TRUE
@@ -374,8 +374,8 @@ ensemble_fit_elanet_vfold_sel1 <- submodels_resamples_vfold_sel1_tbl |>
       mixture = tune()
     ) |>
       set_engine("glmnet"),
-    kfolds = 10,
-    grid = 10,
+    kfolds = 3,
+    grid = 3,
     control = control_grid(
       verbose   = TRUE,
       allow_par = TRUE
@@ -390,8 +390,8 @@ ensemble_fit_elanet_vfold_sel2 <- submodels_resamples_vfold_sel2_tbl |>
       mixture = tune()
     ) |>
       set_engine("glmnet"),
-    kfolds = 10,
-    grid = 10,
+    kfolds = 3,
+    grid = 3,
     control = control_grid(
       verbose   = TRUE,
       allow_par = TRUE

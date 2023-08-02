@@ -38,9 +38,9 @@ remotes::install_github("AlbertoAlmuinha/neuralprophet")
 library(neuralprophet)
 # step 3: install the Python env (only the first time!)
 neuralprophet::install_nprophet(fresh_install = TRUE)
-# step 4: check the r-gluonts env exists
+# step 4: check the nprophet env exists
 reticulate::conda_list()
-# step 4: check the r-gluonts env
+# step 4: check the nprophet env
 system2(reticulate::conda_binary(), args = "list -n nprophet")
 reticulate::py_module_available("nprophet")
 # step 5: restart R session (close RStudio!)
@@ -107,7 +107,7 @@ Sys.getenv("NPROPHET_PYTHON")
 library(neuralprophet)
 reticulate::py_config()
 
-setwd("~/Desktop/RProjects/tsforecasting-course") # sorry for this path
+# setwd("~/Desktop/RProjects/tsforecasting-course") # sorry for this path
 source("R/utils.R")
 source("R/packages.R")
 
@@ -119,9 +119,8 @@ artifacts_list <- read_rds("artifacts/feature_engineering_artifacts_list.rds")
 data_prep_tbl <- artifacts_list$data$data_prep_tbl
 forecast_tbl <- artifacts_list$data$forecast_tbl
 
-# Add ID column required by GluonTS Algos
-data_prep_tbl <- data_prep_tbl |> mutate(id = "subscribers", .before = everything())
-forecast_tbl <- forecast_tbl |> mutate(id = "subscribers", .before = everything())
+# data_prep_tbl <- data_prep_tbl |> mutate(id = "subscribers", .before = everything())
+# forecast_tbl <- forecast_tbl |> mutate(id = "subscribers", .before = everything())
 
 
 # * Train / Test Sets -----------------------------------------------------

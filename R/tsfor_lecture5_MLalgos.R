@@ -351,23 +351,23 @@ calibrate_evaluate_plot(
 #   - Can combine with ARIMA, Linear Regression, Mars, or Prophet
 
 # Trend Issue Example
-# sample_data_tbl <- tibble(
-#   date = tk_make_timeseries("2021", by = "quarter", length_out = 20),
-#   value = 1:20
-# )
-# sample_data_tbl |> plot_time_series(date, value, .smooth = FALSE)
-# model_fit_knn <- nearest_neighbor(mode = "regression") |>
-#   set_engine("kknn") |>
-#   fit(value ~ as.numeric(date), sample_data_tbl)
-# modeltime_table(model_fit_knn) |>
-#   modeltime_forecast(
-#     new_data = bind_rows(
-#       sample_data_tbl,
-#       future_frame(sample_data_tbl, .length_out = "2 years")
-#     ),
-#     actual_data = sample_data_tbl
-#   ) |>
-#   plot_modeltime_forecast()
+sample_data_tbl <- tibble(
+  date = tk_make_timeseries("2021", by = "quarter", length_out = 20),
+  value = 1:20
+)
+sample_data_tbl |> plot_time_series(date, value, .smooth = FALSE)
+model_fit_knn <- nearest_neighbor(mode = "regression") |>
+  set_engine("kknn") |>
+  fit(value ~ as.numeric(date), sample_data_tbl)
+modeltime_table(model_fit_knn) |>
+  modeltime_forecast(
+    new_data = bind_rows(
+      sample_data_tbl,
+      future_frame(sample_data_tbl, .length_out = "2 years")
+    ),
+    actual_data = sample_data_tbl
+  ) |>
+  plot_modeltime_forecast()
 
 
 # * Engines ---------------------------------------------------------------
@@ -583,14 +583,14 @@ wrkfl_fit_lightgbm_lag |>
 calibrate_evaluate_plot(
   wrkfl_fit_xgb_spline,
   wrkfl_fit_xgb_lag,
-  wrkfl_fit_lightgbm_spline,
-  wrkfl_fit_lightgbm_lag,
+  # wrkfl_fit_lightgbm_spline,
+  # wrkfl_fit_lightgbm_lag,
   # wrkfl_fit_catboost_spline,
   # wrkfl_fit_catboost_lag,
   updated_desc = c(
-    "XGB - Splines", "XGB - Lags",
-    "LIGHT GBM - Splines", "LIGHT GBM - Lags",
-    "CATBOOST - Splines", "CATBOOST - Lags"
+    "XGB - Splines", "XGB - Lags"#,
+    # "LIGHT GBM - Splines", "LIGHT GBM - Lags",
+    # "CATBOOST - Splines", "CATBOOST - Lags"
   )
 )
 # learn how to train Light GBM and CAT Boost

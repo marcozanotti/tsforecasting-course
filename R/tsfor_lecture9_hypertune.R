@@ -123,7 +123,7 @@ resamples_tscv_lag <- time_series_cv(
   initial = "6 months",
   assess = "8 weeks",
   skip = "4 weeks",
-  slice_limit = 6
+  slice_limit = 3
 )
 
 resamples_tscv_lag |>
@@ -147,7 +147,7 @@ penalty()
 set.seed(123)
 grid_spec_nnetar_lh1 <- grid_latin_hypercube(
   parameters(model_spec_nnetar),
-  size = 15
+  size = 3
 )
 
 set.seed(123)
@@ -156,7 +156,7 @@ grid_spec_nnetar_lh2 <- grid_latin_hypercube(
   seasonal_ar(range = c(1, 2)),
   hidden_units(range = c(2, 5)),
   penalty(range = c(-4.8, -2.9), trans = scales::log10_trans()),
-  size = 15
+  size = 3
 )
 
 # types of available grids
@@ -296,7 +296,7 @@ wrkfl_tune_prophet_boost <- wrkfl_fit_prophet_boost |>
 ?vfold_cv()
 
 set.seed(123)
-resamples_vfold <- vfold_cv(training(splits), v = 10)
+resamples_vfold <- vfold_cv(training(splits), v = 3)
 
 resamples_vfold |>
   tk_time_series_cv_plan() |>
@@ -322,7 +322,7 @@ set.seed(123)
 grid_spec_prophet_boost_lh1 <- grid_latin_hypercube(
   parameters(model_spec_prophet_boost) |>
     update(mtry = mtry(range = c(1, 65))), # update a single parameter
-  size = 15
+  size = 3
 )
 
 set.seed(123)
@@ -332,7 +332,7 @@ grid_spec_prophet_boost_lh2 <- grid_latin_hypercube(
   tree_depth(),
   learn_rate(range = c(-1.5, -0.8)),
   loss_reduction(),
-  size = 15
+  size = 3
 )
 
 

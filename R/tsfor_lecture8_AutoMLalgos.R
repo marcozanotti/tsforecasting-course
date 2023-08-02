@@ -108,6 +108,7 @@ model_spec_h2o <- automl_reg(mode = "regression") |>
     max_models = 10,
     nfolds = 10,
     sort_metric = "rmse",
+    # include_algos = c("DRF"),
     exclude_algos = c("DeepLearning"), # remove deeplearning for computation time
     verbosity = NULL,
     seed = 123
@@ -124,10 +125,10 @@ wrkfl_fit_h2o <- workflow() |>
   fit(training(splits))
 wrkfl_fit_h2o
 
-wrkfl_fit_h2o |> automl_leaderboard() |> head(20)
-gbm_name <- "GBM_3_AutoML_1_20230608_170827"
-xgb_name <- "XGBoost_3_AutoML_1_20230608_170827"
-stack_name <- "StackedEnsemble_BestOfFamily_1_AutoML_1_20230608_170827"
+wrkfl_fit_h2o |> automl_leaderboard() |> head(20) |> View()
+gbm_name <- "GBM_3_AutoML_1_20230731_181500"
+xgb_name <- "XGBoost_3_AutoML_1_20230731_181500"
+stack_name <- "StackedEnsemble_BestOfFamily_1_AutoML_1_20230731_181500"
 
 # change default selected models
 wrkfl_fit_h20_gbm <- wrkfl_fit_h2o |>
