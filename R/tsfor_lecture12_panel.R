@@ -447,7 +447,7 @@ nested_modeltime_tbl |>
 nested_modeltime_best_tbl <- nested_modeltime_tbl |>
   modeltime_nested_select_best(metric = "rmse")
 
-parallel_start(8)
+parallel_start(parallelly::availableCores())
 
 # Refitting
 nested_best_refit_tbl <- nested_modeltime_best_tbl |>
@@ -530,7 +530,6 @@ rcp_spec <- recipe(optins_trans ~ ., data = training(splits)) |>
   step_dummy(all_nominal(), one_hot = TRUE) |>
   step_rm(optin_time)
 rcp_spec |> prep() |> juice() |> glimpse()
-
 
 
 
@@ -673,8 +672,8 @@ calibration_tbl <- modeltime_table(
   wrkfl_fit_lm,
   wrkfl_fit_elanet,
   wrkfl_fit_svm_rbf,
-  wrkfl_fit_xgb,
-  wrkfl_fit_lightgbm
+  wrkfl_fit_xgb#,
+  # wrkfl_fit_lightgbm
   # wrkfl_fit_catboost
 ) |>
   modeltime_calibrate(testing(splits), id = "id")
