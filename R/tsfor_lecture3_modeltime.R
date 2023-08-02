@@ -303,6 +303,7 @@ calibration_tbl |>
 refit_tbl <- calibration_tbl |>
   modeltime_refit(data = data_prep_tbl)
 
+# out-of-sample forecast
 refit_tbl |>
   modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
   mutate(
