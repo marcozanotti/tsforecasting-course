@@ -208,3 +208,13 @@ nested_calibrate_evaluate_plot <- function(nested_data, workflows, id_var, paral
   return(invisible(nested_calibration_tbl))
 
 }
+
+
+# Function to convert back to original scale
+std_logint_inv_vec <- function(x, mean, sd, limit_lower, limit_upper, offset) {
+
+  res <- standardize_inv_vec(x, mean, sd) |>
+    log_interval_inv_vec(limit_lower, limit_upper, offset)
+  return(res)
+
+}

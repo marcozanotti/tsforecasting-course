@@ -44,6 +44,7 @@ testing(splits)
 # * Recipes ---------------------------------------------------------------
 
 rcp_spec_lag <- artifacts_list$recipes$rcp_spec_lag
+rcp_spec_lag |> prep() |> juice() |> glimpse()
 
 
 
@@ -169,7 +170,7 @@ calibration_tbl |>
     conf_interval = .8
   ) |>
   plot_modeltime_forecast(
-    .conf_interval_show = FALSE,
+    .conf_interval_show = TRUE,
     .conf_interval_alpha = .5,
     .conf_interval_fill = "lightblue",
     .title = "Subscriber Forecast"
@@ -250,6 +251,69 @@ model_tbl |>
   modeltime_forecast(
     new_data = forecast_tbl,
     actual_data = data_prep_tbl
+  ) |>
+  plot_modeltime_forecast()
+
+
+# * Back Transformation ---------------------------------------------------
+
+artifacts_list
+std_mean <- artifacts_list$standardize$std_mean
+std_sd <- artifacts_list$standardize$std_sd
+limit_lower <- artifacts_list$log_interval$limit_lower
+limit_upper <- artifacts_list$log_interval$limit_upper
+offset <- artifacts_list$log_interval$offset
+
+# convert back to original scale
+back_calibration_tbl <- calibration_tbl
+for (i in 1:nrow(calibration_tbl)) {
+  back_calibration_tbl$.calibration_data[[i]] <- calibration_tbl$.calibration_data[[i]] |>
+    mutate(
+      across(
+        .actual:.prediction,
+        .fns = ~ std_logint_inv_vec(
+          x = .,
+          mean = std_mean, sd = std_sd,
+          limit_lower = limit_lower, limit_upper = limit_upper, offset = offset
+        )
+      )
+    ) |>
+    mutate(.residuals = .actual - .prediction)
+}
+
+back_calibration_tbl |>
+  modeltime_accuracy() |>
+  table_modeltime_accuracy(.interactive = TRUE, bordered = TRUE, resizable = TRUE)
+
+calibration_tbl |>
+  modeltime_forecast(new_data = testing(splits), actual_data = data_prep_tbl) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ std_logint_inv_vec(
+        x = .,
+        mean = std_mean, sd = std_sd,
+        limit_lower = limit_lower, limit_upper = limit_upper, offset = offset
+      )
+    )
+  ) |>
+  plot_modeltime_forecast()
+
+# refitting
+refit_tbl <- calibration_tbl |>
+  modeltime_refit(data = data_prep_tbl)
+
+refit_tbl |>
+  modeltime_forecast(new_data = forecast_tbl, actual_data = data_prep_tbl) |>
+  mutate(
+    across(
+      .value:.conf_hi,
+      .fns = ~ std_logint_inv_vec(
+        x = .,
+        mean = std_mean, sd = std_sd,
+        limit_lower = limit_lower, limit_upper = limit_upper, offset = offset
+      )
+    )
   ) |>
   plot_modeltime_forecast()
 
