@@ -33,7 +33,7 @@ walmart_sales_weekly |>
 
 
 
-# Clustering --------------------------------------------------------------
+# Feature Extraction ------------------------------------------------------
 
 # Custom Function
 my_mean <- function(x, na.rm = TRUE) {
@@ -67,6 +67,10 @@ tsfeature_tbl
 View(tsfeature_tbl)
 
 
+
+# Clustering --------------------------------------------------------------
+
+# * K-means ---------------------------------------------------------------
 set.seed(123)
 cluster_tbl <- tibble(
   cluster = tsfeature_tbl |>
@@ -78,7 +82,6 @@ cluster_tbl <- tibble(
   bind_cols(tsfeature_tbl)
 cluster_tbl
 
-
 cluster_tbl |>
   select(cluster, id) |>
   right_join(walmart_sales_weekly, by = "id") |>
@@ -89,3 +92,4 @@ cluster_tbl |>
     .facet_ncol  = 2,
     .interactive = FALSE
   )
+
