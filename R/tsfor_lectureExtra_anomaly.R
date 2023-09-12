@@ -5,6 +5,7 @@
 
 # Goals:
 # - Some anomaly detection algorithms
+# - Ensemble approach
 
 
 
@@ -56,16 +57,8 @@ data_prep_tbl |>
 data_prep_tbl |>
   plot_anomaly_diagnostics(optin_time, optins_trans)
 
-data = data_prep_tbl$optins_trans
-dates = data_prep_tbl$optin_time
 
-res_df |>
-  plot_time_series(.date_var = datetime, .value = score)
-res_df |>
-  ggplot(aes(x = datetime, y = value, col = score)) +
-  geom_line()
-
-
+# Functions
 anomaly_detection <- function(
     data,
     dates,
@@ -164,19 +157,11 @@ anomaly_detection <- function(
   # anomaly
   if ("anomaly" %in% apply_methods) {
     logging::loginfo("Detecting anomalies through method anomaly...")
-    check <- check_constant_variable(data)
-    if (check == 1) {
-      logging::loginfo("Skip calculations through method anomaly because of constant variable...")
-      res_list[["anomaly_capa"]] <- NULL # CAPA
-      res_list[["anomaly_scapa"]] <- NULL # SCAPA
-    } else {
-      # CAPA
-      out <- anomaly::point_anomalies(anomaly::capa.uv(data, transform = scale)) # base scale function as transform to avoid NaN problems
-      res_list[["anomaly_capa"]][out[out$strength > 0, "location"]] <- 1
-      # SCAPA
-      out <- anomaly::point_anomalies(anomaly::scapa.uv(data, transform = scale)) # base scale function as transform to avoid NaN problems
-      res_list[["anomaly_capa"]][out[out$strength > 0, "location"]] <- 1
-    }
+    out <- anomaly::point_anomalies(anomaly::capa.uv(data, transform = scale)) # base scale function as transform to avoid NaN problems
+    res_list[["anomaly_capa"]][out[out$strength > 0, "location"]] <- 1
+    # SCAPA
+    out <- anomaly::point_anomalies(anomaly::scapa.uv(data, transform = scale)) # base scale function as transform to avoid NaN problems
+    res_list[["anomaly_capa"]][out[out$strength > 0, "location"]] <- 1
   } else {
     res_list[["anomaly_capa"]] <- NULL # CAPA
     res_list[["anomaly_scapa"]] <- NULL # SCAPA
@@ -226,7 +211,6 @@ anomaly_detection <- function(
 
 }
 
-
 anomaly_score <- function(anomaly_data, weights = NULL) {
 
   if (is.null(weights)) {
@@ -239,3 +223,22 @@ anomaly_score <- function(anomaly_data, weights = NULL) {
   return(score)
 
 }
+
+
+# Test functions
+# data = data_prep_tbl$optins_trans
+# dates = data_prep_tbl$optin_time
+
+res_df <- anomaly_detection(
+  data = data_prep_tbl$optins_trans,
+  dates = data_prep_tbl$optin_time
+)
+
+res_df
+
+res_df |>
+  plot_time_series(.date_var = datetime, .value = score)
+res_df |>
+  ggplot(aes(x = datetime, y = value, col = score)) +
+  geom_line()
+
