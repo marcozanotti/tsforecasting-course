@@ -338,7 +338,6 @@ calibration_tbl <- modeltime_table(
   update_model_description(3, "GLMNET - Lag Recipe") |>
   modeltime_calibrate(new_data = testing(splits))
 
-
 nonconf_tbl <- calibration_tbl |>
   modeltime_forecast(
     new_data = testing(splits),
@@ -348,8 +347,10 @@ nonconf_tbl <- calibration_tbl |>
     keep_data = TRUE
   )
 nonconf_tbl |>
-  plot_modeltime_forecast(.title = "Non-Conformal Intervals")
-
+  plot_modeltime_forecast(
+    .title = "Non-Conformal Intervals",
+    .facet_ncol = 1, .facet_vars = .model_desc
+  )
 
 conf_tbl <- calibration_tbl |>
   modeltime_forecast(
@@ -360,12 +361,14 @@ conf_tbl <- calibration_tbl |>
     keep_data = TRUE
   )
 conf_tbl |>
-  plot_modeltime_forecast(.title = "Conformal Intervals")
+  plot_modeltime_forecast(
+    .title = "Conformal Intervals",
+    .facet_ncol = 1, .facet_vars = .model_desc
+  )
 
-
-nonconf_tbl |>
+res_confint_tbl <- nonconf_tbl |>
   select(.model_id:.conf_hi) |>
   rename("nonconf_lo" = ".conf_lo", "nonconf_hi" = ".conf_hi") |>
-  bind_cols(conf_tbl |> select(.conf_lo:.conf_hi) |> set_names(c("conf_lo", "conf_hi"))) |>
-  tail()
+  bind_cols(conf_tbl |> select(.conf_lo:.conf_hi) |> set_names(c("conf_lo", "conf_hi")))
+tail(res_confint_tbl)
 
