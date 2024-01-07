@@ -1,0 +1,101 @@
+---
+title: "Time Series Forecasting Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    css: css/styles-default2.css
+    # logo: img/logo.png
+    social: ["menu"]
+    source_code: https://github.com/marcozanotti/tsforecasting-course
+runtime: shiny
+---
+
+
+
+Data {data-orientation=rows}  
+=======================================================================
+<!-- data-navmenu="Data" -->
+
+Input {.sidebar}
+-----------------------------------------------------------------------
+
+Row {data-height=500}
+---------------------------------------------------------------
+
+### Data
+
+Row {data-height=500}
+---------------------------------------------------------------
+
+### Time Series {.no-padding}
+
+
+
+Visualization {data-navmenu="Analyze" data-orientation=rows}
+=======================================================================
+
+Row {data-height=400}
+---------------------------------------------------------------
+
+### Time Series {.no-padding}
+
+### Autocorrelation {.no-padding}
+
+Row {data-height=600}
+---------------------------------------------------------------
+
+### Decomposition {.no-padding}
+
+### Seasonality {.no-padding}
+
+
+
+Anomaly Detection {data-navmenu="Analyze" data-orientation=rows}
+=======================================================================
+
+Input {.sidebar}
+-----------------------------------------------------------------------
+
+Row {data-height=100}
+---------------------------------------------------------------
+
+### Anomalyze {.no-padding}
+
+
+
+TS Methods {data-navmenu="Forecast" data-orientation=rows}
+=======================================================================
+
+Input {.sidebar}
+-----------------------------------------------------------------------
+
+Row {data-height=700}
+---------------------------------------------------------------
+
+### Forecasting Plot {.no-padding}
+
+Row {data-height=300}
+---------------------------------------------------------------
+
+### Model Summary {.no-padding}
+
+
+
+ML Methods {data-navmenu="Forecast" data-orientation=rows}
+=======================================================================
+
+Input {.sidebar}
+-----------------------------------------------------------------------
+
+Row {data-height=700}
+---------------------------------------------------------------
+
+### Forecasting Plot {.no-padding}
+
+Row {data-height=300}
+---------------------------------------------------------------
+
+### Model Summary {.no-padding}
+
+
