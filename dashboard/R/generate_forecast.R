@@ -13,7 +13,7 @@ generate_ts_forecast <- function(data, method, params, n_future, seed = 1992) {
       window_size = params$window_size
     ) |>
       set_engine("window_function", window_function = mean, na.rm = TRUE) |>
-      fit(value ~ date, data = data |> select(-id))
+      fit(value ~ date, data = data |> select(-id, -frequency))
 
   } else if (method == "ETS") {
 
@@ -28,11 +28,21 @@ generate_ts_forecast <- function(data, method, params, n_future, seed = 1992) {
       smooth_seasonal = params$smooth_seasonal
     ) |>
       set_engine("ets") |>
-      fit(value ~ date, data = data |> select(-id))
+      fit(value ~ date, data = data |> select(-id, -frequency))
 
   } else if (method == "ARIMA") {
 
     check_parameters(method, params)
+    wkfl_fit <- arima_reg(
+      non_seasonal_ar = params$non_seasonal_ar,
+      non_seasonal_differences = params$non_seasonal_differences,
+      non_seasonal_ma = params$non_seasonal_ma,
+      seasonal_ar = params$seasonal_ar,
+      seasonal_differences = params$seasonal_differences,
+      seasonal_ma = params$seasonal_ma
+    ) |>
+      set_engine("arima") |>
+      fit(value ~ date, data = data |> select(-id, -frequency))
 
   } else {
     stop(paste("Unknown method", method))
@@ -60,7 +70,7 @@ generate_ml_forecast <- function(data, method, params, n_future, seed = 1992) {
   future_tbl <- data |>
     future_frame(.date_var = date, .length_out = n_future)
 
-  ml_rcp <- recipe(value ~ ., data = data |> select(-id)) |>
+  ml_rcp <- recipe(value ~ ., data = data |> select(-id, -frequency)) |>
     step_timeseries_signature(date) |>
     step_normalize(date_index.num) |>
     step_zv(all_predictors()) |>
@@ -77,7 +87,7 @@ generate_ml_forecast <- function(data, method, params, n_future, seed = 1992) {
     wkfl_fit <- workflow() |>
       add_recipe(ml_rcp) |>
       add_model(model_spec) |>
-      fit(data = data |> select(-id))
+      fit(data = data |> select(-id, -frequency))
 
   } else if (method == "Elastic Net") {
 
@@ -91,7 +101,7 @@ generate_ml_forecast <- function(data, method, params, n_future, seed = 1992) {
     wkfl_fit <- workflow() |>
       add_recipe(ml_rcp) |>
       add_model(model_spec) |>
-      fit(data = data |> select(-id))
+      fit(data = data |> select(-id, -frequency))
 
   } else {
     stop(paste("Unknown method", method))

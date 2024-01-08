@@ -1,6 +1,6 @@
 # Packages
 pkgs <- c(
-  "tidyverse",
+  "tidyverse", "tsibbledata", "janitor",
   "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
   "randomForest", "ranger", "xgboost", "treesnip", "lightgbm", "catboost",
   "Cubist", "rules",

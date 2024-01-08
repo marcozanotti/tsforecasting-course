@@ -111,16 +111,50 @@ set_options <- function() {
     tsf.dashboard.methods_params = list(
       "Rolling Average" = c("window_size"),
       "ETS" = c("error", "trend", "season", "damping", "smooth_level", "smooth_trend", "smooth_season"),
-      "ARIMA" = c(""),
+      "ARIMA" = c(
+        "non_seasonal_ar", "non_seasonal_differences", "non_seasonal_ma",
+        "seasonal_ar", "seasonal_differences", "seasonal_ma"
+      ),
       "Linear Regression" = "none",
       "Elastic Net" = c("penalty", "mixture")
-    )
+    ),
+    tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff")
   )
   toset <- !(names(op.tsf.dashboard) %in% names(op))
   if (any(toset)) options(op.tsf.dashboard[toset])
 
   return(invisible(NULL))
 
+}
+
+# function to convert frequency from character to numeric
+parse_frequency <- function(frequency) {
+  if (frequency == "year") {
+    freq <- 1
+  } else if (frequency == "semester") {
+    freq <- 2
+  } else if (frequency == "quarter") {
+    freq <- 4
+  } else if (frequency == "month") {
+    freq <- 12
+  } else if (frequency == "week") {
+    freq <- 52
+  } else if (frequency == "bus-day") {
+    freq <- 252
+  } else if (frequency == "day") {
+    freq <- 365
+  } else if (frequency == "bus-hour") {
+    freq <- 252 * 24
+  } else if (frequency == "hour") {
+    freq <- 365 * 24
+  } else if (frequency == "bus-half-hour") {
+    freq <- 252 * 48
+  } else if (frequency == "half-hour") {
+    freq <- 365 * 48
+  } else {
+    stop(paste("Unknown frequency", frequency))
+  }
+  return(freq)
 }
 
 # function to understand if the method is a time series or a machine learning one
@@ -145,7 +179,7 @@ check_parameters <- function(method, params) {
 
   mtd_prm <- getOption("tsf.dashboard.methods_params")[[method]]
   if (!all(mtd_prm %in% names(params))) {
-    stop(paste("Parameters for method", method, "are not correct!"))
+    stop(paste("Parameters for", method, "are not correct!"))
   }
 
 }

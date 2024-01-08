@@ -15,23 +15,29 @@ runtime: shiny
 <!-- data-icon="fa-list" -->
 
 <!-- upload input per csv file con switch tra un dataset e l'altro e janitor -->
-<!-- dataset timeseries del pacchetto forecast o tsibble -->
-<!-- aggiungere metodi di time series -->
-<!-- aggiungere metodi di ml -->
-<!-- pensare e aggiungere la pulizia degli outliers -->
-<!-- pensare e aggiungere le trasformazioni da applicare in fase di visualization e forecasting -->
-<!-- pensare e aggiungere la sezione di feature engineering -->
-<!-- pensare e aggiungere la sezione di ensemble -->
-<!-- documentazione in alto a destra  -->
+<!-- documentazione in alto a destra -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
+<!-- modificare autput modello con parsing -->
+<!-- aggiungere la valutazione del modello con le metriche sul test e train -->
+<!-- aggiungere metodi di time series -->
+<!-- aggiungere metodi di ml -->
+<!-- pensare e aggiungere la sezione di feature engineering -->
+<!-- pensare e aggiungere la sezione di ensemble -->
+
+
 ```{r setup, include=FALSE, message=FALSE}
 source("R/utils.R")
+source("R/get_data.R")
 source("R/generate_forecast.R")
 source("R/packages.R")
 
 set_options()
+datasets <- c(
+  "Air Passengers", # "Electricity Demand", 
+  "Stock Price",   "Tobacco Prod", "EU Population", "People Traffic", "custom"
+)
 ts_methods <- getOption("tsf.dashboard.methods")$ts
 ml_methods <- getOption("tsf.dashboard.methods")$ml
 
@@ -48,40 +54,6 @@ useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
 # )
 ```
 
-```{r data}
-data1 <- tibble(
-  date = seq.Date(from = as.Date("2010-01-01"), to = as.Date("2023-12-31"), by = "day"),
-  id = "TS 1 - daily",
-  value = rnorm(n = 5113, mean = 100, sd = 1000) + 1:5113 + sin(365)
-)
-
-data2 <- tibble(
-  date = seq.Date(from = as.Date("2010-01-01"), to = as.Date("2023-12-31"), by = "week"),
-  id = "TS 2 - weekly",
-  value = rnorm(n = 731, mean = 100, sd = 1000) + 1:731 + sin(52)
-)
-
-data3 <- tibble(
-  date = seq.Date(from = as.Date("2010-01-01"), to = as.Date("2023-12-31"), by = "month"),
-  id = "TS 3 - monthly",
-  value = rnorm(n = 168, mean = 100, sd = 1000) + 1:168 + sin(6)
-)
-
-data4 <- tibble(
-  date = seq.Date(from = as.Date("2010-01-01"), to = as.Date("2023-12-31"), by = "quarter"),
-  id = "TS 4 - quarterly",
-  value = rnorm(n = 56, mean = 100, sd = 1000) + 1:56 + sin(2)
-)
-
-data5 <- tibble(
-  date = seq.Date(from = as.Date("2010-01-01"), to = as.Date("2023-12-31"), by = "year"),
-  id = "TS 5 - yearly",
-  value = rnorm(n = 14, mean = 100, sd = 1000) + 1:14
-)
-
-data <- bind_rows(data1, data2, data3, data4, data5)
-```
-
 
 
 Data {data-orientation=rows}  
@@ -93,48 +65,51 @@ Input {.sidebar}
 
 ```{r}
 selectInput(
-  inputId = "id", label = h4("Dataset"), 
-  choices = unique(data$id), selected = unique(data$id)[3]
+  inputId = "dataset", label = h4("Dataset"), 
+  choices = datasets, selected = datasets[1], multiple = FALSE
 )
+
+conditionalPanel(
+  condition = "input.dataset == 'custom'",
+  h4("Upload your dataset: "),
+  "The dataset must be a .csv file containing columns 'date', 'id', 'frequency' and 'value'.", 
+  fileInput(
+    inputId = "upload_custom", label = "", accept = c(".csv"),
+    multiple = FALSE, buttonLabel = "Browse...", placeholder = "No file"
+  )
+)
+
+br()
 
 prettyRadioButtons(inputId = "table_type", label = NULL, choices = c("preview", "str", "summary"))
 
-fileInput(
-  inputId = "upload", label = h4("Load Dataset"), accept = c(".csv"),
-  multiple = FALSE, buttonLabel = "Browse...", placeholder = "No file"
-)
-
 # input <- list(
-#   id = unique(data$id)[3],
-#   date_range = c(min(data$date), max(data$date))
+#   dataset = datasets[2]
 # )
 ```
 
 ```{r}
-data_upload <- reactive({
-    req(input$upload)
-    ext <- tools::file_ext(input$upload$datapath)
-    validate(need(ext == "csv", "Please upload a csv file"))
-    # data <<- 
-    read_csv(input$upload$datapath, na = c("", "NA")) |> janitor::clean_names()
-})
-
-data_filtered_id <- reactive({
-  # data_filtered <-
-  data |>
-    filter(id == input$id)
+data_selected <- reactive({
+  if (input$dataset == "custom") {
+    req(input$upload_custom)
+    # ext <- tools::file_ext(input$upload$datapath)
+    # validate(need(ext == "csv", "Please upload a csv file"))
+    read_csv(input$upload$datapath, na = c("", "NA"), show_col_types = FALSE) |> 
+      janitor::clean_names()
+  } else {
+    # data_selected <-
+    get_data(input$dataset)
+  }
 })
 
 ts_freq <- reactive({
   # ts_freq <-
-  data_filtered_id() |>
-    tk_index() |>
-    tk_get_frequency(period = "auto")
+  data_selected()$frequency |> unique() |> parse_frequency()
 })
 ```
 
 
-Row {data-height=100}
+Row 1 {data-height=100}
 ---------------------------------------------------------------------------
 
 ### Dataset Preview
@@ -142,7 +117,7 @@ Row {data-height=100}
 ```{r}
 output$data_table <- renderDT({
   if (input$table_type == "preview") {
-    data_filtered_id() |>
+    data_selected() |>
       datatable(
         options = list(
           ordering = TRUE,
@@ -151,27 +126,27 @@ output$data_table <- renderDT({
           searching = TRUE, # FALSE
           info = FALSE,
           paging = TRUE,
-          scrollY = 575, # 250
+          scrollY = 550, # 250
           scrollCollapse = TRUE
         )
       )
   } else if (input$table_type == "str") {
-    str(data_filtered_id())
+    str(data_selected())
   } else {
-    summary(data_filtered_id())
+    summary(data_selected())
   }
 })
 DTOutput(outputId = "data_table")
 ```
 
-<!-- Row {data-height=500} -->
+<!-- Row 2 {data-height=500} -->
 <!-- --------------------------------------------------------------------------- -->
 
 <!-- ### {.no-padding} -->
 
 <!-- ```{r} -->
 <!-- output$ts_plot <- renderPlotly({ -->
-<!--   data_filtered() |> -->
+<!--   data_selected() |> -->
 <!--     timetk::plot_time_series( -->
 <!--       .date_var = date, .value = value,  -->
 <!--       .smooth = FALSE, .interactive = TRUE -->
@@ -182,51 +157,117 @@ DTOutput(outputId = "data_table")
 
 
 
-Visualize & Transform {data-navmenu="Analyze" data-orientation=rows}
+Visualize, Impute & Transform {data-navmenu="Analyze" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
 ---------------------------------------------------------------------------
 
 ```{r}
-dateRangeInput(
-  inputId = "date_range", label = h4("Date range"), 
-  start = min(data$date), end = max(data$date) 
-)
+h3("Visualize")
 
+dateRangeInput(
+  inputId = "date_range", label = NULL, 
+  start = as.Date("1940-01-01"), end = as.Date("2023-12-31")
+)
 observeEvent(
-  eventExpr = input$id, 
+  eventExpr = input$dataset, 
   handlerExpr = {
     updateDateRangeInput(
       session = session, inputId = "date_range", 
-      start = min(data$date), end = max(data$date)
+      start = min(data_selected()$date), end = max(data_selected()$date)
     )
   }
 )
 
+materialSwitch(
+  inputId = "smooth_line", label = h5("Smooth Line"), 
+  value = TRUE, status = "primary", inline = TRUE
+)
+
+numericInput(
+  inputId = "acf_lag", label = h5("ACF Lag"),
+  value = 48, min = 1, max = 300, step = 1, width = "45%"
+)
+observeEvent(
+  eventExpr = input$dataset, 
+  handlerExpr = {
+    updateNumericInput(
+      session = session, inputId = "acf_lag", 
+      value = ifelse(ts_freq() < 60, ts_freq() * 3, 150), 
+      min = 1, max = 300, step = 1
+    )
+  }
+)
+
+hr()
+h3("Missing Imputation")
+switchInput(inputId = "impute", value = FALSE, width = "500%", size = "small")
+
+hr()
+h3("Transform")
+
+materialSwitch(inputId = "log", label = "Log", value = FALSE, status = "primary")
+materialSwitch(inputId = "boxcox", label = "Box-Cox", value = FALSE, status = "primary")
+materialSwitch(inputId = "norm", label = "Normalize", value = FALSE, status = "primary")
+materialSwitch(inputId = "stand", label = "Standardize", value = FALSE, status = "primary")
+materialSwitch(inputId = "diff", label = "Diff", value = FALSE, status = "primary")
+materialSwitch(inputId = "sdiff", label = "Seasonal Diff", value = FALSE, status = "primary")
+
+br()
+
+actionButton(inputId = "transf_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$transf_reset, 
+  handlerExpr = {
+    updateMaterialSwitch(session = session, inputId = "smooth_line", value = TRUE)
+    updateNumericInput(session = session, inputId = "acf_lag", value = ifelse(ts_freq() < 60, ts_freq() * 3, ts_freq()))
+    updateSwitchInput(session = session, inputId = "impute", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "log", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "boxcox", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "norm", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "stand", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "diff", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "sdiff", value = FALSE)
+  }
+)
+
 # input <- list(
-#   id = unique(data$id)[3],
-#   date_range = c(min(data$date), max(data$date))
+#   dataset = datasets[2],
+#   date_range = c(as.Date("1940-01-01"), as.Date("2023-12-31")),
+#   smooth_line = TRUE,
+#   acf_lag = 48,
+#   log = TRUE,
+#   boxcox = FALSE,
+#   norm = FALSE,
+#   stand = FALSE,
+#   diff = TRUE,
+#   sdiff = FALSE
 # )
 ```
 
 ```{r}
-data_filtered <- reactive({
-  # data_filtered <-
-  data_filtered_id() |>
+data_transformed <- reactive({
+  data_selected() |> 
+    impute_data(params = input, freq = ts_freq()) |> 
+    transform_data(params = input, freq = ts_freq()) |> 
     filter(between(date, input$date_range[1], input$date_range[2]))
 })
 ```
 
-Row {data-height=400}
+Row 1 {data-height=400}
 ---------------------------------------------------------------------------
 
 ### {.no-padding}
 
 ```{r}
 output$ts_plot_smooth <- renderPlotly({
-  data_filtered() |>
-    timetk::plot_time_series(.date_var = date, .value = value, .interactive = TRUE)
+  data_transformed() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = input$smooth_line, # ifelse(ts_freq() > 60, FALSE, TRUE),
+      .interactive = TRUE
+    )
 })
 plotlyOutput(outputId = "ts_plot_smooth")
 ```
@@ -235,25 +276,26 @@ plotlyOutput(outputId = "ts_plot_smooth")
 
 ```{r}
 output$autocorr_plot <- renderPlotly({
-  data_filtered() |>
+  data_transformed() |>
     timetk::plot_acf_diagnostics(
       .date_var = date, .value = value, 
-      .lags = ts_freq() * 3, .interactive = TRUE,
-      .title = "Autocorrelation"
+      .lags = input$acf_lag, # ifelse(ts_freq() < 60, ts_freq() * 3, 150)
+      .interactive = TRUE,
+      .title = "Autocorrelation", .y_lab = NULL,
     )
 })
 plotlyOutput(outputId = "autocorr_plot")
 ```
 
 
-Row {data-height=600}
+Row 2 {data-height=600}
 ---------------------------------------------------------------------------
 
 ### {.no-padding}
 
 ```{r}
 output$decomp_plot <- renderPlotly({
-    data_filtered() |>
+    data_transformed() |>
       timetk::plot_stl_diagnostics(
     .date_var = date, .value = value, 
     .feature_set = c("season", "trend", "remainder"), .interactive = TRUE,
@@ -267,7 +309,7 @@ plotlyOutput(outputId = "decomp_plot")
 
 ```{r}
 output$season_plot <- renderPlotly({
-  data_filtered() |>
+  data_transformed() |>
     timetk::plot_seasonal_diagnostics(
       .date_var = date, .value = value, 
       .interactive = TRUE, .title = "Seasonality"
@@ -278,39 +320,80 @@ plotlyOutput(outputId = "season_plot")
 
 
 
-Anomaly Detection {data-navmenu="Analyze" data-orientation=rows}
+Anomaly Detection & Cleaning {data-navmenu="Analyze" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
 ---------------------------------------------------------------------------
 
 ```{r}
-sliderInput(inputId = "alpha", label = h3("Alpha"), min = 0.01, max = 1, value = 0.05, step = 0.01)
+h3("Anomaly Detection")
 
-sliderInput(inputId = "max_anomalies", label = h3("Max Anomalies (%)"), min = 0.01, max = 1, value = 0.1, step = 0.01)
+sliderInput(inputId = "alpha", label = h4("Confidence Level"), min = 0.01, max = 1, value = 0.02, step = 0.01)
+sliderInput(inputId = "max_anomalies", label = h4("Max Anomalies (%)"), min = 0.01, max = 1, value = 0.1, step = 0.01)
+
+hr()
+h3("Anomaly Cleaning")
+switchInput(inputId = "clean", value = FALSE, size = "small", width = "500px")
+
+br()
+
+actionButton(inputId = "anomaly_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$anomaly_reset, 
+  handlerExpr = {
+    updateSliderInput(session = session, inputId = "alpha", value = 0.02)
+    updateSliderInput(session = session, inputId = "max_anomalies", value = 0.1)
+    updateSwitchInput(session = session, inputId = "clean", value = FALSE)
+  }
+)
+```
+
+```{r}
+data_cleaned <- reactive({
+  data_transformed() |> clean_data(params = input)
+})
 ```
 
 
-Row {data-height=100}
+Row 1 {data-height=650}
 ---------------------------------------------------------------------------
 
 ### {.no-padding}
 
 ```{r}
 output$anomaly_plot <- renderPlotly({
-  data_filtered() |>
+  data_transformed() |>
     timetk::plot_anomaly_diagnostics(
       .date_var = date, .value = value, 
       .alpha = input$alpha, .max_anomalies = input$max_anomalies,
-      .interactive = TRUE, .title = "Anomaly Plot"
+      .interactive = TRUE, .title = "Anomaly Plot", .legend_show = FALSE
     )
 })
 plotlyOutput(outputId = "anomaly_plot")
 ```
 
 
+Row 2 {data-height=350}
+---------------------------------------------------------------------------
 
-TS Methods {data-navmenu="Forecast" data-orientation=rows}
+### {.no-padding}
+
+```{r}
+output$clean_plot <- renderPlotly({
+  data_cleaned() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, 
+      .title = "Cleaned Time Series"
+    )
+})
+plotlyOutput(outputId = "clean_plot")
+```
+
+
+
+Time Series Algorithms {data-navmenu="Forecast" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
@@ -318,12 +401,12 @@ Input {.sidebar}
 
 ```{r}
 sliderInput(
-  inputId = "n_future", label = h4("Forecast Horizon"), 
+  inputId = "n_future", label = h3("Forecast Horizon"), 
   value = 12, min = 1, max = 60, step = 1
 )
 
 selectInput(
-  inputId = "ts_method", label = h4("Forecast Method"), 
+  inputId = "ts_method", label = h3("Forecast Algorithm"), 
   choices = ts_methods, selected = ts_methods[1]
 )
 
@@ -344,14 +427,14 @@ br() # break rule
 # Rolling Average
 conditionalPanel(
   condition = "input.ts_method == 'Rolling Average'",
-  h5("Method hyperparameters: "),
+  h5("Algorithm hyperparameters: "),
   numericInput(inputId = "window_size", label = "Window Size", value = 12, min = 1)
 )
 
 # ETS
 conditionalPanel(
   condition = "input.ts_method == 'ETS'",
-  h5("Method hyperparameters: "),
+  h5("Algorithm hyperparameters: "),
   selectInput(inputId = "error", label = "Error", choices = c("auto", "additive", "multiplicative"), selected = "auto"),
   selectInput(inputId = "trend", label = "Trend", choices = c("auto", "additive", "multiplicative", "none"), selected = "auto"),
   selectInput(inputId = "season", label = "Seasonality", choices = c("auto", "additive", "multiplicative", "none"), selected = "auto"),
@@ -364,7 +447,13 @@ conditionalPanel(
 # ARIMA
 conditionalPanel(
   condition = "input.ts_method == 'ARIMA'",
-  h5("Method hyperparameters: "),
+  h5("Algorithm hyperparameters: "),
+  sliderInput(inputId = "non_seasonal_ar", label = "p", value = 1, min = 0, max = 5, step = 1),
+  sliderInput(inputId = "non_seasonal_differences", label = "d", value = 1, min = 0, max = 2, step = 1),
+  sliderInput(inputId = "non_seasonal_ma", label = "q", value = 1, min = 0, max = 5, step = 1),
+  sliderInput(inputId = "seasonal_ar", label = "P", value = 0, min = 0, max = 5, step = 1),
+  sliderInput(inputId = "seasonal_differences", label = "D", value = 0, min = 0, max = 2, step = 1),
+  sliderInput(inputId = "seasonal_ma", label = "Q", value = 0, min = 0, max = 5, step = 1)
 )
 
 # input <- list(
@@ -381,16 +470,12 @@ conditionalPanel(
 # )
 ```
 
-
-Row {data-height=700}
----------------------------------------------------------------------------
-
 ```{r}
 ts_forecast_results <- eventReactive(
   eventExpr = input$apply_ts_forecast,
   valueExpr = {
-    # data_pred <-
-    data_filtered() |>
+    # ts_forecast_results <-
+    data_cleaned() |>
       generate_forecast(
         method = input$ts_method, params = input, 
         n_future = input$n_future, seed = 1992
@@ -398,6 +483,10 @@ ts_forecast_results <- eventReactive(
   }
 )
 ```
+
+
+Row 1 {data-height=700}
+---------------------------------------------------------------------------
 
 ### Forecasting Plot {.no-padding}
 
@@ -410,7 +499,7 @@ plotlyOutput(outputId = "plot_ts_forecast")
 ```
 
 
-Row {data-height=300}
+Row 2 {data-height=300}
 ---------------------------------------------------------------------------
 
 ### Model Summary {.no-padding}
@@ -424,7 +513,7 @@ verbatimTextOutput(outputId = "summary_ts_model")
 
 
 
-ML Methods {data-navmenu="Forecast" data-orientation=rows}
+Machine Learning Algorithms {data-navmenu="Forecast" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
@@ -432,12 +521,12 @@ Input {.sidebar}
 
 ```{r}
 sliderInput(
-  inputId = "n_future", label = h4("Forecast Horizon"), 
+  inputId = "n_future", label = h3("Forecast Horizon"), 
   value = 12, min = 1, max = 60, step = 1
 )
 
 selectInput(
-  inputId = "ml_method", label = h4("Forecast Method"), 
+  inputId = "ml_method", label = h3("Forecast Method"), 
   choices = ml_methods, selected = ml_methods[1]
 )
 
@@ -458,17 +547,17 @@ br() # break rule
 # Linear Regression
 conditionalPanel(
   condition = "input.ml_method == 'Linear Regression'",
-  h5("Method hyperparameters: "),
-  h6("No hyperparameters for this method!")
+  h5("Algorithm hyperparameters: "),
+  h6("No hyperparameters for this algorithm!")
   # input$none <- "none"
 )
 
 # Elastic Net
 conditionalPanel(
   condition = "input.ml_method == 'Elastic Net'",
-  h5("Method hyperparameters: "),
+  h5("Algorithm hyperparameters: "),
   numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
-  numericInput(inputId = "mixture", label = "Mixture", value = 1, min = 0, max = 1)
+  numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
 )
 
 # input <- list(
@@ -480,16 +569,12 @@ conditionalPanel(
 # )
 ```
 
-
-Row {data-height=700}
----------------------------------------------------------------------------
-
 ```{r}
 ml_forecast_results <- eventReactive(
   eventExpr = input$apply_ml_forecast,
   valueExpr = {
-    # data_pred <-
-    data_filtered() |>
+    # ml_forecast_results <-
+    data_cleaned() |>
       generate_forecast(
         method = input$ml_method, params = input,
         n_future = input$n_future, seed = 1992
@@ -497,6 +582,10 @@ ml_forecast_results <- eventReactive(
   }
 )
 ```
+
+
+Row 1 {data-height=700}
+---------------------------------------------------------------------------
 
 ### Forecasting Plot {.no-padding}
 
@@ -509,7 +598,7 @@ plotlyOutput(outputId = "plot_ml_forecast")
 ```
 
 
-Row {data-height=300}
+Row 2 {data-height=300}
 ---------------------------------------------------------------------------
 
 ### Model Summary {.no-padding}
