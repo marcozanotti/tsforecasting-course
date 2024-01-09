@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 /* AUTH PANEL */
 .panel-auth {
   position: fixed;
@@ -51,6 +55,7 @@ body {
     }
     .sidebar {
         width: 250px !important;
+        /*margin-right: 30px !important;*/
     }
 }
 

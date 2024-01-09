@@ -19,8 +19,9 @@ runtime: shiny
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
-<!-- modificare autput modello con parsing -->
 <!-- aggiungere la valutazione del modello con le metriche sul test e train -->
+<!-- aggiungere tabset per analisi residui modello forecasting -->
+<!-- modificare autput modello con parsing -->
 <!-- aggiungere metodi di time series -->
 <!-- aggiungere metodi di ml -->
 <!-- pensare e aggiungere la sezione di feature engineering -->
@@ -30,6 +31,8 @@ runtime: shiny
 ```{r setup, include=FALSE, message=FALSE}
 source("R/utils.R")
 source("R/get_data.R")
+source("R/transform_data.R")
+source("R/hp_testing.R")
 source("R/generate_forecast.R")
 source("R/packages.R")
 
@@ -84,7 +87,7 @@ br()
 prettyRadioButtons(inputId = "table_type", label = NULL, choices = c("preview", "str", "summary"))
 
 # input <- list(
-#   dataset = datasets[2]
+#   dataset = datasets[1]
 # )
 ```
 
@@ -202,7 +205,7 @@ observeEvent(
 
 hr()
 h3("Missing Imputation")
-switchInput(inputId = "impute", value = FALSE, width = "500%", size = "small")
+switchInput(inputId = "impute", value = FALSE, size = "mini")
 
 hr()
 h3("Transform")
@@ -250,7 +253,7 @@ observeEvent(
 data_transformed <- reactive({
   data_selected() |> 
     impute_data(params = input, freq = ts_freq()) |> 
-    transform_data(params = input, freq = ts_freq()) |> 
+    transform_data(section = "viz_transf", params = input, freq = ts_freq()) |> 
     filter(between(date, input$date_range[1], input$date_range[2]))
 })
 ```
@@ -334,7 +337,7 @@ sliderInput(inputId = "max_anomalies", label = h4("Max Anomalies (%)"), min = 0.
 
 hr()
 h3("Anomaly Cleaning")
-switchInput(inputId = "clean", value = FALSE, size = "small", width = "500px")
+switchInput(inputId = "clean", value = FALSE, size = "mini")
 
 br()
 
@@ -393,31 +396,142 @@ plotlyOutput(outputId = "clean_plot")
 
 
 
-Time Series Algorithms {data-navmenu="Forecast" data-orientation=rows}
+Hypothesis Testing {data-navmenu="Analyze" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
 ---------------------------------------------------------------------------
 
 ```{r}
-sliderInput(
-  inputId = "n_future", label = h3("Forecast Horizon"), 
-  value = 12, min = 1, max = 60, step = 1
+h3("Normality Tests")
+h5("Shapiro-Wilk and Jarque-Bera")
+br()
+
+hr()
+h3("Autocorrelation Tests")
+h5("Ljung-Box and Box-Pierce")
+br()
+
+hr()
+h3("Stationarity Tests")
+h5("ADF, PP and KPSS")
+
+br()
+br()
+br()
+materialSwitch(inputId = "test_log", label = "Test on log?", value = FALSE, status = "primary")
+materialSwitch(inputId = "test_diff", label = "Test on diff?", value = FALSE, status = "primary")
+materialSwitch(inputId = "test_sdiff", label = "Test on seasonal diff?", value = FALSE, status = "primary")
+```
+
+```{r}
+data_test <- reactive({
+  data_selected() |> 
+    transform_data(section = "test_hp", params = input, freq = ts_freq())
+})
+
+test_results <- reactive({
+  data_test() |> compute_hptests()
+})
+```
+
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### 
+
+```{r}
+output$test_table <- renderDT({
+  test_results() |>
+    datatable(
+      options = list(
+        ordering = FALSE,
+        pageLength = 20,
+        lengthChange = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        paging = FALSE
+      )
+    )
+})
+DTOutput(outputId = "test_table")
+```
+
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### {.no-padding}
+
+```{r}
+output$test_ts_plot <- renderPlotly({
+  data_test() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, .title = NULL
+    )
+})
+plotlyOutput(outputId = "test_ts_plot")
+```
+
+### {.no-padding}
+
+```{r}
+output$test_autocorr_plot <- renderPlotly({
+  data_test() |>
+    timetk::plot_acf_diagnostics(
+      .date_var = date, .value = value, 
+      .lags = ifelse(ts_freq() < 60, ts_freq() * 3, 150),
+      .interactive = TRUE, .title = NULL, .y_lab = NULL
+    )
+})
+plotlyOutput(outputId = "test_autocorr_plot")
+```
+
+
+
+Test & Evaluate {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+```{r}
+br()
+dropdownButton(
+  numericInput(
+    inputId = "n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
 )
 
 selectInput(
-  inputId = "ts_method", label = h3("Forecast Algorithm"), 
-  choices = ts_methods, selected = ts_methods[1]
+  inputId = "method", label = h3("Forecast Algorithm"), 
+  choices = methods, selected = methods[1]
 )
 
-actionButton(inputId = "apply_ts_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "apply_forecast", label = "Forecast!", icon = icon("play"))
 actionButton(inputId = "ts_reset", label = "Reset", icon = icon("sync"))
 observeEvent(
   eventExpr = input$ts_reset, 
   handlerExpr = {
     updateNumericInput(session = session, inputId = "n_future", value = 12)
-    updateSelectInput(session = session, inputId = "ts_method", selected = ts_methods[1])
-    shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_ts_forecast")})
+    updateNumericInput(session = session, inputId = "n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "assess_type", selected = "Rolling")
+    updateSelectInput(session = session, inputId = "method", selected = ts_methods[1])
+    shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_forecast")})
   }
 )
 
@@ -426,14 +540,14 @@ br() # break rule
 
 # Rolling Average
 conditionalPanel(
-  condition = "input.ts_method == 'Rolling Average'",
+  condition = "input.method == 'Rolling Average'",
   h5("Algorithm hyperparameters: "),
   numericInput(inputId = "window_size", label = "Window Size", value = 12, min = 1)
 )
 
 # ETS
 conditionalPanel(
-  condition = "input.ts_method == 'ETS'",
+  condition = "input.method == 'ETS'",
   h5("Algorithm hyperparameters: "),
   selectInput(inputId = "error", label = "Error", choices = c("auto", "additive", "multiplicative"), selected = "auto"),
   selectInput(inputId = "trend", label = "Trend", choices = c("auto", "additive", "multiplicative", "none"), selected = "auto"),
@@ -446,7 +560,7 @@ conditionalPanel(
 
 # ARIMA
 conditionalPanel(
-  condition = "input.ts_method == 'ARIMA'",
+  condition = "input.method == 'ARIMA'",
   h5("Algorithm hyperparameters: "),
   sliderInput(inputId = "non_seasonal_ar", label = "p", value = 1, min = 0, max = 5, step = 1),
   sliderInput(inputId = "non_seasonal_differences", label = "d", value = 1, min = 0, max = 2, step = 1),
@@ -454,6 +568,21 @@ conditionalPanel(
   sliderInput(inputId = "seasonal_ar", label = "P", value = 0, min = 0, max = 5, step = 1),
   sliderInput(inputId = "seasonal_differences", label = "D", value = 0, min = 0, max = 2, step = 1),
   sliderInput(inputId = "seasonal_ma", label = "Q", value = 0, min = 0, max = 5, step = 1)
+)
+
+# Linear Regression
+conditionalPanel(
+  condition = "input.method == 'Linear Regression'",
+  h5("Algorithm hyperparameters: "),
+  h6("No hyperparameters for this algorithm!")
+)
+
+# Elastic Net
+conditionalPanel(
+  condition = "input.method == 'Elastic Net'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
+  numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
 )
 
 # input <- list(
@@ -471,13 +600,13 @@ conditionalPanel(
 ```
 
 ```{r}
-ts_forecast_results <- eventReactive(
-  eventExpr = input$apply_ts_forecast,
+forecast_results <- eventReactive(
+  eventExpr = input$apply_forecast,
   valueExpr = {
     # ts_forecast_results <-
     data_cleaned() |>
       generate_forecast(
-        method = input$ts_method, params = input, 
+        method = input$method, params = input, 
         n_future = input$n_future, seed = 1992
       )
   }
@@ -491,11 +620,11 @@ Row 1 {data-height=700}
 ### Forecasting Plot {.no-padding}
 
 ```{r}
-output$plot_ts_forecast <- renderPlotly({
-  ts_forecast_results()$forecast |> 
+output$plot_forecast <- renderPlotly({
+  forecast_results()$forecast |> 
     plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE)
 })
-plotlyOutput(outputId = "plot_ts_forecast")
+plotlyOutput(outputId = "plot_forecast")
 ```
 
 
@@ -505,107 +634,8 @@ Row 2 {data-height=300}
 ### Model Summary {.no-padding}
 
 ```{r}
-output$summary_ts_model <- renderPrint({
-  ts_forecast_results()$model
+output$summary_model <- renderPrint({
+  forecast_results()$model
 })
-verbatimTextOutput(outputId = "summary_ts_model")
-```
-
-
-
-Machine Learning Algorithms {data-navmenu="Forecast" data-orientation=rows}
-===========================================================================
-
-Input {.sidebar}
----------------------------------------------------------------------------
-
-```{r}
-sliderInput(
-  inputId = "n_future", label = h3("Forecast Horizon"), 
-  value = 12, min = 1, max = 60, step = 1
-)
-
-selectInput(
-  inputId = "ml_method", label = h3("Forecast Method"), 
-  choices = ml_methods, selected = ml_methods[1]
-)
-
-actionButton(inputId = "apply_ml_forecast", label = "Forecast!", icon = icon("play"))
-actionButton(inputId = "ml_reset", label = "Reset", icon = icon("sync"))
-observeEvent(
-  eventExpr = input$ml_reset, 
-  handlerExpr = {
-    updateNumericInput(session = session, inputId = "n_future", value = 12)
-    updateSelectInput(session = session, inputId = "ml_method", selected = ml_methods[1])
-    shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_ml_forecast")})
-  }
-)
-
-br() # break rule
-br() # break rule
-
-# Linear Regression
-conditionalPanel(
-  condition = "input.ml_method == 'Linear Regression'",
-  h5("Algorithm hyperparameters: "),
-  h6("No hyperparameters for this algorithm!")
-  # input$none <- "none"
-)
-
-# Elastic Net
-conditionalPanel(
-  condition = "input.ml_method == 'Elastic Net'",
-  h5("Algorithm hyperparameters: "),
-  numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
-  numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
-)
-
-# input <- list(
-#   id = unique(data$id)[3],
-#   n_future = 12,
-#   method = "Elastic Net",
-#   penalty = 0.1,
-#   mixture = 0.1
-# )
-```
-
-```{r}
-ml_forecast_results <- eventReactive(
-  eventExpr = input$apply_ml_forecast,
-  valueExpr = {
-    # ml_forecast_results <-
-    data_cleaned() |>
-      generate_forecast(
-        method = input$ml_method, params = input,
-        n_future = input$n_future, seed = 1992
-      )
-  }
-)
-```
-
-
-Row 1 {data-height=700}
----------------------------------------------------------------------------
-
-### Forecasting Plot {.no-padding}
-
-```{r}
-output$plot_ml_forecast <- renderPlotly({
-  ml_forecast_results()$forecast |> 
-    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE)
-})
-plotlyOutput(outputId = "plot_ml_forecast")
-```
-
-
-Row 2 {data-height=300}
----------------------------------------------------------------------------
-
-### Model Summary {.no-padding}
-
-```{r}
-output$summary_ml_model <- renderPrint({
-  ml_forecast_results()$model
-})
-verbatimTextOutput(outputId = "summary_ml_model")
+verbatimTextOutput(outputId = "summary_model")
 ```

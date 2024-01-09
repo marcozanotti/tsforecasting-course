@@ -118,7 +118,8 @@ set_options <- function() {
       "Linear Regression" = "none",
       "Elastic Net" = c("penalty", "mixture")
     ),
-    tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff")
+    tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),
+    tsf.dashboard.test_transfs = c("test_log", "test_diff", "test_sdiff")
   )
   toset <- !(names(op.tsf.dashboard) %in% names(op))
   if (any(toset)) options(op.tsf.dashboard[toset])

@@ -1,5 +1,9 @@
 # function to forecast using time series methods
-generate_ts_forecast <- function(data, method, params, n_future, seed = 1992) {
+generate_ts_forecast <- function(
+  data, method, params,
+  n_future, n_assess, assess_type,
+  seed = 1992
+) {
 
   future_tbl <- data |>
     future_frame(.date_var = date, .length_out = n_future)
@@ -60,7 +64,11 @@ generate_ts_forecast <- function(data, method, params, n_future, seed = 1992) {
 }
 
 # function to forecast using machine learning methods
-generate_ml_forecast <- function(data, method, params, n_future, seed = 1992) {
+generate_ml_forecast <- function(
+  data, method, params,
+  n_future, n_assess, assess_type,
+  seed = 1992
+) {
 
   # time_scale <- data |>
   #   tk_index() |>
