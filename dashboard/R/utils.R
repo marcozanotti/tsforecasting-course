@@ -106,7 +106,8 @@ set_options <- function() {
     # Global Paths
     tsf.dashboard.methods = list(
       "ts" = c("Rolling Average", "ETS", "ARIMA"),
-      "ml" = c("Linear Regression", "Elastic Net")
+      "ml" = c("Linear Regression", "Elastic Net"),
+      "ens" = c("Average", "Weighted Average", "Median", "Linear Regression")
     ),
     tsf.dashboard.methods_params = list(
       "Rolling Average" = c("window_size"),
@@ -115,7 +116,7 @@ set_options <- function() {
         "non_seasonal_ar", "non_seasonal_differences", "non_seasonal_ma",
         "seasonal_ar", "seasonal_differences", "seasonal_ma"
       ),
-      "Linear Regression" = "none",
+      "Linear Regression" = NULL,
       "Elastic Net" = c("penalty", "mixture")
     ),
     tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),

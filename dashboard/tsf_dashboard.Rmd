@@ -8,24 +8,28 @@ output:
     logo: img/logo.png
     social: ["menu"]
     source_code: https://github.com/marcozanotti/tsforecasting-course
+    navbar:
+      - { title: "About", href: "https://marcozanotti.netlify.app/", align: right }
+      - { title: "Manual", href: "https://example.com/about", align: right }
 runtime: shiny
 ---
 
 <!-- Link to [Page 3](#page-3) -->
 <!-- data-icon="fa-list" -->
 
-<!-- aggiungere la valutazione del modello con le metriche sul test e train -->
-<!-- aggiungere tabset per analisi residui modello forecasting -->
-<!-- modificare autput modello con parsing -->
 <!-- upload input per csv file con switch tra un dataset e l'altro e janitor -->
 <!-- documentazione in alto a destra -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
-<!-- pensare e aggiungere la sezione di ensemble -->
+<!-- pensare e aggiungere la sezione di optimize tuning -->
+<!-- pensare e aggiungere la sezione di ensemble-combine -->
+<!-- pensare e aggiungere la sezione di compare-run competition -->
+<!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
 <!-- aggiungere metodi di time series -->
 <!-- aggiungere metodi di ml -->
 <!-- pensare e aggiungere la sezione di feature engineering -->
+<!-- modificare autput modello con parsing -->
 
 
 
@@ -34,6 +38,8 @@ source("R/utils.R")
 source("R/get_data.R")
 source("R/transform_data.R")
 source("R/hp_testing.R")
+source("R/metrics.R")
+source("R/fit_model.R")
 source("R/generate_forecast.R")
 source("R/packages.R")
 
@@ -42,7 +48,14 @@ datasets <- c(
   "Air Passengers", # "Electricity Demand", 
   "Stock Price",   "Tobacco Prod", "EU Population", "People Traffic", "custom"
 )
-methods <- getOption("tsf.dashboard.methods") |> unlist() |> unname()
+methods <- getOption("tsf.dashboard.methods")
+ts_methods <- methods$ts
+ml_methods <- methods$ml
+ens_methods <- methods$ens
+methods <- c(ts_methods, ml_methods)
+
+methods_params <- getOption("tsf.dashboard.methods_params")
+methods_params_cl <- methods_params |> map( ~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
 ```
 
 ```{r auth}
@@ -59,7 +72,6 @@ methods <- getOption("tsf.dashboard.methods") |> unlist() |> unname()
 
 Data {data-orientation=rows}  
 ===========================================================================
-<!-- data-navmenu="Data" -->
 
 Input {.sidebar}
 ---------------------------------------------------------------------------
@@ -83,10 +95,6 @@ conditionalPanel(
 br()
 
 prettyRadioButtons(inputId = "table_type", label = NULL, choices = c("preview", "str", "summary"))
-
-# input <- list(
-#   dataset = datasets[1]
-# )
 ```
 
 ```{r}
@@ -109,36 +117,100 @@ ts_freq <- reactive({
 })
 ```
 
-
 Row 1 {data-height=100}
 ---------------------------------------------------------------------------
 
 ### Dataset Preview
 
 ```{r}
-output$data_table <- renderDT({
-  if (input$table_type == "preview") {
-    data_selected() |>
-      datatable(
-        options = list(
-          ordering = TRUE,
-          pageLength = 20,
-          lengthChange = TRUE, # FALSE
-          searching = TRUE, # FALSE
-          info = FALSE,
-          paging = TRUE,
-          scrollY = 550, # 250
-          scrollCollapse = TRUE
-        )
-      )
-  } else if (input$table_type == "str") {
-    str(data_selected())
-  } else {
-    summary(data_selected())
-  }
-})
-DTOutput(outputId = "data_table")
+# data_table <- reactive({
+#   if (input$table_type == "preview") { data_selected() }
+# })
+# output$data_table <- renderDT({ data_table() })
+# 
+# data_str <- reactive({
+#   if (input$table_type == "str") { str(data_selected()) }
+# })
+# output$data_str <- renderPrint({ data_str() })
+# 
+# data_summ <- reactive({
+#   if (input$table_type == "summary") { summary(data_selected()) }
+# })
+# output$data_summ <- renderPrint({ data_summ() })
+# 
+# observe({
+#   req(input$table_type)
+#   switch(
+#     input$table_type,
+#     data_table = { renderUI({ DTOutput(outputId = "data_table") }) },
+#     data_str = { renderUI({ verbatimTextOutput(outputId = "data_str") }) },
+#     data_summ = { renderUI({ verbatimTextOutput(outputId = "data_summ") }) }
+#   )
+# })
+  
+# https://stackoverflow.com/questions/59069454/r-shiny-switch-between-table-and-plot-in-renderui
+# 
+# output$data_table <- renderDT({ data_selected() })
+# output$data_str <- renderPrint({ str(data_selected()) })
+# output$data_summ <- renderPrint({ summary(data_selected()) })
+# 
+# reactive({
+#   req(input$table_type)
+#   if (input$table_type == "preview") {
+#     DTOutput(outputId = "data_table")
+#   } else if (input$table_type == "str") {
+#     verbatimTextOutput(outputId = "data_str")
+#   } else if (input$table_type == "summary") {
+#     verbatimTextOutput(outputId = "data_summ")
+#   }
+# })
+
+# observe({
+#   req(input$table_type)
+#   switch(
+#     input$table_type,
+#     preview = DTOutput(outputId = "data_table"),
+#     str = verbatimTextOutput(outputId = "data_str"),
+#     summ = verbatimTextOutput(outputId = "data_summ")
+#   )
+# })
 ```
+
+<!-- ```{r} -->
+<!-- output$data_table <- renderDT({ -->
+<!--   data_selected() |> -->
+<!--       datatable( -->
+<!--         options = list( -->
+<!--           ordering = TRUE, -->
+<!--           pageLength = 20, -->
+<!--           lengthChange = TRUE, -->
+<!--           # FALSE -->
+<!--           searching = TRUE, -->
+<!--           # FALSE -->
+<!--           info = FALSE, -->
+<!--           paging = TRUE, -->
+<!--           scrollY = 550, -->
+<!--           # 250 -->
+<!--           scrollCollapse = TRUE -->
+<!--         ) -->
+<!--       ) -->
+<!-- }) -->
+<!-- DTOutput(outputId = "data_table") -->
+<!-- ``` -->
+
+### Dataset Structure
+
+<!-- ```{r} -->
+<!-- output$data_str <- renderPrint({ str(data_selected()) }) -->
+<!-- verbatimTextOutput(outputId = "data_str") -->
+<!-- ``` -->
+
+### Dataset Summary
+
+<!-- ```{r} -->
+<!-- output$data_summ <- renderPrint({ summary(data_selected()) }) -->
+<!-- verbatimTextOutput(outputId = "data_summ") -->
+<!-- ``` -->
 
 <!-- Row 2 {data-height=500} -->
 <!-- --------------------------------------------------------------------------- -->
@@ -158,7 +230,7 @@ DTOutput(outputId = "data_table")
 
 
 
-Visualize, Impute & Transform {data-navmenu="Analyze" data-orientation=rows}
+Visualize, & Transform {data-navmenu="Analyze" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
@@ -450,7 +522,8 @@ output$test_table <- renderDT({
         searching = FALSE,
         info = FALSE,
         paging = FALSE
-      )
+      ), 
+      rownames = FALSE
     )
 })
 DTOutput(outputId = "test_table")
@@ -489,7 +562,7 @@ plotlyOutput(outputId = "test_autocorr_plot")
 
 
 
-Test & Evaluate {data-navmenu="Forecast" data-orientation=rows}
+Feature Engineering {data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
@@ -497,7 +570,25 @@ Input {.sidebar}
 
 ```{r}
 useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
-br()
+```
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Features {.no-padding}
+
+COMING SOON
+
+
+Test & Evaluate {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+*Forecast - Test & Evaluate* 
+```{r}
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
 dropdownButton(
   numericInput(
     inputId = "n_future", label = "Forecast Horizon", 
@@ -584,10 +675,140 @@ conditionalPanel(
   numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
   numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
 )
+```
 
+```{r}
+forecast_results <- eventReactive(
+  eventExpr = input$apply_forecast,
+  valueExpr = {
+    data_cleaned() |>
+      fit_model(
+        method = input$method, params = input, 
+        n_assess = input$n_assess, assess_type = input$assess_type, 
+        seed = 1992
+      ) |> 
+      generate_forecast(
+        data = data_cleaned(), method = input$method, n_future = input$n_future,
+        n_assess = input$n_assess, assess_type = input$assess_type
+    )
+  }
+)
+```
+
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Test Forecasts {.no-padding}
+
+```{r}
+output$plot_test_forecast <- renderPlotly({
+  forecast_results()$test_forecast |> 
+    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_test_forecast")
+```
+
+<!-- ### Validation Plan {.no-padding} -->
+
+<!-- ```{r} -->
+<!-- output$plot_splits <- renderPlotly({ -->
+<!--   forecast_results()$splits |>  -->
+<!--     tk_time_series_cv_plan() |> -->
+<!--     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE) -->
+<!-- }) -->
+<!-- plotlyOutput(outputId = "plot_splits") -->
+<!-- ``` -->
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+output$plot_oos_forecast <- renderPlotly({
+  forecast_results()$oos_forecast |> 
+    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_oos_forecast")
+```
+
+
+Row 2 {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {.no-padding}
+
+```{r}
+output$accuracy_table <- renderDT({
+  forecast_results()$accuracy |>
+    select(-1, -2) |>
+    rename("Type" = ".type") |>
+    rename_with(.fn = toupper, .cols = -1) |>
+    relocate("ME", .after = 1) |> 
+    mutate(across(where(is.numeric), ~round(., 2))) |>
+    pivot_longer(cols = -1, names_to = "Metric", values_to = "Value") |>
+    pivot_wider(names_from = "Type", values_from = "Value") |>
+    datatable(
+      options = list(
+        ordering = FALSE,
+        pageLength = 20,
+        lengthChange = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        paging = FALSE
+      ), 
+      rownames = FALSE
+    )
+})
+DTOutput(outputId = "accuracy_table")
+```
+
+### Algorithm Summary {.no-padding}
+
+```{r}
+output$model_summary <- renderPrint({
+  forecast_results()$fit
+})
+verbatimTextOutput(outputId = "model_summary")
+```
+
+### Residuals Time Plot {.no-padding}
+
+```{r}
+output$plot_resid_ts <- renderPlotly({
+  forecast_results()$residuals |> 
+    select(.index, .residuals) |> 
+    set_names(c("date", "value")) |> 
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, .title = NULL
+    )
+})
+plotlyOutput(outputId = "plot_resid_ts")
+```
+
+### Residuals ACF {.no-padding}
+
+```{r}
+output$plot_resid_acf <- renderPlotly({
+  forecast_results()$residuals |> 
+    select(.index, .residuals) |> 
+    set_names(c("date", "value")) |> 
+    timetk::plot_acf_diagnostics(
+      .date_var = date, .value = value, 
+      .interactive = TRUE, .title = NULL, .y_lab = NULL,
+    )
+})
+plotlyOutput(outputId = "plot_resid_acf")
+```
+
+
+```{r}
+# testing
+# data_selected <- get_data(datasets[1])
+# ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
 # input <- list(
-#   id = unique(data$id)[3],
 #   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
 #   method = "ETS",
 #   error = "auto",
 #   trend = "auto",
@@ -597,46 +818,339 @@ conditionalPanel(
 #   smooth_trend = 0.1,
 #   smooth_season = 0.1
 # )
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = "Elastic Net",
+#   penalty = 1,
+#   mixture = 0.5
+# )
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = "Rolling Average",
+#   window_size = 12
+# )
+# 
+# fitted_model <- fit_model(
+#   data = data_selected, method = input$method, params = input,
+#   n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+# )
+# 
+# forecast_results <- generate_forecast(
+#   fitted_model = fitted_model, data = data_selected,
+#   method = input$method, n_future = input$n_future, 
+#   n_assess = input$n_assess, assess_type = input$assess_type
+# )
+# 
+# data_selected |> 
+#   fit_model(
+#     method = input$method,
+#     params = input,
+#     n_assess = input$n_assess,
+#     assess_type = input$assess_type,
+#     seed = 1992
+#   ) |>
+#   generate_forecast(
+#     data = data_selected,
+#     method = input$method,
+#     n_future = input$n_future,
+#     n_assess = input$n_assess,
+#     assess_type = input$assess_type
+#   )
+# 
+#   
+# 
+# data = data_selected
+# method = input$method
+# params = input
+# n_assess = input$n_assess
+# assess_type = input$assess_type
+# seed = 1992
+# data_splits = fitted_model$splits
+# fitted_model = fitted_model$fit
+# n_future = input$n_future
+# 
+# forecast_results$splits |>
+#   tk_time_series_cv_plan() |>
+#   plot_time_series_cv_plan(date, value)
+# forecast_results$fit
+# forecast_results$residuals
+# forecast_results$accuracy
+# forecast_results$test_forecast |> plot_modeltime_forecast()
+# forecast_results$oos_forecast |> plot_modeltime_forecast()
 ```
 
+
+
+
+Optimize {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+*Forecast - Optimize*  
 ```{r}
-forecast_results <- eventReactive(
-  eventExpr = input$apply_forecast,
-  valueExpr = {
-    # ts_forecast_results <-
-    data_cleaned() |>
-      generate_forecast(
-        method = input$method, params = input, 
-        n_future = input$n_future, n_assess = input$n_assess, 
-        assess_type = input$assess_type, seed = 1992
-      )
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+dropdownButton(
+  numericInput(
+    inputId = "tune_n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "tune_n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "tune_assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  prettyRadioButtons(
+    inputId = "tune_valid_type", label = "Validation Type", 
+    choices = c("Time Series CV", "K-Fold CV"), selected = "Time Series CV", 
+    inline = TRUE
+  ),
+  sliderInput(
+    inputId = "tune_k", label = "Folds", 
+    min = 2, max = 10, value = 5, step = 1
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
+)
+
+selectInput(
+  inputId = "tune_method", label = h3("Forecast Algorithm"), 
+  choices = ml_methods, selected = ml_methods[2]
+)
+
+actionButton(inputId = "tune_apply_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "tune_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$tune_reset, 
+  handlerExpr = {
+    updateNumericInput(session = session, inputId = "tune_n_future", value = 12)
+    updateNumericInput(session = session, inputId = "tune_n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "tune_assess_type", selected = "Rolling")
+    updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
+    updateSliderInput(session = session, inputId = "tune_k", value = 5)
+    updateSelectInput(session = session, inputId = "tune_method", selected = ml_methods[2])
+    updatePickerInput(session = session, inputId = "tune_elanet", selected = methods_params_cl[["Elastic Net"]][2])
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
+  }
+)
+
+br() # break rule
+br() # break rule
+
+# Elastic Net
+conditionalPanel(
+  condition = "input.tune_method == 'Elastic Net'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_elanet", label = NULL, 
+    choices = methods_params_cl[["Elastic Net"]], multiple = TRUE, 
+    selected = methods_params_cl[["Elastic Net"]][2],
+    options = list("actions-box" = TRUE)
+  )
+)
+```
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Forecasts Results {.no-padding}
+
+COMING SOON
+
+
+
+Compare {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+*Forecast - Compare*
+```{r}
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+dropdownButton(
+  numericInput(
+    inputId = "comp_n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "comp_n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "comp_assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
+)
+
+pickerInput(
+  inputId = "comp_method", label = h3("Forecast Algorithms"), 
+  choices = methods, selected = methods[c(2, 3)], multiple = TRUE,
+  options =  list("actions-box" = TRUE)
+)
+
+br()
+materialSwitch(inputId = "comp_tune", label = "Tune algorithms?", value = FALSE, status = "primary")
+br()
+
+actionButton(inputId = "comp_apply_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "comp_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$comp_reset, 
+  handlerExpr = {
+    updateNumericInput(session = session, inputId = "comp_n_future", value = 12)
+    updateNumericInput(session = session, inputId = "comp_n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "comp_assess_type", selected = "Rolling")
+    updatePickerInput(session = session, inputId = "comp_method", selected = methods[c(2, 3)])
+    updateMaterialSwitch(session = session, inputId = "comp_tune", value = FALSE)
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )
 ```
 
-
-Row 1 {data-height=700}
+Row 1 {data-height=500}
 ---------------------------------------------------------------------------
 
-### Forecasting Plot {.no-padding}
+### Forecasts Results {.no-padding}
 
-```{r}
-output$plot_forecast <- renderPlotly({
-  forecast_results()$forecast |> 
-    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE)
-})
-plotlyOutput(outputId = "plot_forecast")
-```
+COMING SOON
 
 
-Row 2 {data-height=300}
+
+Combine {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
 ---------------------------------------------------------------------------
 
-### Model Summary {.no-padding}
-
+*Forecast - Combine*
 ```{r}
-output$summary_model <- renderPrint({
-  forecast_results()$model
-})
-verbatimTextOutput(outputId = "summary_model")
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+dropdownButton(
+  numericInput(
+    inputId = "ens_n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "ens_n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "ens_assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
+)
+
+pickerInput(
+  inputId = "ens_method", label = h3("Forecast Algorithms"), 
+  choices = methods, selected = methods[c(2, 3)], multiple = TRUE,
+  options =  list(
+    "actions-box" = FALSE,
+    "max-options" = 5,
+    "max-options-text" = "You can combine maximum 5 algorithms!"
+  )
+)
+
+pickerInput(
+  inputId = "ens_type", label = h3("Ensemble Method"), 
+  choices = ens_methods, selected = ens_methods[1], multiple = TRUE,
+  options =  list("actions-box" = TRUE)
+)
+
+br()
+materialSwitch(inputId = "ens_tune", label = "Tune algorithms?", value = FALSE, status = "primary")
+br()
+
+actionButton(inputId = "ens_apply_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "ens_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$ens_reset, 
+  handlerExpr = {
+    updateNumericInput(session = session, inputId = "ens_n_future", value = 12)
+    updateNumericInput(session = session, inputId = "ens_n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "ens_assess_type", selected = "Rolling")
+    updatePickerInput(session = session, inputId = "ens_method", selected = methods[c(2, 3)])
+    updatePickerInput(session = session, inputId = "ens_type", selected = ens_methods[1])
+    updateMaterialSwitch(session = session, inputId = "ens_tune", value = FALSE)
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
+  }
+)
 ```
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Forecasts Results {.no-padding}
+
+COMING SOON
+
+
+
+Scenario {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+*Forecast - Scenario*
+```{r}
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+dropdownButton(
+  numericInput(
+    inputId = "scn_n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "scn_n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "scn_assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
+)
+
+selectInput(
+  inputId = "scn_method", label = h3("Forecast Algorithm"), 
+  choices = methods, selected = methods[2]
+)
+
+actionButton(inputId = "scn_apply_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "scn_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$scn_reset, 
+  handlerExpr = {
+    updateNumericInput(session = session, inputId = "scn_n_future", value = 12)
+    updateNumericInput(session = session, inputId = "scn_n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "scn_assess_type", selected = "Rolling")
+    updateSelectInput(session = session, inputId = "scn_method", selected = ml_methods[2])
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
+  }
+)
+```
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Forecasts Results {.no-padding}
+
+COMING SOON
+

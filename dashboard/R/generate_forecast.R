@@ -1,149 +1,67 @@
 # function to forecast using time series methods
-generate_ts_forecast <- function(
-  data, method, params,
-  n_future, n_assess, assess_type,
-  seed = 1992
-) {
+generate_forecast <- function(fitted_model, data, method, n_future, n_assess, assess_type) {
 
-  set.seed(seed)
-
-
+  splits <- timetk::time_series_split(
+    data, date_var = date,
+    initial = nrow(data) - n_assess,
+    assess = n_assess,
+    cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
+  )
+  train_tbl <- training(splits) |> select(-id, -frequency)
+  test_tbl <- testing(splits) |> select(-id, -frequency)
   future_tbl <- data |>
     future_frame(.date_var = date, .length_out = n_future)
 
-  if (method == "Rolling Average") {
+  # model summary
+  # fitted_model
 
-    check_parameters(method, params)
-    wkfl_fit <- window_reg(
-      window_size = params$window_size
-    ) |>
-      set_engine("window_function", window_function = mean, na.rm = TRUE) |>
-      fit(value ~ date, data = data |> select(-id, -frequency))
+  # calibration
+  calibration_tbl <- fitted_model |>
+    modeltime::modeltime_table() |>
+    modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = method) |>
+    modeltime::modeltime_calibrate(new_data = test_tbl)
 
-  } else if (method == "ETS") {
+  # residuals
+  residuals_tbl <- calibration_tbl |>
+    modeltime::modeltime_residuals(new_data = train_tbl)
 
-    check_parameters(method, params)
-    wkfl_fit <- exp_smoothing(
-      error = params$error,
-      trend = params$trend,
-      season = params$season,
-      damping = params$damping,
-      smooth_level = params$smooth_level,
-      smooth_trend = params$smooth_trend,
-      smooth_seasonal = params$smooth_seasonal
-    ) |>
-      set_engine("ets") |>
-      fit(value ~ date, data = data |> select(-id, -frequency))
+  # evaluation
+  new_mset <- modeltime::default_forecast_accuracy_metric_set(me) # add ME to the default metric set
+  accuracy_tbl <- dplyr::bind_rows(
+    calibration_tbl |>
+      modeltime::modeltime_accuracy(new_data = train_tbl, metric_set = new_mset) |>
+      dplyr::mutate(.type = "Train"),
+    calibration_tbl |>
+      modeltime::modeltime_accuracy(new_data = test_tbl, metric_set = new_mset) |>
+      dplyr::mutate(.type = "Test")
+  )
 
-  } else if (method == "ARIMA") {
+  # test forecasting
+  test_forecast_tbl <- calibration_tbl |>
+    modeltime::modeltime_forecast(
+      actual_data = data, new_data = test_tbl,
+      conf_interval = 0.95, conf_method = "conformal_split"
+    )
 
-    check_parameters(method, params)
-    wkfl_fit <- arima_reg(
-      non_seasonal_ar = params$non_seasonal_ar,
-      non_seasonal_differences = params$non_seasonal_differences,
-      non_seasonal_ma = params$non_seasonal_ma,
-      seasonal_ar = params$seasonal_ar,
-      seasonal_differences = params$seasonal_differences,
-      seasonal_ma = params$seasonal_ma
-    ) |>
-      set_engine("arima") |>
-      fit(value ~ date, data = data |> select(-id, -frequency))
+  # refitting
+  refit_tbl <- calibration_tbl |>
+    modeltime::modeltime_refit(data = data)
 
-  } else {
-    stop(paste("Unknown method", method))
-  }
+  # out-of-sample forecasting
+  oos_forecast_tbl <- refit_tbl |>
+    modeltime::modeltime_forecast(
+      actual_data = data, new_data = future_tbl,
+      conf_interval = 0.95, conf_method = "conformal_split"
+    )
 
-  forecast_res <- wkfl_fit |>
-    modeltime_table() |>
-    modeltime_calibrate(new_data = data) |>
-    modeltime_forecast(actual_data = data, new_data = future_tbl)
-  model_res <- wkfl_fit |> extract_fit_engine() # model_res <- wkfl_fit |> parse_model(method)
-
-  res <- list("forecast" = forecast_res, "model" = model_res)
-  return(res)
-
-}
-
-# function to forecast using machine learning methods
-generate_ml_forecast <- function(
-  data, method, params,
-  n_future, n_assess, assess_type,
-  seed = 1992
-) {
-
-  # time_scale <- data |>
-  #   tk_index() |>
-  #   tk_get_timeseries_summary() |>
-  #   pull(scale)
-
-  future_tbl <- data |>
-    future_frame(.date_var = date, .length_out = n_future)
-
-  ml_rcp <- recipe(value ~ ., data = data |> select(-id, -frequency)) |>
-    step_timeseries_signature(date) |>
-    step_normalize(date_index.num) |>
-    step_zv(all_predictors()) |>
-    step_rm(matches("(iso)|(xts)|(lbl)")) |>
-    step_rm(date)
-
-  set.seed(seed)
-
-  if (method == "Linear Regression") {
-
-    # check_parameters(method, params)
-    model_spec <- linear_reg(mode = "regression") |>
-      set_engine(engine = "lm")
-    wkfl_fit <- workflow() |>
-      add_recipe(ml_rcp) |>
-      add_model(model_spec) |>
-      fit(data = data |> select(-id, -frequency))
-
-  } else if (method == "Elastic Net") {
-
-    check_parameters(method, params)
-    model_spec <- linear_reg(
-      mode = "regression",
-      penalty = params$penalty,
-      mixture = params$mixture
-    ) |>
-      set_engine(engine = "glmnet")
-    wkfl_fit <- workflow() |>
-      add_recipe(ml_rcp) |>
-      add_model(model_spec) |>
-      fit(data = data |> select(-id, -frequency))
-
-  } else {
-    stop(paste("Unknown method", method))
-  }
-
-  forecast_res <- wkfl_fit |>
-    modeltime_table() |>
-    modeltime_calibrate(new_data = data) |>
-    modeltime_forecast(actual_data = data, new_data = future_tbl)
-  model_res <- wkfl_fit |> extract_fit_engine() # model_res <- wkfl_fit |> parse_model(method)
-
-  res <- list("forecast" = forecast_res, "model" = model_res)
-  return(res)
-
-}
-
-# function to generate the forecasts
-generate_forecast <- function(
-    data, method, params,
-    n_future, n_assess, assess_type,
-    seed = 1992
-) {
-
-  method_type <- parse_method(method)
-
-  if (method_type == "ts") {
-    res <- generate_ts_forecast(data, method, params, n_future, n_assess, assess_type, seed)
-  } else if (method_type == "ml") {
-    res <- generate_ml_forecast(data, method, params, n_future, n_assess, assess_type, seed)
-  } else {
-    stop(paste("Unknown method", method))
-  }
-
+  res <- list(
+    "splits" = splits,
+    "fit" = fitted_model,
+    "residuals" = residuals_tbl,
+    "accuracy" = accuracy_tbl,
+    "test_forecast" = test_forecast_tbl,
+    "oos_forecast" = oos_forecast_tbl
+  )
   return(res)
 
 }
