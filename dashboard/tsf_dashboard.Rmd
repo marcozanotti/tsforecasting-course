@@ -14,18 +14,19 @@ runtime: shiny
 <!-- Link to [Page 3](#page-3) -->
 <!-- data-icon="fa-list" -->
 
+<!-- aggiungere la valutazione del modello con le metriche sul test e train -->
+<!-- aggiungere tabset per analisi residui modello forecasting -->
+<!-- modificare autput modello con parsing -->
 <!-- upload input per csv file con switch tra un dataset e l'altro e janitor -->
 <!-- documentazione in alto a destra -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
-<!-- aggiungere la valutazione del modello con le metriche sul test e train -->
-<!-- aggiungere tabset per analisi residui modello forecasting -->
-<!-- modificare autput modello con parsing -->
+<!-- pensare e aggiungere la sezione di ensemble -->
 <!-- aggiungere metodi di time series -->
 <!-- aggiungere metodi di ml -->
 <!-- pensare e aggiungere la sezione di feature engineering -->
-<!-- pensare e aggiungere la sezione di ensemble -->
+
 
 
 ```{r setup, include=FALSE, message=FALSE}
@@ -41,10 +42,7 @@ datasets <- c(
   "Air Passengers", # "Electricity Demand", 
   "Stock Price",   "Tobacco Prod", "EU Population", "People Traffic", "custom"
 )
-ts_methods <- getOption("tsf.dashboard.methods")$ts
-ml_methods <- getOption("tsf.dashboard.methods")$ml
-
-useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+methods <- getOption("tsf.dashboard.methods") |> unlist() |> unname()
 ```
 
 ```{r auth}
@@ -498,6 +496,7 @@ Input {.sidebar}
 ---------------------------------------------------------------------------
 
 ```{r}
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
 br()
 dropdownButton(
   numericInput(
@@ -523,14 +522,15 @@ selectInput(
 )
 
 actionButton(inputId = "apply_forecast", label = "Forecast!", icon = icon("play"))
-actionButton(inputId = "ts_reset", label = "Reset", icon = icon("sync"))
+actionButton(inputId = "tsf_reset", label = "Reset", icon = icon("sync"))
 observeEvent(
-  eventExpr = input$ts_reset, 
+  eventExpr = input$tsf_reset, 
   handlerExpr = {
     updateNumericInput(session = session, inputId = "n_future", value = 12)
     updateNumericInput(session = session, inputId = "n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "assess_type", selected = "Rolling")
-    updateSelectInput(session = session, inputId = "method", selected = ts_methods[1])
+    updateSelectInput(session = session, inputId = "method", selected = methods[1])
+    updateNumericInput(session = session, inputId = "window_size", value = 12)
     shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_forecast")})
   }
 )
@@ -607,7 +607,8 @@ forecast_results <- eventReactive(
     data_cleaned() |>
       generate_forecast(
         method = input$method, params = input, 
-        n_future = input$n_future, seed = 1992
+        n_future = input$n_future, n_assess = input$n_assess, 
+        assess_type = input$assess_type, seed = 1992
       )
   }
 )

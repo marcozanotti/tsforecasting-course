@@ -5,10 +5,11 @@ generate_ts_forecast <- function(
   seed = 1992
 ) {
 
+  set.seed(seed)
+
+
   future_tbl <- data |>
     future_frame(.date_var = date, .length_out = n_future)
-
-  set.seed(seed)
 
   if (method == "Rolling Average") {
 
@@ -127,14 +128,18 @@ generate_ml_forecast <- function(
 }
 
 # function to generate the forecasts
-generate_forecast <- function(data, method, params, n_future, seed = 1992) {
+generate_forecast <- function(
+    data, method, params,
+    n_future, n_assess, assess_type,
+    seed = 1992
+) {
 
   method_type <- parse_method(method)
 
   if (method_type == "ts") {
-    res <- generate_ts_forecast(data, method, params, n_future, seed)
+    res <- generate_ts_forecast(data, method, params, n_future, n_assess, assess_type, seed)
   } else if (method_type == "ml") {
-    res <- generate_ml_forecast(data, method, params, n_future, seed)
+    res <- generate_ml_forecast(data, method, params, n_future, n_assess, assess_type, seed)
   } else {
     stop(paste("Unknown method", method))
   }
