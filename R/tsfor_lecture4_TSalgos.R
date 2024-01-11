@@ -365,7 +365,7 @@ model_fit_stlm_arima_xregs <- seasonal_reg(
   set_engine("stlm_arima") |>
   fit(optins_trans ~ optin_time + event, data = training(splits))
 
-# Auto-STLM with ARIMA (simply STL with ARIMA on the ts frequency seasonlity)
+# Auto-STLM with ARIMA (simply STL with ARIMA on the ts frequency seasonality)
 model_fit_auto_stlm_arima <- seasonal_reg() |>
   set_engine("stlm_arima") |>
   fit(optins_trans ~ optin_time, data = training(splits))

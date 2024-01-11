@@ -17,19 +17,20 @@ runtime: shiny
 <!-- Link to [Page 3](#page-3) -->
 <!-- data-icon="fa-list" -->
 
-<!-- upload input per csv file con switch tra un dataset e l'altro e janitor -->
-<!-- documentazione in alto a destra -->
+<!-- modeltime issue with linear regression -->
+<!-- reset dataset uploaded -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
 <!-- pensare e aggiungere la sezione di optimize tuning -->
 <!-- pensare e aggiungere la sezione di ensemble-combine -->
-<!-- pensare e aggiungere la sezione di compare-run competition -->
-<!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
 <!-- aggiungere metodi di time series -->
 <!-- aggiungere metodi di ml -->
+<!-- pensare e aggiungere la sezione di compare-run competition -->
+<!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
 <!-- pensare e aggiungere la sezione di feature engineering -->
 <!-- modificare autput modello con parsing -->
+<!-- documentazione in alto a destra -->
 
 ```{r setup, include=FALSE, message=FALSE}
 source("R/utils.R")
@@ -66,7 +67,8 @@ ens_methods <- methods$ens
 methods <- c(ts_methods, ml_methods)
 
 methods_params <- getOption("tsf.dashboard.methods_params")
-methods_params_cl <- methods_params |> map( ~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
+methods_params_cl <- methods_params |> 
+  map(~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
 ```
 
 
@@ -537,9 +539,10 @@ dropdownButton(
   tooltip = tooltipOptions(title = "Click to see inputs!")
 )
 
-selectInput(
-  inputId = "method", label = h3("Forecast Algorithm"), 
-  choices = methods, selected = methods[1]
+pickerInput(
+  inputId = "method", label = h3("Forecast Algorithm"), multiple = FALSE,
+  choices = list(`Time Series` = ts_methods, `Machine Learning` = ml_methods), 
+  selected = ts_methods[1]
 )
 
 actionButton(inputId = "apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -550,7 +553,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "n_future", value = 12)
     updateNumericInput(session = session, inputId = "n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "assess_type", selected = "Rolling")
-    updateSelectInput(session = session, inputId = "method", selected = methods[1])
+    updatePickerInput(session = session, inputId = "method", selected = ts_methods[1])
     updateNumericInput(session = session, inputId = "window_size", value = 12)
     shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_forecast")})
   }
@@ -558,6 +561,20 @@ observeEvent(
 
 br() # break rule
 br() # break rule
+
+# Naive
+conditionalPanel(
+  condition = "input.method == 'Naive'",
+  h5("Algorithm hyperparameters: "),
+  h6("No hyperparameters for this algorithm!")
+)
+
+# Seasonal Naive
+conditionalPanel(
+  condition = "input.method == 'Seasonal Naive'",
+  h5("Algorithm hyperparameters: "),
+  h6("No hyperparameters for this algorithm!")
+)
 
 # Rolling Average
 conditionalPanel(
@@ -570,25 +587,80 @@ conditionalPanel(
 conditionalPanel(
   condition = "input.method == 'ETS'",
   h5("Algorithm hyperparameters: "),
-  selectInput(inputId = "error", label = "Error", choices = c("auto", "additive", "multiplicative"), selected = "auto"),
-  selectInput(inputId = "trend", label = "Trend", choices = c("auto", "additive", "multiplicative", "none"), selected = "auto"),
-  selectInput(inputId = "season", label = "Seasonality", choices = c("auto", "additive", "multiplicative", "none"), selected = "auto"),
-  selectInput(inputId = "damping", label = "Damped Trend", choices = c("auto", "damped", "none"), selected = "auto"),
+  awesomeCheckbox(inputId = "auto_ets", label = "Automatic estimation?", value = FALSE),
+  selectInput(inputId = "error", label = "Error", choices = c("additive", "multiplicative"), selected = "additive"),
+  selectInput(inputId = "trend", label = "Trend", choices = c("additive", "multiplicative", "none"), selected = "none"),
+  selectInput(inputId = "season", label = "Seasonality", choices = c("additive", "multiplicative", "none"), selected = "none"),
+  selectInput(inputId = "damping", label = "Damped Trend", choices = c("damped", "none"), selected = "none"),
   numericInput(inputId = "smooth_level", label = "Alpha", value = 0.1, min = 0, max = 1),
   numericInput(inputId = "smooth_trend", label = "Beta", value = 0.1, min = 0, max = 1),
   numericInput(inputId = "smooth_season", label = "Gamma", value = 0.1, min = 0, max = 1)
 )
 
-# ARIMA
+# Theta
 conditionalPanel(
-  condition = "input.method == 'ARIMA'",
+  condition = "input.method == 'Theta'",
   h5("Algorithm hyperparameters: "),
+  h6("No hyperparameters for this algorithm!"),
+  h6("This algorithm is fully automatic!")
+)
+
+# SARIMA
+conditionalPanel(
+  condition = "input.method == 'SARIMA'",
+  h5("Algorithm hyperparameters: "),
+  awesomeCheckbox(inputId = "auto_arima", label = "Automatic estimation?", value = FALSE),
   sliderInput(inputId = "non_seasonal_ar", label = "p", value = 1, min = 0, max = 5, step = 1),
   sliderInput(inputId = "non_seasonal_differences", label = "d", value = 1, min = 0, max = 2, step = 1),
   sliderInput(inputId = "non_seasonal_ma", label = "q", value = 1, min = 0, max = 5, step = 1),
   sliderInput(inputId = "seasonal_ar", label = "P", value = 0, min = 0, max = 5, step = 1),
   sliderInput(inputId = "seasonal_differences", label = "D", value = 0, min = 0, max = 2, step = 1),
   sliderInput(inputId = "seasonal_ma", label = "Q", value = 0, min = 0, max = 5, step = 1)
+)
+
+# TBATS
+conditionalPanel(
+  condition = "input.method == 'TBATS'",
+  h5("Algorithm hyperparameters: "),
+  awesomeCheckbox(inputId = "auto_tbats", label = "Automatic estimation?", value = FALSE),
+  numericInput(inputId = "tbats_seasonal_period_1", label = "Seasonal Period 1", value = 12, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "tbats_seasonal_period_2", label = "Seasonal Period 2", value = 0, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "tbats_seasonal_period_3", label = "Seasonal Period 3", value = 0, min = 0, max = Inf, step = 1)
+)
+
+# STLM
+conditionalPanel(
+  condition = "input.method == 'STLM'",
+  h5("Algorithm hyperparameters: "),
+  awesomeCheckbox(inputId = "auto_stlm", label = "Automatic estimation?", value = FALSE),
+  prettyRadioButtons(inputId = "trend_model", label = "Trend Model", choices = c("ETS", "ARIMA"), inline = TRUE, selected = "ETS"),
+  numericInput(inputId = "stlm_seasonal_period_1", label = "Seasonal Period 1", value = 12, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "stlm_seasonal_period_2", label = "Seasonal Period 2", value = 0, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "stlm_seasonal_period_3", label = "Seasonal Period 3", value = 0, min = 0, max = Inf, step = 1)
+)
+
+# Prophet
+conditionalPanel(
+  condition = "input.method == 'Prophet'",
+  h5("Algorithm hyperparameters: "),
+  awesomeCheckbox(inputId = "auto_prophet", label = "Automatic estimation?", value = FALSE),
+  prettyRadioButtons(inputId = "growth", label = "Growth", choices = c("linear", "logistic"), inline = TRUE, selected = "linear"),
+  conditionalPanel(
+    condition = "input.growth == 'logistic'",
+    numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = 0, min = -Inf, max = Inf, step = 1),
+    numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = 0, min = -Inf, max = Inf, step = 1)
+  ),
+  # numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = 0, min = -Inf, max = Inf, step = 1),
+  # numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = 0, min = -Inf, max = Inf, step = 1),
+  numericInput(inputId = "changepoint_num", label = "Changepoints (num)", value = 25, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "changepoint_range", label = "Changepoints (range)", value = 0.8, min = 0, max = 1),
+  prettyRadioButtons(inputId = "season", label = "Seasonality", choices = c("additive", "multiplicative"), inline = TRUE, selected = "additive"),
+  awesomeCheckbox(inputId = "seasonality_yearly", label = "Yearly Seasonality?", value = TRUE),
+  awesomeCheckbox(inputId = "seasonality_weekly", label = "Weekly Seasonality?", value = FALSE),
+  awesomeCheckbox(inputId = "seasonality_daily", label = "Daily Seasonality?", value = FALSE),
+  numericInput(inputId = "prior_scale_changepoints", label = "Changepoint Flexibility", value = 0.05, min = 0, max = 1),
+  numericInput(inputId = "prior_scale_seasonality", label = "Seasonality Stength", value = 10, min = 0, max = Inf),
+  numericInput(inputId = "prior_scale_holidays", label = "Holidays Strength", value = 10, min = 0, max = Inf)
 )
 
 # Linear Regression
@@ -604,6 +676,19 @@ conditionalPanel(
   h5("Algorithm hyperparameters: "),
   numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
   numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
+)
+
+# XGBoost
+conditionalPanel(
+  condition = "input.method == 'XGBoost'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "mtry", label = "Random Predictors", value = 5, min = 0, max = Inf, step = 1),
+  numericInput(inputId = "trees", label = "Trees", value = 15, min = 1, max = Inf, step = 1),
+  numericInput(inputId = "min_n", label = "Min Node Size", value = 1, min = 1, max = Inf, step = 1),
+  numericInput(inputId = "tree_depth", label = "Tree Depth", value = 6, min = 1, max = Inf),
+  numericInput(inputId = "learn_rate", label = "Learning Rate", value = 0.3, min = 0, max = 1),
+  numericInput(inputId = "loss_reduction", label = "Min Loss Reduction", value = 0, min = 0, max = 1),
+  numericInput(inputId = "sample_size", label = "Sample Size", value = 1, min = 0, max = 1)
 )
 ```
 
@@ -852,9 +937,10 @@ dropdownButton(
   tooltip = tooltipOptions(title = "Click to see inputs!")
 )
 
-selectInput(
-  inputId = "tune_method", label = h3("Forecast Algorithm"), 
-  choices = ml_methods, selected = ml_methods[2]
+pickerInput(
+  inputId = "tune_method", label = h3("Forecast Algorithm"), multiple = FALSE,
+  choices = list(`Time Series` = ts_methods, `Machine Learning` = ml_methods), 
+  selected = ml_methods[2]
 )
 
 actionButton(inputId = "tune_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -926,9 +1012,9 @@ dropdownButton(
 )
 
 pickerInput(
-  inputId = "comp_method", label = h3("Forecast Algorithms"), 
-  choices = methods, selected = methods[c(2, 3)], multiple = TRUE,
-  options =  list("actions-box" = TRUE)
+  inputId = "comp_method", label = h3("Forecast Algorithm"), multiple = TRUE,
+  choices = list(`Time Series` = ts_methods, `Machine Learning` = ml_methods), 
+  selected = ts_methods[c(4, 6)], options = list("actions-box" = TRUE)
 )
 
 br()
@@ -943,7 +1029,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "comp_n_future", value = 12)
     updateNumericInput(session = session, inputId = "comp_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "comp_assess_type", selected = "Rolling")
-    updatePickerInput(session = session, inputId = "comp_method", selected = methods[c(2, 3)])
+    updatePickerInput(session = session, inputId = "comp_method", selected = ts_methods[c(4, 6)])
     updateMaterialSwitch(session = session, inputId = "comp_tune", value = FALSE)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
@@ -988,7 +1074,8 @@ dropdownButton(
 
 pickerInput(
   inputId = "ens_method", label = h3("Forecast Algorithms"), 
-  choices = methods, selected = methods[c(2, 3)], multiple = TRUE,
+  choices = list(`Time Series` = ts_methods, `Machine Learning` = ml_methods), 
+  selected = ts_methods[c(4, 6)], multiple = TRUE,
   options =  list(
     "actions-box" = FALSE,
     "max-options" = 5,
@@ -1014,7 +1101,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "ens_n_future", value = 12)
     updateNumericInput(session = session, inputId = "ens_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "ens_assess_type", selected = "Rolling")
-    updatePickerInput(session = session, inputId = "ens_method", selected = methods[c(2, 3)])
+    updatePickerInput(session = session, inputId = "ens_method", selected = ts_methods[c(4, 6)])
     updatePickerInput(session = session, inputId = "ens_type", selected = ens_methods[1])
     updateMaterialSwitch(session = session, inputId = "ens_tune", value = FALSE)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
@@ -1058,9 +1145,10 @@ dropdownButton(
   tooltip = tooltipOptions(title = "Click to see inputs!")
 )
 
-selectInput(
-  inputId = "scn_method", label = h3("Forecast Algorithm"), 
-  choices = methods, selected = methods[2]
+pickerInput(
+  inputId = "scn_method", label = h3("Forecast Algorithms"), multiple = FALSE,
+  choices = list(`Time Series` = ts_methods, `Machine Learning` = ml_methods), 
+  selected = ts_methods[4]
 )
 
 actionButton(inputId = "scn_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -1071,7 +1159,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "scn_n_future", value = 12)
     updateNumericInput(session = session, inputId = "scn_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "scn_assess_type", selected = "Rolling")
-    updateSelectInput(session = session, inputId = "scn_method", selected = ml_methods[2])
+    updateSelectInput(session = session, inputId = "scn_method", selected = ts_methods[4])
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )

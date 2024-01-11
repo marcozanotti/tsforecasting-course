@@ -5,19 +5,34 @@ set_options <- function() {
   op.tsf.dashboard <- list(
     # Global Paths
     tsf.dashboard.methods = list(
-      "ts" = c("Rolling Average", "ETS", "ARIMA"),
-      "ml" = c("Linear Regression", "Elastic Net"),
+      "ts" = c("Naive", "Seasonal Naive", "Rolling Average", "ETS", "Theta", "SARIMA", "TBATS", "STLM", "Prophet"),
+      "ml" = c("Linear Regression", "Elastic Net", "XGBoost"),
       "ens" = c("Average", "Weighted Average", "Median", "Linear Regression")
     ),
     tsf.dashboard.methods_params = list(
+      "Naive" = NULL,
+      "Seasonal Naive" = NULL,
       "Rolling Average" = c("window_size"),
-      "ETS" = c("error", "trend", "season", "damping", "smooth_level", "smooth_trend", "smooth_season"),
-      "ARIMA" = c(
-        "non_seasonal_ar", "non_seasonal_differences", "non_seasonal_ma",
+      "ETS" = c(
+        "auto_ets", "error", "trend", "season", "damping",
+        "smooth_level", "smooth_trend", "smooth_season"
+      ),
+      "Theta" = NULL,
+      "SARIMA" = c(
+        "auto_arima", "non_seasonal_ar", "non_seasonal_differences", "non_seasonal_ma",
         "seasonal_ar", "seasonal_differences", "seasonal_ma"
       ),
+      "TBATS" = c("auto_tbats", "tbats_seasonal_period_1", "tbats_seasonal_period_2", "tbats_seasonal_period_3"),
+      "STLM" = c("auto_stlm", "trend_model", "stlm_seasonal_period_1", "stlm_seasonal_period_2", "stlm_seasonal_period_3"),
+      "Prophet" = c(
+        "auto_prophet", "growth", "logistic_cap", "logistic_floor",
+        "changepoint_num", "changepoint_range", "season",
+        "seasonality_yearly", "seasonality_weekly", "seasonality_daily",
+        "prior_scale_changepoints", "prior_scale_seasonality", "prior_scale_holidays"
+      ),
       "Linear Regression" = NULL,
-      "Elastic Net" = c("penalty", "mixture")
+      "Elastic Net" = c("penalty", "mixture"),
+      "XGBoost" = c("mtry", "trees", "min_n", "tree_depth", "learn_rate", "loss_reduction", "sample_size")
     ),
     tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),
     tsf.dashboard.test_transfs = c("test_log", "test_diff", "test_sdiff")
