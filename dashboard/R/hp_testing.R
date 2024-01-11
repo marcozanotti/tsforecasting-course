@@ -20,6 +20,7 @@ compute_hptests <- function(data, digits = 4) {
   # urca::ur.df() type = c("none", "drift", "trend"), lags = 1
 
   x <- data$value
+  x <- x[which(!is.na(x))]
   k <- trunc((length(x) - 1) ^ (1 / 3))
 
   res <- tibble::tibble(

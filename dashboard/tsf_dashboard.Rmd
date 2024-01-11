@@ -31,22 +31,33 @@ runtime: shiny
 <!-- pensare e aggiungere la sezione di feature engineering -->
 <!-- modificare autput modello con parsing -->
 
-
-
 ```{r setup, include=FALSE, message=FALSE}
 source("R/utils.R")
+source("R/utils-packages.R")
 source("R/get_data.R")
 source("R/transform_data.R")
 source("R/hp_testing.R")
 source("R/metrics.R")
 source("R/fit_model.R")
 source("R/generate_forecast.R")
-source("R/packages.R")
+
+# Packages
+pkgs <- c(
+  "tidyverse", "tsibbledata", "janitor", "skimr", "vroom",
+  "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
+  "randomForest", "ranger", "xgboost", "treesnip", "lightgbm", "catboost",
+  "Cubist", "rules",
+  "tidymodels", "modeltime",
+  "plotly", "DT", "timetk",
+  "rmarkdown", "flexdashboard",
+  "shiny", "shinyWidgets", "shinyjs", "shinymanager"
+)
+install_and_load(pkgs)
 
 set_options()
 datasets <- c(
-  "Air Passengers", # "Electricity Demand", 
-  "Stock Price",   "Tobacco Prod", "EU Population", "People Traffic", "custom"
+  "Air Passengers", "EU Population", # "Electricity Demand", 
+  "People Traffic", "Stock Price", "Tobacco Prod", ""
 )
 methods <- getOption("tsf.dashboard.methods")
 ts_methods <- methods$ts
@@ -56,16 +67,6 @@ methods <- c(ts_methods, ml_methods)
 
 methods_params <- getOption("tsf.dashboard.methods_params")
 methods_params_cl <- methods_params |> map( ~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
-```
-
-```{r auth}
-# credentials <- read.csv("auth.txt")
-# shinymanager::auth_ui(id = "auth")
-# auth <- shiny::callModule(
-#   module = shinymanager::auth_server,
-#   id = "auth",
-#   check_credentials = shinymanager::check_credentials(credentials)
-# )
 ```
 
 
@@ -82,151 +83,91 @@ selectInput(
   choices = datasets, selected = datasets[1], multiple = FALSE
 )
 
-conditionalPanel(
-  condition = "input.dataset == 'custom'",
-  h4("Upload your dataset: "),
-  "The dataset must be a .csv file containing columns 'date', 'id', 'frequency' and 'value'.", 
-  fileInput(
-    inputId = "upload_custom", label = "", accept = c(".csv"),
-    multiple = FALSE, buttonLabel = "Browse...", placeholder = "No file"
-  )
+h4("Upload your dataset: ")
+h6("The dataset must be a .csv file containing columns 'date', 'id', 'frequency' and 'value'.")
+fileInput(
+  inputId = "upload_custom", label = NULL, accept = c(".csv"), multiple = FALSE,
+  buttonLabel = "Browse...", placeholder = "No file"
 )
+actionButton(inputId = "data_import", label = "Import", icon = icon("upload"))
+actionButton(inputId = "data_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$data_reset, 
+  handlerExpr = {
+    reset("upload_custom")
+    updateSelectInput(session = session, inputId = "dataset", selected = datasets[1])
+})
 
 br()
+br()
 
-prettyRadioButtons(inputId = "table_type", label = NULL, choices = c("preview", "str", "summary"))
+prettyRadioButtons(
+  inputId = "table_type", label = h5("Show:"), 
+  choices = c("Preview", "Structure", "Summary")
+)
 ```
 
 ```{r}
 data_selected <- reactive({
-  if (input$dataset == "custom") {
+
+  if (input$data_import & !input$data_reset) {
     req(input$upload_custom)
-    # ext <- tools::file_ext(input$upload$datapath)
-    # validate(need(ext == "csv", "Please upload a csv file"))
-    read_csv(input$upload$datapath, na = c("", "NA"), show_col_types = FALSE) |> 
-      janitor::clean_names()
+    ext <- tools::file_ext(input$upload_custom$datapath)
+    validate(need(ext == "csv", "Please upload a csv file"))
+    updateSelectInput(session = session, inputId = "dataset", selected = "") # important to activate date_range input
+    get_data("custom", path = input$upload_custom$datapath)
   } else {
-    # data_selected <-
     get_data(input$dataset)
   }
+  
 })
 
 ts_freq <- reactive({
-  # ts_freq <-
   data_selected()$frequency |> unique() |> parse_frequency()
 })
 ```
 
+
 Row 1 {data-height=100}
 ---------------------------------------------------------------------------
 
-### Dataset Preview
+### 
 
 ```{r}
-# data_table <- reactive({
-#   if (input$table_type == "preview") { data_selected() }
-# })
-# output$data_table <- renderDT({ data_table() })
-# 
-# data_str <- reactive({
-#   if (input$table_type == "str") { str(data_selected()) }
-# })
-# output$data_str <- renderPrint({ data_str() })
-# 
-# data_summ <- reactive({
-#   if (input$table_type == "summary") { summary(data_selected()) }
-# })
-# output$data_summ <- renderPrint({ data_summ() })
-# 
-# observe({
-#   req(input$table_type)
-#   switch(
-#     input$table_type,
-#     data_table = { renderUI({ DTOutput(outputId = "data_table") }) },
-#     data_str = { renderUI({ verbatimTextOutput(outputId = "data_str") }) },
-#     data_summ = { renderUI({ verbatimTextOutput(outputId = "data_summ") }) }
-#   )
-# })
-  
-# https://stackoverflow.com/questions/59069454/r-shiny-switch-between-table-and-plot-in-renderui
-# 
-# output$data_table <- renderDT({ data_selected() })
-# output$data_str <- renderPrint({ str(data_selected()) })
-# output$data_summ <- renderPrint({ summary(data_selected()) })
-# 
-# reactive({
-#   req(input$table_type)
-#   if (input$table_type == "preview") {
-#     DTOutput(outputId = "data_table")
-#   } else if (input$table_type == "str") {
-#     verbatimTextOutput(outputId = "data_str")
-#   } else if (input$table_type == "summary") {
-#     verbatimTextOutput(outputId = "data_summ")
-#   }
-# })
+output$data_table <- renderDT({
+  data_selected() |>
+      datatable(
+        options = list(
+          ordering = TRUE,
+          pageLength = 20,
+          lengthChange = TRUE,
+          # FALSE
+          searching = TRUE,
+          # FALSE
+          info = FALSE,
+          paging = TRUE,
+          scrollY = 560,
+          # 250
+          scrollCollapse = TRUE
+        )
+      )
+})
+output$data_str <- renderPrint({ str(data_selected()) })
+output$data_summ <- renderPrint({ skim(data_selected()) })
 
-# observe({
-#   req(input$table_type)
-#   switch(
-#     input$table_type,
-#     preview = DTOutput(outputId = "data_table"),
-#     str = verbatimTextOutput(outputId = "data_str"),
-#     summ = verbatimTextOutput(outputId = "data_summ")
-#   )
-# })
+conditionalPanel(
+  condition = "input.table_type == 'Preview'",
+  DTOutput(outputId = "data_table")
+)
+conditionalPanel(
+  condition = "input.table_type == 'Structure'",
+  verbatimTextOutput(outputId = "data_str")
+)
+conditionalPanel(
+  condition = "input.table_type == 'Summary'",
+  verbatimTextOutput(outputId = "data_summ")
+)
 ```
-
-<!-- ```{r} -->
-<!-- output$data_table <- renderDT({ -->
-<!--   data_selected() |> -->
-<!--       datatable( -->
-<!--         options = list( -->
-<!--           ordering = TRUE, -->
-<!--           pageLength = 20, -->
-<!--           lengthChange = TRUE, -->
-<!--           # FALSE -->
-<!--           searching = TRUE, -->
-<!--           # FALSE -->
-<!--           info = FALSE, -->
-<!--           paging = TRUE, -->
-<!--           scrollY = 550, -->
-<!--           # 250 -->
-<!--           scrollCollapse = TRUE -->
-<!--         ) -->
-<!--       ) -->
-<!-- }) -->
-<!-- DTOutput(outputId = "data_table") -->
-<!-- ``` -->
-
-### Dataset Structure
-
-<!-- ```{r} -->
-<!-- output$data_str <- renderPrint({ str(data_selected()) }) -->
-<!-- verbatimTextOutput(outputId = "data_str") -->
-<!-- ``` -->
-
-### Dataset Summary
-
-<!-- ```{r} -->
-<!-- output$data_summ <- renderPrint({ summary(data_selected()) }) -->
-<!-- verbatimTextOutput(outputId = "data_summ") -->
-<!-- ``` -->
-
-<!-- Row 2 {data-height=500} -->
-<!-- --------------------------------------------------------------------------- -->
-
-<!-- ### {.no-padding} -->
-
-<!-- ```{r} -->
-<!-- output$ts_plot <- renderPlotly({ -->
-<!--   data_selected() |> -->
-<!--     timetk::plot_time_series( -->
-<!--       .date_var = date, .value = value,  -->
-<!--       .smooth = FALSE, .interactive = TRUE -->
-<!--     ) -->
-<!-- }) -->
-<!-- plotlyOutput(outputId = "ts_plot") -->
-<!-- ``` -->
 
 
 
@@ -240,14 +181,15 @@ Input {.sidebar}
 h3("Visualize")
 
 dateRangeInput(
-  inputId = "date_range", label = NULL, 
+  inputId = "date_range", label = NULL,
   start = as.Date("1940-01-01"), end = as.Date("2023-12-31")
 )
 observeEvent(
-  eventExpr = input$dataset, 
+  eventExpr = input$dataset,
   handlerExpr = {
+    req(data_selected())
     updateDateRangeInput(
-      session = session, inputId = "date_range", 
+      session = session, inputId = "date_range",
       start = min(data_selected()$date), end = max(data_selected()$date)
     )
   }
@@ -304,19 +246,6 @@ observeEvent(
     updateMaterialSwitch(session = session, inputId = "sdiff", value = FALSE)
   }
 )
-
-# input <- list(
-#   dataset = datasets[2],
-#   date_range = c(as.Date("1940-01-01"), as.Date("2023-12-31")),
-#   smooth_line = TRUE,
-#   acf_lag = 48,
-#   log = TRUE,
-#   boxcox = FALSE,
-#   norm = FALSE,
-#   stand = FALSE,
-#   diff = TRUE,
-#   sdiff = FALSE
-# )
 ```
 
 ```{r}
@@ -327,6 +256,7 @@ data_transformed <- reactive({
     filter(between(date, input$date_range[1], input$date_range[2]))
 })
 ```
+
 
 Row 1 {data-height=400}
 ---------------------------------------------------------------------------

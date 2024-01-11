@@ -1,7 +1,7 @@
 # function to get the data
-get_data <- function(dataset_name) { # Monthly
+get_data <- function(dataset_name, path = NULL) {
 
-  if (dataset_name == "Air Passengers") {
+  if (dataset_name == "Air Passengers") { # Monthly
     data <- tibble(
       "date" = seq.Date(as.Date("1949-01-01"), as.Date("1960-12-01"), by = "month"),
       "id" = "Air Passengers",
@@ -43,6 +43,9 @@ get_data <- function(dataset_name) { # Monthly
       "frequency" = "week",
       "value" = tsibbledata::ansett |> group_by(Week) |> summarise(value = sum(Passengers)) |> pull(value)
     )
+  } else if (dataset_name == "custom") {
+    data <- vroom::vroom(path, delim = ",", na = c("", "NA"), show_col_types = FALSE) |>
+      janitor::clean_names()
   } else {
     stop(paste("Unknown dataset", dataset_name))
   }
