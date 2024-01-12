@@ -17,15 +17,15 @@ runtime: shiny
 <!-- Link to [Page 3](#page-3) -->
 <!-- data-icon="fa-list" -->
 
-<!-- modeltime issue with linear regression -->
+<!-- modeltime issue with linear regression & cubist in refitting and oosf -->
 <!-- reset dataset uploaded -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
 
+<!-- aggiungere metodi di ml -->
+<!-- pensare e aggiungere il save del modello sia in Test & Evaluate sia in Optimize (da usare in Compare/Combine al posto dei default) -->
 <!-- pensare e aggiungere la sezione di optimize tuning -->
 <!-- pensare e aggiungere la sezione di ensemble-combine -->
-<!-- aggiungere metodi di time series -->
-<!-- aggiungere metodi di ml -->
 <!-- pensare e aggiungere la sezione di compare-run competition -->
 <!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
 <!-- pensare e aggiungere la sezione di feature engineering -->
@@ -580,21 +580,21 @@ conditionalPanel(
 conditionalPanel(
   condition = "input.method == 'Rolling Average'",
   h5("Algorithm hyperparameters: "),
-  numericInput(inputId = "window_size", label = "Window Size", value = 12, min = 1)
+  numericInput(inputId = "window_size", label = "Window Size", value = get_default("window_size"), min = 1)
 )
 
 # ETS
 conditionalPanel(
   condition = "input.method == 'ETS'",
   h5("Algorithm hyperparameters: "),
-  awesomeCheckbox(inputId = "auto_ets", label = "Automatic estimation?", value = FALSE),
-  selectInput(inputId = "error", label = "Error", choices = c("additive", "multiplicative"), selected = "additive"),
-  selectInput(inputId = "trend", label = "Trend", choices = c("additive", "multiplicative", "none"), selected = "none"),
-  selectInput(inputId = "season", label = "Seasonality", choices = c("additive", "multiplicative", "none"), selected = "none"),
-  selectInput(inputId = "damping", label = "Damped Trend", choices = c("damped", "none"), selected = "none"),
-  numericInput(inputId = "smooth_level", label = "Alpha", value = 0.1, min = 0, max = 1),
-  numericInput(inputId = "smooth_trend", label = "Beta", value = 0.1, min = 0, max = 1),
-  numericInput(inputId = "smooth_season", label = "Gamma", value = 0.1, min = 0, max = 1)
+  awesomeCheckbox(inputId = "auto_ets", label = "Automatic estimation?", value = get_default("auto_ets")),
+  selectInput(inputId = "error", label = "Error", choices = c("additive", "multiplicative"), selected = get_default("error")),
+  selectInput(inputId = "trend", label = "Trend", choices = c("additive", "multiplicative", "none"), selected = get_default("trend")),
+  selectInput(inputId = "season", label = "Seasonality", choices = c("additive", "multiplicative", "none"), selected = get_default("season")),
+  selectInput(inputId = "damping", label = "Damped Trend", choices = c("damped", "none"), selected = get_default("damping")),
+  numericInput(inputId = "smooth_level", label = "Alpha", value = get_default("smooth_level"), min = 0, max = 1),
+  numericInput(inputId = "smooth_trend", label = "Beta", value = get_default("smooth_trend"), min = 0, max = 1),
+  numericInput(inputId = "smooth_season", label = "Gamma", value = get_default("smooth_season"), min = 0, max = 1)
 )
 
 # Theta
@@ -609,58 +609,56 @@ conditionalPanel(
 conditionalPanel(
   condition = "input.method == 'SARIMA'",
   h5("Algorithm hyperparameters: "),
-  awesomeCheckbox(inputId = "auto_arima", label = "Automatic estimation?", value = FALSE),
-  sliderInput(inputId = "non_seasonal_ar", label = "p", value = 1, min = 0, max = 5, step = 1),
-  sliderInput(inputId = "non_seasonal_differences", label = "d", value = 1, min = 0, max = 2, step = 1),
-  sliderInput(inputId = "non_seasonal_ma", label = "q", value = 1, min = 0, max = 5, step = 1),
-  sliderInput(inputId = "seasonal_ar", label = "P", value = 0, min = 0, max = 5, step = 1),
-  sliderInput(inputId = "seasonal_differences", label = "D", value = 0, min = 0, max = 2, step = 1),
-  sliderInput(inputId = "seasonal_ma", label = "Q", value = 0, min = 0, max = 5, step = 1)
+  awesomeCheckbox(inputId = "auto_arima", label = "Automatic estimation?", value = get_default("auto_arima")),
+  sliderInput(inputId = "non_seasonal_ar", label = "p", value = get_default("non_seasonal_ar"), min = 0, max = 5, step = 1),
+  sliderInput(inputId = "non_seasonal_differences", label = "d", value = get_default("non_seasonal_differences"), min = 0, max = 2, step = 1),
+  sliderInput(inputId = "non_seasonal_ma", label = "q", value = get_default("non_seasonal_ma"), min = 0, max = 5, step = 1),
+  sliderInput(inputId = "seasonal_ar", label = "P", value = get_default("seasonal_ar"), min = 0, max = 5, step = 1),
+  sliderInput(inputId = "seasonal_differences", label = "D", value = get_default("seasonal_differences"), min = 0, max = 2, step = 1),
+  sliderInput(inputId = "seasonal_ma", label = "Q", value = get_default("seasonal_ma"), min = 0, max = 5, step = 1)
 )
 
 # TBATS
 conditionalPanel(
   condition = "input.method == 'TBATS'",
   h5("Algorithm hyperparameters: "),
-  awesomeCheckbox(inputId = "auto_tbats", label = "Automatic estimation?", value = FALSE),
-  numericInput(inputId = "tbats_seasonal_period_1", label = "Seasonal Period 1", value = 12, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "tbats_seasonal_period_2", label = "Seasonal Period 2", value = 0, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "tbats_seasonal_period_3", label = "Seasonal Period 3", value = 0, min = 0, max = Inf, step = 1)
+  awesomeCheckbox(inputId = "auto_tbats", label = "Automatic estimation?", value = get_default("auto_tbats")),
+  numericInput(inputId = "tbats_seasonal_period_1", label = "Seasonal Period 1", value = get_default("tbats_seasonal_period_1"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "tbats_seasonal_period_2", label = "Seasonal Period 2", value = get_default("tbats_seasonal_period_2"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "tbats_seasonal_period_3", label = "Seasonal Period 3", value = get_default("tbats_seasonal_period_3"), min = 0, max = Inf, step = 1)
 )
 
 # STLM
 conditionalPanel(
   condition = "input.method == 'STLM'",
   h5("Algorithm hyperparameters: "),
-  awesomeCheckbox(inputId = "auto_stlm", label = "Automatic estimation?", value = FALSE),
-  prettyRadioButtons(inputId = "trend_model", label = "Trend Model", choices = c("ETS", "ARIMA"), inline = TRUE, selected = "ETS"),
-  numericInput(inputId = "stlm_seasonal_period_1", label = "Seasonal Period 1", value = 12, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "stlm_seasonal_period_2", label = "Seasonal Period 2", value = 0, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "stlm_seasonal_period_3", label = "Seasonal Period 3", value = 0, min = 0, max = Inf, step = 1)
+  awesomeCheckbox(inputId = "auto_stlm", label = "Automatic estimation?", value = get_default("auto_stlm")),
+  prettyRadioButtons(inputId = "trend_model", label = "Trend Model", choices = c("ETS", "ARIMA"), inline = TRUE, selected = get_default("trend_model")),
+  numericInput(inputId = "stlm_seasonal_period_1", label = "Seasonal Period 1", value = get_default("stlm_seasonal_period_1"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "stlm_seasonal_period_2", label = "Seasonal Period 2", value = get_default("stlm_seasonal_period_2"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "stlm_seasonal_period_3", label = "Seasonal Period 3", value = get_default("stlm_seasonal_period_3"), min = 0, max = Inf, step = 1)
 )
 
 # Prophet
 conditionalPanel(
   condition = "input.method == 'Prophet'",
   h5("Algorithm hyperparameters: "),
-  awesomeCheckbox(inputId = "auto_prophet", label = "Automatic estimation?", value = FALSE),
-  prettyRadioButtons(inputId = "growth", label = "Growth", choices = c("linear", "logistic"), inline = TRUE, selected = "linear"),
+  awesomeCheckbox(inputId = "auto_prophet", label = "Automatic estimation?", value = get_default("auto_prophet")),
+  prettyRadioButtons(inputId = "growth", label = "Growth", choices = c("linear", "logistic"), inline = TRUE, selected = get_default("growth")),
   conditionalPanel(
     condition = "input.growth == 'logistic'",
-    numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = 0, min = -Inf, max = Inf, step = 1),
-    numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = 0, min = -Inf, max = Inf, step = 1)
+    numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = get_default("logistic_cap"), min = -Inf, max = Inf, step = 1),
+    numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = get_default("logistic_floor"), min = -Inf, max = Inf, step = 1)
   ),
-  # numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = 0, min = -Inf, max = Inf, step = 1),
-  # numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = 0, min = -Inf, max = Inf, step = 1),
-  numericInput(inputId = "changepoint_num", label = "Changepoints (num)", value = 25, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "changepoint_range", label = "Changepoints (range)", value = 0.8, min = 0, max = 1),
-  prettyRadioButtons(inputId = "season", label = "Seasonality", choices = c("additive", "multiplicative"), inline = TRUE, selected = "additive"),
-  awesomeCheckbox(inputId = "seasonality_yearly", label = "Yearly Seasonality?", value = TRUE),
-  awesomeCheckbox(inputId = "seasonality_weekly", label = "Weekly Seasonality?", value = FALSE),
-  awesomeCheckbox(inputId = "seasonality_daily", label = "Daily Seasonality?", value = FALSE),
-  numericInput(inputId = "prior_scale_changepoints", label = "Changepoint Flexibility", value = 0.05, min = 0, max = 1),
-  numericInput(inputId = "prior_scale_seasonality", label = "Seasonality Stength", value = 10, min = 0, max = Inf),
-  numericInput(inputId = "prior_scale_holidays", label = "Holidays Strength", value = 10, min = 0, max = Inf)
+  numericInput(inputId = "changepoint_num", label = "Changepoints (num)", value = get_default("changepoint_num"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "changepoint_range", label = "Changepoints (range)", value = get_default("changepoint_range"), min = 0, max = 1),
+  prettyRadioButtons(inputId = "prophet_season", label = "Seasonality", choices = c("additive", "multiplicative"), inline = TRUE, selected = get_default("prophet_season")),
+  awesomeCheckbox(inputId = "seasonality_yearly", label = "Yearly Seasonality?", value = get_default("seasonality_yearly")),
+  awesomeCheckbox(inputId = "seasonality_weekly", label = "Weekly Seasonality?", value = get_default("seasonality_weekly")),
+  awesomeCheckbox(inputId = "seasonality_daily", label = "Daily Seasonality?", value = get_default("seasonality_daily")),
+  numericInput(inputId = "prior_scale_changepoints", label = "Changepoint Flexibility", value = get_default("prior_scale_changepoints") , min = 0, max = 1),
+  numericInput(inputId = "prior_scale_seasonality", label = "Seasonality Stength", value = get_default("prior_scale_seasonality"), min = 0, max = Inf),
+  numericInput(inputId = "prior_scale_holidays", label = "Holidays Strength", value = get_default("prior_scale_holidays"), min = 0, max = Inf)
 )
 
 # Linear Regression
@@ -674,21 +672,55 @@ conditionalPanel(
 conditionalPanel(
   condition = "input.method == 'Elastic Net'",
   h5("Algorithm hyperparameters: "),
-  numericInput(inputId = "penalty", label = "Penalty", value = 1, min = 0, max = 100),
-  numericInput(inputId = "mixture", label = "Mixture", value = 0.5, min = 0, max = 1)
+  numericInput(inputId = "penalty", label = "Penalty", value = get_default("penalty"), min = 0, max = 100),
+  numericInput(inputId = "mixture", label = "Mixture", value = get_default("mixture"), min = 0, max = 1)
 )
 
-# XGBoost
+# MARS
 conditionalPanel(
-  condition = "input.method == 'XGBoost'",
+  condition = "input.method == 'MARS'",
   h5("Algorithm hyperparameters: "),
-  numericInput(inputId = "mtry", label = "Random Predictors", value = 5, min = 0, max = Inf, step = 1),
-  numericInput(inputId = "trees", label = "Trees", value = 15, min = 1, max = Inf, step = 1),
-  numericInput(inputId = "min_n", label = "Min Node Size", value = 1, min = 1, max = Inf, step = 1),
-  numericInput(inputId = "tree_depth", label = "Tree Depth", value = 6, min = 1, max = Inf),
-  numericInput(inputId = "learn_rate", label = "Learning Rate", value = 0.3, min = 0, max = 1),
-  numericInput(inputId = "loss_reduction", label = "Min Loss Reduction", value = 0, min = 0, max = 1),
-  numericInput(inputId = "sample_size", label = "Sample Size", value = 1, min = 0, max = 1)
+  numericInput(inputId = "num_terms", label = "Num Terms", value = get_default("num_terms"), min = 0, max = 200),
+  sliderInput(inputId = "prod_degree", label = "Interactions Degree", value = get_default("prod_degree"), min = 0, max = 5, step = 1),
+  selectInput(inputId = "prune_method", label = "Prune Method", choices = c("backward", "forward", "none"), selected = get_default("prune_method"))
+)
+
+# KNN
+conditionalPanel(
+  condition = "input.method == 'KNN'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "neighbors", label = "K-neighbors", value = get_default("neighbors"), min = 0, max = Inf)
+)
+
+# Random Forest
+conditionalPanel(
+  condition = "input.method == 'Random Forest'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "rf_mtry", label = "Random Predictors", value = get_default("rf_mtry"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "rf_trees", label = "Trees", value = get_default("rf_trees"), min = 1, max = Inf, step = 1),
+  numericInput(inputId = "rf_min_n", label = "Min Node Size", value = get_default("rf_min_n"), min = 1, max = Inf, step = 1)
+)
+
+# Boosted Trees
+conditionalPanel(
+  condition = "input.method == 'Boosted Trees'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "boost_mtry", label = "Random Predictors", value = get_default("boost_mtry"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "boost_trees", label = "Trees", value = get_default("boost_trees"), min = 1, max = Inf, step = 1),
+  numericInput(inputId = "boost_min_n", label = "Min Node Size", value = get_default("boost_min_n"), min = 1, max = Inf, step = 1),
+  numericInput(inputId = "boost_tree_depth", label = "Tree Depth", value = get_default("boost_tree_depth"), min = 1, max = Inf),
+  numericInput(inputId = "boost_learn_rate", label = "Learning Rate", value = get_default("boost_learn_rate"), min = 0, max = 1),
+  numericInput(inputId = "boost_loss_reduction", label = "Min Loss Reduction", value = get_default("boost_loss_reduction"), min = 0, max = 1),
+  numericInput(inputId = "boost_sample_size", label = "Sample Size", value = get_default("boost_sample_size"), min = 0, max = 1)
+)
+
+# Cubist
+conditionalPanel(
+  condition = "input.method == 'Cubist'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "committees", label = "Num Members", value = get_default("committees"), min = 0, max = 100, step = 1),
+  sliderInput(inputId = "cub_neighbors", label = "Neighbors", value = get_default("cub_neighbors"), min = 0, max = 9, step = 1),
+  numericInput(inputId = "max_rules", label = "Max Rules", value = get_default("max_rules"), min = 1, max = Inf, step = 1)
 )
 ```
 

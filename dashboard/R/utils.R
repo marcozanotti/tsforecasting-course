@@ -6,7 +6,8 @@ set_options <- function() {
     # Global Paths
     tsf.dashboard.methods = list(
       "ts" = c("Naive", "Seasonal Naive", "Rolling Average", "ETS", "Theta", "SARIMA", "TBATS", "STLM", "Prophet"),
-      "ml" = c("Linear Regression", "Elastic Net", "XGBoost"),
+      "ml" = c("Linear Regression", "Elastic Net", "MARS", "KNN", "SVM", "Random Forest", "Boosted Trees", "Cubist"),
+      "dl" = c("MLP", "NNETAR"),
       "ens" = c("Average", "Weighted Average", "Median", "Linear Regression")
     ),
     tsf.dashboard.methods_params = list(
@@ -26,13 +27,21 @@ set_options <- function() {
       "STLM" = c("auto_stlm", "trend_model", "stlm_seasonal_period_1", "stlm_seasonal_period_2", "stlm_seasonal_period_3"),
       "Prophet" = c(
         "auto_prophet", "growth", "logistic_cap", "logistic_floor",
-        "changepoint_num", "changepoint_range", "season",
+        "changepoint_num", "changepoint_range", "prophet_season",
         "seasonality_yearly", "seasonality_weekly", "seasonality_daily",
         "prior_scale_changepoints", "prior_scale_seasonality", "prior_scale_holidays"
       ),
       "Linear Regression" = NULL,
       "Elastic Net" = c("penalty", "mixture"),
-      "XGBoost" = c("mtry", "trees", "min_n", "tree_depth", "learn_rate", "loss_reduction", "sample_size")
+      "MARS" = c("num_terms", "prod_degree", "prune_method"),
+      "KNN" = c("neighbors"),
+      "SVM" = c(""),
+      "Random Forest" = c("rf_mtry", "rf_trees", "rf_min_n"),
+      "Boosted Trees" = c(
+        "boost_mtry", "boost_trees", "boost_min_n", "boost_tree_depth",
+        "boost_learn_rate", "boost_loss_reduction", "boost_sample_size"
+      ),
+      "Cubist" = c("committees", "cub_neighbors", "max_rules")
     ),
     tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),
     tsf.dashboard.test_transfs = c("test_log", "test_diff", "test_sdiff")
