@@ -35,7 +35,7 @@ set_options <- function() {
       "Elastic Net" = c("penalty", "mixture"),
       "MARS" = c("num_terms", "prod_degree", "prune_method"),
       "KNN" = c("neighbors"),
-      "SVM" = c(""),
+      "SVM" = c("boundary", "cost", "margin"),
       "Random Forest" = c("rf_mtry", "rf_trees", "rf_min_n"),
       "Boosted Trees" = c(
         "boost_mtry", "boost_trees", "boost_min_n", "boost_tree_depth",

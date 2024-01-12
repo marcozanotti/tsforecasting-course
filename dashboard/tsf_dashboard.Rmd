@@ -692,6 +692,15 @@ conditionalPanel(
   numericInput(inputId = "neighbors", label = "K-neighbors", value = get_default("neighbors"), min = 0, max = Inf)
 )
 
+# SVM
+conditionalPanel(
+  condition = "input.method == 'SVM'",
+  h5("Algorithm hyperparameters: "),
+  prettyRadioButtons(inputId = "boundary", label = "Boundary Type", choices = c("linear", "radial"), inline = TRUE, selected = get_default("boundary")),
+  numericInput(inputId = "cost", label = "Cost", value = get_default("cost"), min = 0, max = Inf),
+  numericInput(inputId = "margin", label = "Margin", value = get_default("margin"), min = 0, max = Inf)
+)
+
 # Random Forest
 conditionalPanel(
   condition = "input.method == 'Random Forest'",

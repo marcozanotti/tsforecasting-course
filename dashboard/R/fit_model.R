@@ -18,6 +18,7 @@ get_default <- function(parameter, return_value = TRUE) {
     "penalty" = 1, "mixture" = 0.5, # Elastic Net
     "num_terms" = 20, "prod_degree" = 1, "prune_method" = "backward", # MARS
     "neighbors" = 5, # KNN
+    "boundary" = "linear", "cost" = 1, "margin" = 0.1, # SVM
     "rf_mtry" = 5, "rf_trees" = 500, "rf_min_n" = 5, # Random Forest
     "boost_mtry" = 5, "boost_trees" = 100, "boost_min_n" = 1, "boost_tree_depth" = 6, # Boosted Trees
     "boost_learn_rate" = 0.3, "boost_loss_reduction" = 0, "boost_sample_size" = 1,
@@ -188,6 +189,24 @@ generate_model_spec <- function(method, params) {
       neighbors = params$neighbors
     ) |>
       set_engine("kknn")
+
+  } else if (method == "SVM") {
+
+    if (params$boundary == "linear") {
+      model_spec <- svm_linear(
+        mode = "regression",
+        cost = params$cost,
+        margin = params$margin
+      ) |>
+        set_engine("kernlab")
+    } else {
+      model_spec <- svm_rbf(
+        mode = "regression",
+        cost = params$cost,
+        margin = params$margin
+      ) |>
+        set_engine("kernlab")
+    }
 
   } else if (method == "Random Forest") {
 
