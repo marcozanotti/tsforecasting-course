@@ -20,9 +20,17 @@ get_default <- function(parameter, return_value = TRUE) {
     "neighbors" = 5, # KNN
     "boundary" = "linear", "cost" = 1, "margin" = 0.1, # SVM
     "rf_mtry" = 5, "rf_trees" = 500, "rf_min_n" = 5, # Random Forest
-    "boost_mtry" = 5, "boost_trees" = 100, "boost_min_n" = 1, "boost_tree_depth" = 6, # Boosted Trees
+    "boost_method" = "XGBoost", # Boosted Trees
+    "boost_mtry" = 5, "boost_trees" = 100, "boost_min_n" = 1, "boost_tree_depth" = 6,
     "boost_learn_rate" = 0.3, "boost_loss_reduction" = 0, "boost_sample_size" = 1,
-    "committees" = 1, "cub_neighbors" = 0, "max_rules" = 20 # Cubist
+    "committees" = 1, "cub_neighbors" = 0, "max_rules" = 20, # Cubist
+    "ff_hidden_units" = 10, "ff_penalty" = 0, "ff_epochs" = 100, "ff_dropout" = 0.1, "ff_learn_rate" = 0.3, # Feed-Forward
+    "ffar_non_seasonal_ar" = 1, "ffar_seasonal_ar" = 0, # Feed-Forward AR
+    "ffar_hidden_units" = 10, "ffar_penalty" = 0, "ffar_epochs" = 100, "ffar_num_networks" = 20,
+    "arima_boost_mtry" = 5, "arima_boost_trees" = 100, "arima_boost_min_n" = 1, "arima_boost_tree_depth" = 6, # ARIMA-Boost
+    "arima_boost_learn_rate" = 0.3, "arima_boost_loss_reduction" = 0, "arima_boost_sample_size" = 1,
+    "prophet_boost_mtry" = 5, "prophet_boost_trees" = 100, "prophet_boost_min_n" = 1, "prophet_boost_tree_depth" = 6, #  Prophet-Boost
+    "prophet_boost_learn_rate" = 0.3, "prophet_boost_loss_reduction" = 0, "prophet_boost_sample_size" = 1
   )
 
   if (return_value) {
@@ -30,6 +38,41 @@ get_default <- function(parameter, return_value = TRUE) {
   } else {
     return(def[parameter])
   }
+
+}
+
+#function to generate the recipe specification
+generate_recipe_spec <- function(data, method) {
+
+  method_type <- parse_method(method)
+
+  if (method_type == "ts") {
+
+    rcp_spec <- recipe(value ~ ., data = data)
+
+  } else if (method_type == "ml" | method_type == "dl") {
+
+    rcp_spec <- recipe(value ~ ., data = data) |>
+      step_timeseries_signature(date) |>
+      step_mutate(date = as.numeric(date)) |>
+      step_zv(all_predictors()) |>
+      step_rm(matches("(iso)|(xts)|(index.num)")) |>
+      step_dummy(all_nominal(), one_hot = TRUE)
+
+  } else if (method_type == "mix") {
+
+    rcp_spec <- recipe(value ~ ., data = data) |>
+      step_timeseries_signature(date) |>
+      step_normalize(date_index.num) |>
+      step_zv(all_predictors()) |>
+      step_rm(matches("(iso)|(xts)")) |>
+      step_dummy(all_nominal(), one_hot = TRUE)
+
+  } else {
+    stop(paste("Unknown method type", method_type))
+  }
+
+  return(rcp_spec)
 
 }
 
@@ -220,17 +263,33 @@ generate_model_spec <- function(method, params) {
 
   } else if (method == "Boosted Trees") {
 
-    model_spec <- boost_tree(
-      mode = "regression",
-      mtry = params$boost_mtry,
-      trees = params$boost_trees,
-      min_n = params$boost_min_n,
-      tree_depth = params$boost_tree_depth,
-      learn_rate = params$boost_learn_rate,
-      loss_reduction = params$boost_loss_reduction,
-      sample_size = params$boost_sample_size
-    ) |>
-      set_engine("xgboost")
+    if (params$boost_method == "XGBoost") {
+      model_spec <- boost_tree(
+        mode = "regression",
+        mtry = params$boost_mtry,
+        trees = params$boost_trees,
+        min_n = params$boost_min_n,
+        tree_depth = params$boost_tree_depth,
+        learn_rate = params$boost_learn_rate,
+        loss_reduction = params$boost_loss_reduction,
+        sample_size = params$boost_sample_size
+      ) |>
+        set_engine("xgboost")
+    } else if (params$boost_method == "LightGBM") {
+      model_spec <- boost_tree(
+        mode = "regression",
+        mtry = params$boost_mtry,
+        trees = params$boost_trees,
+        min_n = params$boost_min_n,
+        tree_depth = params$boost_tree_depth,
+        learn_rate = params$boost_learn_rate,
+        loss_reduction = params$boost_loss_reduction,
+        sample_size = params$boost_sample_size
+      ) |>
+        set_engine("lightgbm")
+    } else {
+      stop(paste("Unknown Boosting method", params$boost_method))
+    }
 
   } else if (method == "Cubist") {
 
@@ -240,6 +299,59 @@ generate_model_spec <- function(method, params) {
       max_rules = params$max_rules
     ) |>
       set_engine("Cubist")
+
+  } else if (method == "Feed-Forward") {
+
+    model_spec <- mlp(
+      mode = "regression",
+      hidden_units = params$ff_hidden_units,
+      penalty = params$ff_penalty,
+      epochs = params$ff_epochs,
+      dropout = params$ff_dropout,
+      learn_rate = params$ff_learn_rate
+    ) |>
+      set_engine("nnet")
+
+  } else if (method == "Feed-Forward AR") {
+
+    model_spec <- nnetar_reg(
+      mode = "regression",
+      non_seasonal_ar = params$ffar_non_seasonal_ar,
+      seasonal_ar = params$ffar_seasonal_ar,
+      hidden_units = params$ffar_hidden_units,
+      penalty = params$ffar_penalty,
+      epochs = params$ffar_epochs,
+      num_networks = params$ffar_num_networks
+    ) |>
+      set_engine("nnetar")
+
+  } else if (method == "ARIMA-Boost") {
+
+    model_spec <- arima_boost(
+      mode = "regression",
+      mtry = params$arima_boost_mtry,
+      trees = params$arima_boost_trees,
+      min_n = params$arima_boost_min_n,
+      tree_depth = params$arima_boost_tree_depth,
+      learn_rate = params$arima_boost_learn_rate,
+      loss_reduction = params$arima_boost_loss_reduction,
+      sample_size = params$arima_boost_sample_size
+    ) |>
+      set_engine("auto_arima_xgboost")
+
+  } else if (method == "Prophet-Boost") {
+
+    model_spec <- prophet_boost(
+      mode = "regression",
+      mtry = params$prophet_boost_mtry,
+      trees = params$prophet_boost_trees,
+      min_n = params$prophet_boost_min_n,
+      tree_depth = params$prophet_boost_tree_depth,
+      learn_rate = params$prophet_boost_learn_rate,
+      loss_reduction = params$prophet_boost_loss_reduction,
+      sample_size = params$prophet_boost_sample_size
+    ) |>
+      set_engine("prophet_xgboost")
 
   } else {
     stop(paste("Unknown method", method))
@@ -258,9 +370,7 @@ generate_model_spec <- function(method, params) {
 fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) {
 
   check_parameters(method, params)
-
   set.seed(seed)
-  method_type <- parse_method(method)
 
   splits <- timetk::time_series_split(
     data, date_var = date,
@@ -270,18 +380,8 @@ fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) 
   )
   train_tbl <- training(splits) |> select(-id, -frequency)
 
-  if (method_type == "ts") {
-    rcp_spec <- recipe(value ~ ., data = train_tbl)
-  } else if (method_type == "ml") {
-    rcp_spec <- recipe(value ~ ., data = train_tbl) |>
-      step_timeseries_signature(date) |>
-      step_normalize(date_index.num) |>
-      step_zv(all_predictors()) |>
-      step_rm(matches("(iso)|(xts)|(lbl)")) |>
-      step_rm(date)
-  } else {
-    stop(paste("Unknown method type", method_type))
-  }
+  # recipe specification
+  rcp_spec <- generate_recipe_spec(train_tbl, method)
 
   # model specification
   model_spec <- generate_model_spec(method, params)

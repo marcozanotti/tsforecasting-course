@@ -7,7 +7,8 @@ set_options <- function() {
     tsf.dashboard.methods = list(
       "ts" = c("Naive", "Seasonal Naive", "Rolling Average", "ETS", "Theta", "SARIMA", "TBATS", "STLM", "Prophet"),
       "ml" = c("Linear Regression", "Elastic Net", "MARS", "KNN", "SVM", "Random Forest", "Boosted Trees", "Cubist"),
-      "dl" = c("MLP", "NNETAR"),
+      "dl" = c("Feed-Forward", "COMING SOON!"),
+      "mix" = c("Feed-Forward AR", "ARIMA-Boost", "Prophet-Boost"),
       "ens" = c("Average", "Weighted Average", "Median", "Linear Regression")
     ),
     tsf.dashboard.methods_params = list(
@@ -38,10 +39,26 @@ set_options <- function() {
       "SVM" = c("boundary", "cost", "margin"),
       "Random Forest" = c("rf_mtry", "rf_trees", "rf_min_n"),
       "Boosted Trees" = c(
+        "boost_method",
         "boost_mtry", "boost_trees", "boost_min_n", "boost_tree_depth",
         "boost_learn_rate", "boost_loss_reduction", "boost_sample_size"
       ),
-      "Cubist" = c("committees", "cub_neighbors", "max_rules")
+      "Cubist" = c("committees", "cub_neighbors", "max_rules"),
+      "Feed-Forward" = c("ff_hidden_units", "ff_penalty", "ff_epochs", "ff_dropout", "ff_learn_rate"),
+      "Feed-Forward AR" = c(
+        "ffar_non_seasonal_ar", "ffar_seasonal_ar",
+        "ffar_hidden_units", "ffar_penalty", "ffar_epochs", "ffar_num_networks"
+      ),
+      "ARIMA-Boost" = c(
+        "arima_boost_mtry", "arima_boost_trees", "arima_boost_min_n",
+        "arima_boost_tree_depth", "arima_boost_learn_rate", "arima_boost_loss_reduction",
+        "arima_boost_sample_size"
+      ),
+      "Prophet-Boost" = c(
+        "prophet_boost_mtry", "prophet_boost_trees", "prophet_boost_min_n",
+        "prophet_boost_tree_depth", "prophet_boost_learn_rate", "prophet_boost_loss_reduction",
+        "prophet_boost_sample_size"
+      )
     ),
     tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),
     tsf.dashboard.test_transfs = c("test_log", "test_diff", "test_sdiff")
@@ -87,15 +104,19 @@ parse_frequency <- function(frequency) {
 parse_method <- function(method) {
 
   mtd <- getOption("tsf.dashboard.methods")
-
   if (method %in% mtd$ts) {
     res <- "ts"
   } else if (method %in% mtd$ml) {
     res <- "ml"
+  } else if (method %in% mtd$dl) {
+    res <- "dl"
+  } else if (method %in% mtd$mix) {
+    res <- "mix"
+  } else if (method %in% mtd$ens) {
+    res <- "ens"
   } else {
     stop(paste("Unknown method", method))
   }
-
   return(res)
 
 }

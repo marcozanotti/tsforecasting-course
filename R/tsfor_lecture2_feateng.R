@@ -455,16 +455,29 @@ wrkfl_fit_lm_2_lag |>
   pluck("fit") |>
   summary()
 
+# LM Spline Workflow
+wrkfl_fit_lm_3 <- workflow() |>
+  add_model(model_spec_lm) |>
+  add_recipe(rcp_spec) |>
+  fit(training(splits))
+wrkfl_fit_lm_3
+wrkfl_fit_lm_3 |>
+  extract_fit_parsnip() |>
+  pluck("fit") |>
+  summary()
+
 
 # * Modeltime -------------------------------------------------------------
 
 # Calibration
 calibration_tbl <- modeltime_table(
   wrkfl_fit_lm_1_spline,
-  wrkfl_fit_lm_2_lag
+  wrkfl_fit_lm_2_lag,
+  wrkfl_fit_lm_3
 ) |>
   update_model_description(1, "LM - Spline Recipe") |>
   update_model_description(2, "LM - Lag Recipe") |>
+  update_model_description(3, "LM - Base Recipe") |>
   modeltime_calibrate(new_data = testing(splits))
 calibration_tbl
 
