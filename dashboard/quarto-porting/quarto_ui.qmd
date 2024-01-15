@@ -1,0 +1,351 @@
+---
+title: "Time Series Dashboard"
+format: 
+  dashboard:
+    orintation: rows
+    nav-buttons: [linkedin, twitter, github]
+    css: "css/styles-default.css"
+server: shiny
+---
+
+```{r setup}
+#| context: server
+source("R/utils.R")
+source("R/utils-packages.R")
+source("R/get_data.R")
+source("R/transform_data.R")
+source("R/hp_testing.R")
+source("R/metrics.R")
+source("R/fit_model.R")
+source("R/generate_forecast.R")
+
+# Packages
+pkgs <- c(
+  "tidyverse", "tsibbledata", "janitor", "skimr", "vroom",
+  "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
+  "randomForest", "ranger", "xgboost", "treesnip", "lightgbm", "catboost",
+  "Cubist", "rules",
+  "tidymodels", "modeltime",
+  "plotly", "DT", "timetk",
+  "rmarkdown", "flexdashboard",
+  "shiny", "shinyWidgets", "shinyjs", "shinymanager"
+)
+install_and_load(pkgs)
+
+set_options()
+datasets <- c(
+  "Air Passengers", "EU Population", # "Electricity Demand", 
+  "People Traffic", "Stock Price", "Tobacco Prod", ""
+)
+methods <- getOption("tsf.dashboard.methods")
+ts_methods <- methods$ts
+ml_methods <- methods$ml
+dl_methods <- methods$dl
+mix_methods <- methods$mix
+ens_methods <- methods$ens
+methods <- c(ts_methods, ml_methods, dl_methods, mix_methods)
+
+methods_params <- getOption("tsf.dashboard.methods_params")
+methods_params_cl <- methods_params |> 
+  map(~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
+```
+
+
+
+# Data
+
+## {.sidebar}
+
+```{r}
+selectInput(
+  inputId = "dataset", label = h4("Dataset"), 
+  choices = datasets, selected = datasets[1], multiple = FALSE
+)
+
+h4("Upload your dataset: ")
+h6("The dataset must be a .csv file containing columns 'date', 'id', 'frequency' and 'value'.")
+fileInput(
+  inputId = "upload_custom", label = NULL, accept = c(".csv"), multiple = FALSE,
+  buttonLabel = "Browse...", placeholder = "No file"
+)
+actionButton(inputId = "data_import", label = "Import", icon = icon("upload"))
+actionButton(inputId = "data_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$data_reset, 
+  handlerExpr = {
+    reset("upload_custom")
+    updateSelectInput(session = session, inputId = "dataset", selected = datasets[1])
+})
+
+br()
+br()
+
+prettyRadioButtons(
+  inputId = "table_type", label = h5("Show:"), 
+  choices = c("Preview", "Structure", "Summary")
+)
+```
+
+```{r}
+#| context: server
+data_selected <- reactive({
+
+  if (input$data_import & !input$data_reset) {
+    req(input$upload_custom)
+    ext <- tools::file_ext(input$upload_custom$datapath)
+    validate(need(ext == "csv", "Please upload a csv file"))
+    updateSelectInput(session = session, inputId = "dataset", selected = "") # important to activate date_range input
+    get_data("custom", path = input$upload_custom$datapath)
+  } else {
+    get_data(input$dataset)
+  }
+  
+})
+
+ts_freq <- reactive({
+  data_selected()$frequency |> unique() |> parse_frequency()
+})
+
+output$data_table <- renderDT({
+  data_selected() |>
+      datatable(
+        options = list(
+          ordering = TRUE, pageLength = 20, lengthChange = TRUE,
+          searching = TRUE, info = FALSE, paging = TRUE,
+          scrollCollapse = TRUE, scrollY = 560 # 250
+        )
+      )
+})
+output$data_str <- renderPrint({ str(data_selected()) })
+output$data_summ <- renderPrint({ skim(data_selected()) })
+```
+
+
+## Row {height=100%}
+
+```{r}
+conditionalPanel(
+  condition = "input.table_type == 'Preview'",
+  DTOutput(outputId = "data_table")
+)
+conditionalPanel(
+  condition = "input.table_type == 'Structure'",
+  verbatimTextOutput(outputId = "data_str")
+)
+conditionalPanel(
+  condition = "input.table_type == 'Summary'",
+  verbatimTextOutput(outputId = "data_summ")
+)
+```
+
+
+
+# Visualize & Transform 
+
+## {.sidebar}
+
+```{r}
+h3("Visualize")
+
+dateRangeInput(
+  inputId = "date_range", label = NULL,
+  start = as.Date("1940-01-01"), end = as.Date("2023-12-31")
+)
+observeEvent(
+  eventExpr = input$dataset,
+  handlerExpr = {
+    req(data_selected())
+    updateDateRangeInput(
+      session = session, inputId = "date_range",
+      start = min(data_selected()$date), end = max(data_selected()$date)
+    )
+  }
+)
+
+materialSwitch(
+  inputId = "smooth_line", label = h5("Smooth Line"), 
+  value = TRUE, status = "primary", inline = TRUE
+)
+
+numericInput(
+  inputId = "acf_lag", label = h5("ACF Lag"),
+  value = 48, min = 1, max = 300, step = 1, width = "45%"
+)
+observeEvent(
+  eventExpr = input$dataset, 
+  handlerExpr = {
+    updateNumericInput(
+      session = session, inputId = "acf_lag", 
+      value = ifelse(ts_freq() < 60, ts_freq() * 3, 150), 
+      min = 1, max = 300, step = 1
+    )
+  }
+)
+
+hr()
+h3("Missing Imputation")
+switchInput(inputId = "impute", value = FALSE, size = "mini")
+
+hr()
+h3("Transform")
+
+materialSwitch(inputId = "log", label = "Log", value = FALSE, status = "primary")
+materialSwitch(inputId = "boxcox", label = "Box-Cox", value = FALSE, status = "primary")
+materialSwitch(inputId = "norm", label = "Normalize", value = FALSE, status = "primary")
+materialSwitch(inputId = "stand", label = "Standardize", value = FALSE, status = "primary")
+materialSwitch(inputId = "diff", label = "Diff", value = FALSE, status = "primary")
+materialSwitch(inputId = "sdiff", label = "Seasonal Diff", value = FALSE, status = "primary")
+
+br()
+
+actionButton(inputId = "transf_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$transf_reset, 
+  handlerExpr = {
+    updateMaterialSwitch(session = session, inputId = "smooth_line", value = TRUE)
+    updateNumericInput(session = session, inputId = "acf_lag", value = ifelse(ts_freq() < 60, ts_freq() * 3, ts_freq()))
+    updateSwitchInput(session = session, inputId = "impute", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "log", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "boxcox", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "norm", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "stand", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "diff", value = FALSE)
+    updateMaterialSwitch(session = session, inputId = "sdiff", value = FALSE)
+  }
+)
+```
+
+```{r}
+#| context: server
+data_transformed <- reactive({
+  data_selected() |> 
+    impute_data(params = input, freq = ts_freq()) |> 
+    transform_data(section = "viz_transf", params = input, freq = ts_freq()) |> 
+    filter(between(date, input$date_range[1], input$date_range[2]))
+})
+
+output$ts_plot_smooth <- renderPlotly({
+  data_transformed() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = input$smooth_line, # ifelse(ts_freq() > 60, FALSE, TRUE),
+      .interactive = TRUE
+    )
+})
+
+output$autocorr_plot <- renderPlotly({
+  data_transformed() |>
+    timetk::plot_acf_diagnostics(
+      .date_var = date, .value = value, 
+      .lags = input$acf_lag, # ifelse(ts_freq() < 60, ts_freq() * 3, 150)
+      .interactive = TRUE,
+      .title = "Autocorrelation", .y_lab = NULL,
+    )
+})
+
+output$decomp_plot <- renderPlotly({
+    data_transformed() |>
+      timetk::plot_stl_diagnostics(
+    .date_var = date, .value = value, 
+    .feature_set = c("season", "trend", "remainder"), .interactive = TRUE,
+    .title = "Decomposition"
+  )
+})
+
+output$season_plot <- renderPlotly({
+  data_transformed() |>
+    timetk::plot_seasonal_diagnostics(
+      .date_var = date, .value = value, 
+      .interactive = TRUE, .title = "Seasonality"
+    )
+})
+```
+
+
+## Row {height=40%}
+
+```{r}
+#| padding: 0px
+plotlyOutput(outputId = "ts_plot_smooth")
+```
+
+```{r}
+#| padding: 0px
+plotlyOutput(outputId = "autocorr_plot")
+```
+
+
+## Row {height=60%}
+
+```{r}
+#| padding: 0px
+plotlyOutput(outputId = "decomp_plot")
+```
+
+```{r}
+#| padding: 0px
+plotlyOutput(outputId = "season_plot")
+```
+
+
+
+# Anomaly Detection & Cleaning
+
+## {.sidebar}
+
+## Row {height=65%}
+
+```{r}
+```
+
+## Row {height=35%}
+
+```{r}
+```
+
+
+
+# Hypothesis Testing
+
+## {.sidebar}
+
+## Row {height=50%}
+
+```{r}
+```
+
+## Row {height=50%}
+
+```{r}
+```
+
+```{r}
+```
+
+
+
+# Test & Evaluate
+
+## {.sidebar}
+
+## Row {height=50%}
+
+```{r}
+```
+
+```{r}
+```
+
+## Row {height=50%}
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
