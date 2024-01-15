@@ -1,0 +1,22 @@
+UI:
+
+Link to [Page 3](#page-3)
+data-icon="fa-list"
+
+Next steps:
+- reset dataset uploaded
+- cambiare logo
+- deployment su github actions
+- move to another github repo
+- documentazione in alto a destra
+
+To Do:
+- fare la funzione parse_parameters per ottenere i nomi da mostrare in UI dal parametro
+- pensare e aggiungere la sezione di optimize tuning
+- aggiungere metodi di automl (h2o)
+- pensare e aggiungere la sezione di stacking (LM + Elastic Net)
+- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?)
+- pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni
+- aggiungere metodi di dl (NeuralProphet + NBEATS + DeepAR)
+- pensare e aggiungere la sezione di feature engineering (con in mente il save)
+- modificare output modello con parsing
