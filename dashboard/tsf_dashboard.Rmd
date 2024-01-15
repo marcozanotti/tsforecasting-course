@@ -23,9 +23,8 @@ runtime: shiny
 <!-- move to another github repo -->
 <!-- documentazione in alto a destra -->
 
-<!-- pensare e aggiungere la sezione di compare-run competition (con in mente il save) -->
 <!-- pensare e aggiungere la sezione di ensemble-combine (con in mente il save) -->
-<!-- pensare e aggiungere la sezione di optimize tuning (con in mente il save) -->
+<!-- pensare e aggiungere la sezione di optimize tuning (con in mente il save + use optimize in altre sezioni) -->
 <!-- pensare e aggiungere il save del modello sia in Test & Evaluate sia in Optimize (da usare in Compare/Combine al posto dei default) -->
 <!-- aggiungere metodi di automl -->
 <!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
@@ -907,94 +906,6 @@ plotlyOutput(outputId = "plot_resid_acf")
 
 
 
-Optimize {data-navmenu="Forecast" data-orientation=rows}
-===========================================================================
-
-Input {.sidebar}
----------------------------------------------------------------------------
-
-*Forecast - Optimize*  
-```{r}
-useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
-dropdownButton(
-  numericInput(
-    inputId = "tune_n_future", label = "Forecast Horizon", 
-    value = 12, min = 1, max = Inf, step = 1, width = "100%"
-  ),
-  numericInput(
-    inputId = "tune_n_assess", label = "Assessment Period", 
-    value = 24, min = 1, max = Inf, step = 1, width = "100%"
-  ), 
-  prettyRadioButtons(
-    inputId = "tune_assess_type", label = "Assessment Type", 
-    choices = c("Expanding", "Rolling"), selected = "Rolling", 
-    inline = TRUE
-  ),
-  prettyRadioButtons(
-    inputId = "tune_valid_type", label = "Validation Type", 
-    choices = c("Time Series CV", "K-Fold CV"), selected = "Time Series CV", 
-    inline = TRUE
-  ),
-  sliderInput(
-    inputId = "tune_k", label = "Folds", 
-    min = 2, max = 10, value = 5, step = 1
-  ),
-  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
-  tooltip = tooltipOptions(title = "Click to see inputs!")
-)
-
-pickerInput(
-  inputId = "tune_method", label = h3("Forecast Algorithm"), multiple = FALSE,
-  choices = list(
-    `Time Series` = ts_methods, 
-    `Machine Learning` = ml_methods,
-    `Deep Learning` = dl_methods,
-    `Mixed Algorithms` = mix_methods
-  ), 
-  selected = ml_methods[2]
-)
-
-actionButton(inputId = "tune_apply_forecast", label = "Forecast!", icon = icon("play"))
-actionButton(inputId = "tune_reset", label = "Reset", icon = icon("sync"))
-observeEvent(
-  eventExpr = input$tune_reset, 
-  handlerExpr = {
-    updateNumericInput(session = session, inputId = "tune_n_future", value = 12)
-    updateNumericInput(session = session, inputId = "tune_n_assess", value = 24)
-    updatePrettyRadioButtons(session = session, inputId = "tune_assess_type", selected = "Rolling")
-    updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
-    updateSliderInput(session = session, inputId = "tune_k", value = 5)
-    updateSelectInput(session = session, inputId = "tune_method", selected = ml_methods[2])
-    updatePickerInput(session = session, inputId = "tune_elanet", selected = methods_params_cl[["Elastic Net"]][2])
-    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
-  }
-)
-
-br() # break rule
-br() # break rule
-
-# Elastic Net
-conditionalPanel(
-  condition = "input.tune_method == 'Elastic Net'",
-  h5("Algorithm hyperparameters to optimize: "),
-  pickerInput(
-    inputId = "tune_elanet", label = NULL, 
-    choices = methods_params_cl[["Elastic Net"]], multiple = TRUE, 
-    selected = methods_params_cl[["Elastic Net"]][2],
-    options = list("actions-box" = TRUE)
-  )
-)
-```
-
-Row 1 {data-height=500}
----------------------------------------------------------------------------
-
-### Forecasts Results {.no-padding}
-
-COMING SOON
-
-
-
 Compare {data-navmenu="Forecast" data-orientation=rows}
 ===========================================================================
 
@@ -1034,7 +945,7 @@ pickerInput(
 )
 
 br()
-materialSwitch(inputId = "comp_tune", label = "Tune algorithms?", value = FALSE, status = "primary")
+awesomeCheckbox(inputId = "comp_tune", label = "Use optimized algorithms?", value = FALSE)
 br()
 
 actionButton(inputId = "comp_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -1125,6 +1036,94 @@ output$comp_model_summary <- renderPrint({
 })
 verbatimTextOutput(outputId = "comp_model_summary")
 ```
+
+
+
+Optimize {data-navmenu="Forecast" data-orientation=rows}
+===========================================================================
+
+Input {.sidebar}
+---------------------------------------------------------------------------
+
+*Forecast - Optimize*  
+```{r}
+useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
+dropdownButton(
+  numericInput(
+    inputId = "tune_n_future", label = "Forecast Horizon", 
+    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+  ),
+  numericInput(
+    inputId = "tune_n_assess", label = "Assessment Period", 
+    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+  ), 
+  prettyRadioButtons(
+    inputId = "tune_assess_type", label = "Assessment Type", 
+    choices = c("Expanding", "Rolling"), selected = "Rolling", 
+    inline = TRUE
+  ),
+  prettyRadioButtons(
+    inputId = "tune_valid_type", label = "Validation Type", 
+    choices = c("Time Series CV", "K-Fold CV"), selected = "Time Series CV", 
+    inline = TRUE
+  ),
+  sliderInput(
+    inputId = "tune_k", label = "Folds", 
+    min = 2, max = 10, value = 5, step = 1
+  ),
+  icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
+  tooltip = tooltipOptions(title = "Click to see inputs!")
+)
+
+pickerInput(
+  inputId = "tune_method", label = h3("Forecast Algorithm"), multiple = FALSE,
+  choices = list(
+    `Time Series` = ts_methods, 
+    `Machine Learning` = ml_methods,
+    `Deep Learning` = dl_methods,
+    `Mixed Algorithms` = mix_methods
+  ), 
+  selected = ml_methods[2]
+)
+
+actionButton(inputId = "tune_apply_forecast", label = "Forecast!", icon = icon("play"))
+actionButton(inputId = "tune_reset", label = "Reset", icon = icon("sync"))
+observeEvent(
+  eventExpr = input$tune_reset, 
+  handlerExpr = {
+    updateNumericInput(session = session, inputId = "tune_n_future", value = 12)
+    updateNumericInput(session = session, inputId = "tune_n_assess", value = 24)
+    updatePrettyRadioButtons(session = session, inputId = "tune_assess_type", selected = "Rolling")
+    updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
+    updateSliderInput(session = session, inputId = "tune_k", value = 5)
+    updateSelectInput(session = session, inputId = "tune_method", selected = ml_methods[2])
+    updatePickerInput(session = session, inputId = "tune_elanet", selected = methods_params_cl[["Elastic Net"]][2])
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
+  }
+)
+
+br() # break rule
+br() # break rule
+
+# Elastic Net
+conditionalPanel(
+  condition = "input.tune_method == 'Elastic Net'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_elanet", label = NULL, 
+    choices = methods_params_cl[["Elastic Net"]], multiple = TRUE, 
+    selected = methods_params_cl[["Elastic Net"]][2],
+    options = list("actions-box" = TRUE)
+  )
+)
+```
+
+Row 1 {data-height=500}
+---------------------------------------------------------------------------
+
+### Forecasts Results {.no-padding}
+
+COMING SOON
 
 
 
