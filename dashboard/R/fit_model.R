@@ -1,43 +1,35 @@
-# function to get default parameters values
-get_default <- function(parameter, return_value = TRUE) {
+# function to generate initial split
+generate_initial_split <- function(data, n_assess, assess_type) {
 
-  def <- list(
-    "window_size" = 12, # Rolling Average
-    "auto_ets" = TRUE, "error" = "additive", "trend" = "none", "season" = "none", # ETS
-    "damping" = "none", "smooth_level" = 0.1, "smooth_trend" = 0, "smooth_season" = 0,
-    "auto_arima" = TRUE, "non_seasonal_ar" = 0, "non_seasonal_differences" = 0, # SARIMA
-    "non_seasonal_ma" = 0, "seasonal_ar" = 0, "seasonal_differences" = 0, "seasonal_ma" = 0,
-    "auto_tbats" = TRUE, "tbats_seasonal_period_1" = 12, # TBATS
-    "tbats_seasonal_period_2" = 0, "tbats_seasonal_period_3" = 0,
-    "auto_stlm" = TRUE, "trend_model" = "ETS", "stlm_seasonal_period_1" = 12, # STLM
-    "stlm_seasonal_period_2" = 0, "stlm_seasonal_period_3" = 0,
-    "auto_prophet" = TRUE, "growth" = "linear", "logistic_cap" = 0, "logistic_floor" = 0, # Prophet
-    "changepoint_num" = 25, "changepoint_range" = 0.8, "prophet_season" = "additive",
-    "seasonality_yearly" = TRUE, "seasonality_weekly" = FALSE, "seasonality_daily" = FALSE,
-    "prior_scale_changepoints" = 0.5, "prior_scale_seasonality" = 10, "prior_scale_holidays" = 10,
-    "penalty" = 1, "mixture" = 0.5, # Elastic Net
-    "num_terms" = 20, "prod_degree" = 1, "prune_method" = "backward", # MARS
-    "neighbors" = 5, # KNN
-    "boundary" = "linear", "cost" = 1, "margin" = 0.1, # SVM
-    "rf_mtry" = 5, "rf_trees" = 500, "rf_min_n" = 5, # Random Forest
-    "boost_method" = "XGBoost", # Boosted Trees
-    "boost_mtry" = 5, "boost_trees" = 100, "boost_min_n" = 1, "boost_tree_depth" = 6,
-    "boost_learn_rate" = 0.3, "boost_loss_reduction" = 0, "boost_sample_size" = 1,
-    "committees" = 1, "cub_neighbors" = 0, "max_rules" = 20, # Cubist
-    "ff_hidden_units" = 10, "ff_penalty" = 0, "ff_epochs" = 100, "ff_dropout" = 0.1, "ff_learn_rate" = 0.3, # Feed-Forward
-    "ffar_non_seasonal_ar" = 1, "ffar_seasonal_ar" = 0, # Feed-Forward AR
-    "ffar_hidden_units" = 10, "ffar_penalty" = 0, "ffar_epochs" = 100, "ffar_num_networks" = 20,
-    "arima_boost_mtry" = 5, "arima_boost_trees" = 100, "arima_boost_min_n" = 1, "arima_boost_tree_depth" = 6, # ARIMA-Boost
-    "arima_boost_learn_rate" = 0.3, "arima_boost_loss_reduction" = 0, "arima_boost_sample_size" = 1,
-    "prophet_boost_mtry" = 5, "prophet_boost_trees" = 100, "prophet_boost_min_n" = 1, "prophet_boost_tree_depth" = 6, #  Prophet-Boost
-    "prophet_boost_learn_rate" = 0.3, "prophet_boost_loss_reduction" = 0, "prophet_boost_sample_size" = 1
+  splits <- timetk::time_series_split(
+    data, date_var = date,
+    initial = nrow(data) - n_assess,
+    assess = n_assess,
+    cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
   )
+  return(splits)
 
-  if (return_value) {
-    return(def[[parameter]])
+}
+
+# function to generato cross validation split
+generate_cv_split <- function(
+    data, n_assess, assess_type, validation_type = "Time Series CV", n_folds = 5,
+    seed = 1992
+) {
+
+  set.seed(seed)
+  if (validation_type == "Time Series CV") {
+    cv_splits <- modeltime.resample::time_series_cv(
+      train_tbl, date_var = date,
+      initial = nrow(train_tbl) - n_assess,
+      assess = trunc(n_assess / n_folds),
+      slice_limit = n_folds,
+      cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
+    )
   } else {
-    return(def[parameter])
+    cv_splits <- rsample::vfold_cv(train_tbl, v = n_folds)
   }
+  return(cv_splits)
 
 }
 
@@ -361,6 +353,26 @@ generate_model_spec <- function(method, params) {
 
 }
 
+# function to perform grid specification
+generate_grid_spec <- function(method, model_spec, grid_size, seed = 1992) {
+
+  set.seed(seed)
+  if (method %in% c("Random Forest", "Boosted Trees")) {
+    grid_spec <- grid_latin_hypercube(
+      hardhat::extract_parameter_set_dials(model_spec) |>
+        recipes::update(mtry = mtry(range = c(1, 15))),
+      size = grid_size
+    )
+  } else {
+    grid_spec <- dials::grid_latin_hypercube(
+      hardhat::extract_parameter_set_dials(model_spec),
+      size = grid_size
+    )
+  }
+  return(grid_spec)
+
+}
+
 # function to perform model estimation
 # the argument assess_type is not effectively used with the split function
 # because it creates train and test splits! To effectively implement expanding
@@ -372,12 +384,8 @@ fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) 
   check_parameters(method, params)
   set.seed(seed)
 
-  splits <- timetk::time_series_split(
-    data, date_var = date,
-    initial = nrow(data) - n_assess,
-    assess = n_assess,
-    cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
-  )
+  # initial split
+  splits <- generate_initial_split(data, n_assess, assess_type)
   train_tbl <- training(splits) |> select(-id, -frequency)
 
   # recipe specification
@@ -386,12 +394,326 @@ fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) 
   # model specification
   model_spec <- generate_model_spec(method, params)
 
+  # workflow specification
+  wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
+
   # fitting
-  wkfl_fit <- workflow() |>
-    add_recipe(rcp_spec) |>
-    add_model(model_spec) |>
-    fit(data = train_tbl)
+  wkfl_fit <- wkfl_spec |> fit(data = train_tbl)
 
   return(wkfl_fit)
+
+}
+
+# function to perform ensemble model estimation
+# it is just adding the ensemble method to the modeltime table
+# because no fitting is required for simple ensembles
+fit_ensemble <- function(modeltime_table, ensemble_method, weights, seed = 1992) {
+
+  set.seed(seed)
+  ensemble_tbl <- modeltime::modeltime_table()
+
+  if ("Average" %in% ensemble_method) {
+    ens_tmp <- modeltime.ensemble::ensemble_average(modeltime_table, type = "mean") |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Average")
+    ensemble_tbl <- modeltime::combine_modeltime_tables(ensemble_tbl, ens_tmp)
+  }
+
+  if ("Weighted Average" %in% ensemble_method) {
+    ens_tmp <- modeltime.ensemble::ensemble_weighted(
+      modeltime_table, loadings = weights, scale_loadings = TRUE
+    ) |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "W-Average")
+    ensemble_tbl <- modeltime::combine_modeltime_tables(ensemble_tbl, ens_tmp)
+  }
+
+  if ("Median" %in% ensemble_method) {
+    ens_tmp <- modeltime.ensemble::ensemble_average(modeltime_table, type = "median") |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Median")
+    ensemble_tbl <- modeltime::combine_modeltime_tables(ensemble_tbl, ens_tmp)
+  }
+
+  return(ensemble_tbl)
+
+}
+
+# function to perform stacking model estimation
+fit_stack <- function(modeltime_table, stack_method, seed = 1992) {
+
+  set.seed(seed)
+  stack_tbl <- modeltime::modeltime_table()
+
+  ens_model_spec <- modeltime.ensemble::ensemble_model_spec(
+    modeltime_table,
+    model_spec = linear_reg() |> set_engine("lm"),
+    control = control_grid(verbose = TRUE)
+  )
+
+  if ("Stacked" %in% stack_method) {
+    ens_tmp <- modeltime.ensemble::ensemble_stacked(modeltime_table) |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Stacked")
+    stack_tbl <- modeltime::combine_modeltime_tables(stack_tbl, ens_tmp)
+  }
+
+  return(stack_tbl)
+
+}
+
+# function to perform model optimization
+#
+fit_model_tuning <- function(
+    data, method, params, n_assess, assess_type,
+    validation_type = "Time Series CV",
+    n_folds = 5, validation_metric = "rmse", grid_size = 10,
+    seed = 1992
+) {
+
+  set.seed(seed)
+
+  # initial split
+  splits <- generate_initial_split(data, n_assess, assess_type)
+  train_tbl <- training(splits) |> select(-id, -frequency)
+
+  # validation split
+  cv_splits <- generate_cv_split(
+    train_tbl, n_assess, assess_type, validation_type, n_folds, seed
+  )
+
+  # recipe specification
+  rcp_spec <- generate_recipe_spec(train_tbl, method)
+
+  # model specification
+  # model_spec <- generate_tune_model_spec(method, params)
+  model_spec <- linear_reg(
+    penalty = tune(),
+    mixture = tune()
+  ) |>
+    set_engine("glmnet")
+  hardhat::extract_parameter_set_dials(model_spec)
+  model_spec <- rand_forest(
+    mode = "regression",
+    trees = tune(),
+    mtry = tune()
+  ) |>
+    set_engine("ranger")
+  hardhat::extract_parameter_set_dials(model_spec)
+
+  # workflow specification
+  wkfl_spec <- workflow() |>
+    add_recipe(rcp_spec) |>
+    add_model(model_spec)
+
+  # grid specification
+  grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
+
+  # tuning
+  if (n_folds > 10 | grid_size > 25) {
+    doFuture::registerDoFuture()
+    future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
+    message("Number of parallel workers: ", future::nbrOfWorkers())
+  }
+  tune_fit <- wkfl_spec |>
+    tune::tune_grid(
+      resamples = cv_splits,
+      grid = grid_spec,
+      metrics = modeltime::default_forecast_accuracy_metric_set(),
+      control = tune::control_grid(save_pred = FALSE)
+    )
+  future::plan(strategy = "sequential")
+
+  # pick best
+  best_fit <- tune::show_best(tune_fit, metric = tolower(validation_metric), n = 1)
+
+  # finalize workflow (fit to training with optimal values)
+  wkfl_fit <- wkfl_spec |>
+    tune::finalize_workflow(best_fit) |>
+    fit(train_tbl)
+
+  return(wkfl_fit)
+
+}
+
+
+# function to generate the model specification for tuning
+generate_tune_model_spec <- function(method, params) {
+
+  if (method == "Prophet") {
+
+    if (params$auto_prophet) {
+      model_spec <- prophet_reg() |>
+        set_engine("prophet")
+    } else {
+      model_spec <- prophet_reg(
+        growth = params$growth,
+        changepoint_num = params$changepoint_num,
+        changepoint_range = params$changepoint_range,
+        season = params$prophet_season,
+        seasonality_yearly = params$seasonality_yearly,
+        seasonality_weekly = params$seasonality_weekly,
+        seasonality_daily = params$seasonality_daily,
+        prior_scale_changepoints = params$prior_scale_changepoints,
+        prior_scale_seasonality = params$prior_scale_seasonality,
+        prior_scale_holidays = params$prior_scale_holidays,
+        logistic_cap = params$logistic_cap,
+        logistic_floor = params$logistic_floor
+      ) |>
+        set_engine("prophet")
+    }
+
+  } else if (method == "Elastic Net") {
+
+    model_spec <- linear_reg(
+      mode = "regression",
+      penalty = params$penalty,
+      mixture = params$mixture
+    ) |>
+      set_engine(engine = "glmnet")
+
+  } else if (method == "MARS") {
+
+    model_spec <- mars(
+      mode = "regression",
+      num_terms = params$num_terms,
+      prod_degree = params$prod_degree,
+      prune_method = params$prune_method
+    ) |>
+      set_engine("earth") # endspan = 100
+
+  } else if (method == "KNN") {
+
+    model_spec <- nearest_neighbor(
+      mode = "regression",
+      neighbors = params$neighbors
+    ) |>
+      set_engine("kknn")
+
+  } else if (method == "SVM") {
+
+    if (params$boundary == "linear") {
+      model_spec <- svm_linear(
+        mode = "regression",
+        cost = params$cost,
+        margin = params$margin
+      ) |>
+        set_engine("kernlab")
+    } else {
+      model_spec <- svm_rbf(
+        mode = "regression",
+        cost = params$cost,
+        margin = params$margin
+      ) |>
+        set_engine("kernlab")
+    }
+
+  } else if (method == "Random Forest") {
+
+    model_spec <- rand_forest(
+      mode = "regression",
+      mtry = params$rf_mtry,
+      trees = params$rf_trees,
+      min_n = params$rf_min_n
+    ) |>
+      set_engine("ranger")
+
+  } else if (method == "Boosted Trees") {
+
+    if (params$boost_method == "XGBoost") {
+      model_spec <- boost_tree(
+        mode = "regression",
+        mtry = params$boost_mtry,
+        trees = params$boost_trees,
+        min_n = params$boost_min_n,
+        tree_depth = params$boost_tree_depth,
+        learn_rate = params$boost_learn_rate,
+        loss_reduction = params$boost_loss_reduction,
+        sample_size = params$boost_sample_size
+      ) |>
+        set_engine("xgboost")
+    } else if (params$boost_method == "LightGBM") {
+      model_spec <- boost_tree(
+        mode = "regression",
+        mtry = params$boost_mtry,
+        trees = params$boost_trees,
+        min_n = params$boost_min_n,
+        tree_depth = params$boost_tree_depth,
+        learn_rate = params$boost_learn_rate,
+        loss_reduction = params$boost_loss_reduction,
+        sample_size = params$boost_sample_size
+      ) |>
+        set_engine("lightgbm")
+    } else {
+      stop(paste("Unknown Boosting method", params$boost_method))
+    }
+
+  } else if (method == "Cubist") {
+
+    model_spec <- cubist_rules(
+      committees = params$committees,
+      neighbors = params$cub_neighbors,
+      max_rules = params$max_rules
+    ) |>
+      set_engine("Cubist")
+
+  } else if (method == "Feed-Forward") {
+
+    model_spec <- mlp(
+      mode = "regression",
+      hidden_units = params$ff_hidden_units,
+      penalty = params$ff_penalty,
+      epochs = params$ff_epochs,
+      dropout = params$ff_dropout,
+      learn_rate = params$ff_learn_rate
+    ) |>
+      set_engine("nnet")
+
+  } else if (method == "Feed-Forward AR") {
+
+    model_spec <- nnetar_reg(
+      mode = "regression",
+      non_seasonal_ar = params$ffar_non_seasonal_ar,
+      seasonal_ar = params$ffar_seasonal_ar,
+      hidden_units = params$ffar_hidden_units,
+      penalty = params$ffar_penalty,
+      epochs = params$ffar_epochs,
+      num_networks = params$ffar_num_networks
+    ) |>
+      set_engine("nnetar")
+
+  } else if (method == "ARIMA-Boost") {
+
+    model_spec <- arima_boost(
+      mode = "regression",
+      mtry = params$arima_boost_mtry,
+      trees = params$arima_boost_trees,
+      min_n = params$arima_boost_min_n,
+      tree_depth = params$arima_boost_tree_depth,
+      learn_rate = params$arima_boost_learn_rate,
+      loss_reduction = params$arima_boost_loss_reduction,
+      sample_size = params$arima_boost_sample_size
+    ) |>
+      set_engine("auto_arima_xgboost")
+
+  } else if (method == "Prophet-Boost") {
+
+    model_spec <- prophet_boost(
+      mode = "regression",
+      mtry = params$prophet_boost_mtry,
+      trees = params$prophet_boost_trees,
+      min_n = params$prophet_boost_min_n,
+      tree_depth = params$prophet_boost_tree_depth,
+      learn_rate = params$prophet_boost_learn_rate,
+      loss_reduction = params$prophet_boost_loss_reduction,
+      sample_size = params$prophet_boost_sample_size
+    ) |>
+      set_engine("prophet_xgboost")
+
+  } else {
+    stop(paste("Unknown method", method))
+  }
+
+  return(model_spec)
 
 }

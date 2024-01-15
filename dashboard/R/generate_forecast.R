@@ -1,5 +1,8 @@
 # function to forecast using time series methods
-generate_forecast <- function(fitted_model_list, data, method, n_future, n_assess, assess_type) {
+generate_forecast <- function(
+    fitted_model_list, data, method, n_future, n_assess, assess_type,
+    ensemble_method = NULL
+  ) {
 
   splits <- timetk::time_series_split(
     data, date_var = date,
@@ -20,6 +23,17 @@ generate_forecast <- function(fitted_model_list, data, method, n_future, n_asses
     modeltime_tbl <- modeltime_tbl |>
       modeltime::add_modeltime_model(model = fitted_model_list[[i]]) |>
       modeltime::update_modeltime_description(.model_id = i, .new_model_desc = method[i])
+  }
+
+  # ensemble
+  if (!is.null(ensemble_method)) {
+    weights <- modeltime_tbl |>
+      modeltime::modeltime_calibrate(new_data = test_tbl) |>
+      modeltime::modeltime_accuracy(new_data = test_tbl) |>
+      dplyr::transmute(rank = dplyr::min_rank(-rmse)) |>
+      dplyr::pull("rank") # weights / sum(weights)
+    ensemble_tbl <- fit_ensemble(modeltime_tbl, ensemble_method, weights)
+    modeltime_tbl <- modeltime::combine_modeltime_tables(modeltime_tbl, ensemble_tbl)
   }
 
   # calibration
@@ -74,3 +88,4 @@ generate_forecast <- function(fitted_model_list, data, method, n_future, n_asses
   return(res)
 
 }
+

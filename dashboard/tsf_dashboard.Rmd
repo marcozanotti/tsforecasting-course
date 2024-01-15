@@ -23,7 +23,7 @@ runtime: shiny
 <!-- move to another github repo -->
 <!-- documentazione in alto a destra -->
 
-<!-- pensare e aggiungere la sezione di ensemble-combine (con in mente il save) -->
+<!-- fare la funzione parse_parameters per ottenere i nomi da mostrare in UI dal parametro -->
 <!-- pensare e aggiungere la sezione di optimize tuning (con in mente il save + use optimize in altre sezioni) -->
 <!-- pensare e aggiungere il save del modello sia in Test & Evaluate sia in Optimize (da usare in Compare/Combine al posto dei default) -->
 <!-- aggiungere metodi di automl -->
@@ -54,22 +54,26 @@ pkgs <- c(
 )
 install_and_load(pkgs)
 
-set_options()
 datasets <- c(
   "Air Passengers", "EU Population", # "Electricity Demand", 
   "People Traffic", "Stock Price", "Tobacco Prod", ""
 )
+
+set_options()
+
 methods <- getOption("tsf.dashboard.methods")
 ts_methods <- methods$ts
 ml_methods <- methods$ml
 dl_methods <- methods$dl
 mix_methods <- methods$mix
 ens_methods <- methods$ens
+stk_methods <- methods$stk
 methods <- c(ts_methods, ml_methods, dl_methods, mix_methods)
 
 methods_params <- getOption("tsf.dashboard.methods_params")
-methods_params_cl <- methods_params |> 
-  map(~ stringr::str_to_title(stringr::str_replace_all(., "_", " ")))
+methods_params_cl <- methods_params |> map(clean_chr)
+
+metrics <- toupper(getOption("tsf.dashboard.metrics"))
 ```
 
 
@@ -1051,11 +1055,11 @@ useShinyjs(rmd = TRUE) # use Shiny JavaScript to allow delay on buttons
 dropdownButton(
   numericInput(
     inputId = "tune_n_future", label = "Forecast Horizon", 
-    value = 12, min = 1, max = Inf, step = 1, width = "100%"
+    value = 12, min = 1, max = Inf, step = 1
   ),
   numericInput(
     inputId = "tune_n_assess", label = "Assessment Period", 
-    value = 24, min = 1, max = Inf, step = 1, width = "100%"
+    value = 24, min = 1, max = Inf, step = 1
   ), 
   prettyRadioButtons(
     inputId = "tune_assess_type", label = "Assessment Type", 
@@ -1068,8 +1072,16 @@ dropdownButton(
     inline = TRUE
   ),
   sliderInput(
-    inputId = "tune_k", label = "Folds", 
-    min = 2, max = 10, value = 5, step = 1
+    inputId = "tune_n_folds", label = "Folds", 
+    min = 2, max = 50, value = 5, step = 1
+  ),
+  selectInput(
+    inputId = "tune_metric", label = "Validation Metric", 
+    choices = metrics, selected = "RMSE"
+  ),
+  sliderInput(
+    inputId = "tune_grid_size", label = "Grid Size", 
+    value = 10, min = 1, max = 200, step = 10
   ),
   icon = icon("gear"), width = "200px", size = "sm", circle = TRUE,
   tooltip = tooltipOptions(title = "Click to see inputs!")
@@ -1095,7 +1107,9 @@ observeEvent(
     updateNumericInput(session = session, inputId = "tune_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "tune_assess_type", selected = "Rolling")
     updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
-    updateSliderInput(session = session, inputId = "tune_k", value = 5)
+    updateSliderInput(session = session, inputId = "tune_n_folds", value = 5)
+    updateSelectInput(session = session, inputId = "tune_metric", selected = "RMSE")
+    updateSliderInput(session = session, inputId = "tune_grid_size", value = 10)
     updateSelectInput(session = session, inputId = "tune_method", selected = ml_methods[2])
     updatePickerInput(session = session, inputId = "tune_elanet", selected = methods_params_cl[["Elastic Net"]][2])
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
@@ -1176,8 +1190,14 @@ pickerInput(
   options =  list("actions-box" = TRUE)
 )
 
+pickerInput(
+  inputId = "stk_type", label = h3("Stacking Method"), 
+  choices = stk_methods, selected = stk_methods[1], multiple = TRUE,
+  options =  list("actions-box" = TRUE)
+)
+
 br()
-materialSwitch(inputId = "ens_tune", label = "Tune algorithms?", value = FALSE, status = "primary")
+awesomeCheckbox(inputId = "ens_tune", label = "Use optimized algorithms?", value = FALSE)
 br()
 
 actionButton(inputId = "ens_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -1196,12 +1216,80 @@ observeEvent(
 )
 ```
 
-Row 1 {data-height=500}
+```{r}
+ensemble_results <- eventReactive(
+  eventExpr = input$ens_apply_forecast,
+  valueExpr = {
+    map(
+      input$ens_method, 
+      ~ fit_model(
+        data = data_cleaned(), method = ., params = input, 
+        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type, seed = 1992
+      )
+    ) |> 
+      generate_forecast(
+        data = data_cleaned(), method = input$ens_method, n_future = input$ens_n_future,
+        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type,
+        ensemble_method = input$ens_type
+      )
+  }
+)
+```
+
+
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
-### Forecasts Results {.no-padding}
+### Test Forecasts {.no-padding}
 
-COMING SOON
+```{r}
+output$plot_ens_test_forecast <- renderPlotly({
+  ensemble_results()$test_forecast |> 
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_ens_test_forecast")
+```
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+output$plot_ens_oos_forecast <- renderPlotly({
+  ensemble_results()$oos_forecast |> 
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_ens_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {data-width=600 .no-padding}
+
+```{r}
+output$ens_accuracy_table <- renderDT({
+  ensemble_results()$accuracy |> 
+    format_accuracy(single_method = FALSE) |>
+    filter(Type == "Test") |> 
+    datatable(
+      options = list(
+        ordering = TRUE, pageLength = 6, lengthChange = FALSE, searching = FALSE, 
+        info = FALSE, paging = FALSE, scrollCollapse = TRUE, scrollY = 300
+      ), 
+      rownames = FALSE
+    )
+})
+DTOutput(outputId = "ens_accuracy_table")
+```
+
+### Algorithm Summary {data-width=400 .no-padding}
+
+```{r}
+output$ens_model_summary <- renderPrint({
+  ensemble_results()$fit
+})
+verbatimTextOutput(outputId = "ens_model_summary")
+```
 
 
 
@@ -1264,127 +1352,3 @@ Row 1 {data-height=500}
 
 COMING SOON
 
-
-
-
-```{r}
-# TEST & EVALUATE
-# data_selected <- get_data(datasets[1])
-# ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
-# input <- list(
-#   n_future = 12,
-#   n_assess = 24,
-#   assess_type = "Rolling",
-#   method = "ETS",
-#   error = "auto",
-#   trend = "auto",
-#   season = "auto",
-#   damping = "auto",
-#   smooth_level = 0.1,
-#   smooth_trend = 0.1,
-#   smooth_season = 0.1
-# )
-# input <- list(
-#   n_future = 12,
-#   n_assess = 24,
-#   assess_type = "Rolling",
-#   method = "Elastic Net",
-#   penalty = 1,
-#   mixture = 0.5
-# )
-# input <- list(
-#   n_future = 12,
-#   n_assess = 24,
-#   assess_type = "Rolling",
-#   method = "Rolling Average",
-#   window_size = 12
-# )
-# 
-# fitted_model <- fit_model(
-#   data = data_selected, method = input$method, params = input,
-#   n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
-# )
-# forecast_results <- generate_forecast(
-#   fitted_model = fitted_model, data = data_selected,
-#   method = input$method, n_future = input$n_future,
-#   n_assess = input$n_assess, assess_type = input$assess_type
-# )
-# 
-# data = data_selected
-# method = input$method
-# params = input
-# n_assess = input$n_assess
-# assess_type = input$assess_type
-# seed = 1992
-# data_splits = fitted_model$splits
-# fitted_model = fitted_model$fit
-# n_future = input$n_future
-# 
-# forecast_results$splits |>
-#   tk_time_series_cv_plan() |>
-#   plot_time_series_cv_plan(date, value)
-# forecast_results$fit
-# forecast_results$residuals
-# forecast_results$accuracy
-# forecast_results$test_forecast |> plot_modeltime_forecast()
-# forecast_results$oos_forecast |> plot_modeltime_forecast()
-# 
-# 
-# # COMPARE 
-# data_selected <- get_data(datasets[1])
-# ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
-# input <- list(
-#   n_future = 12,
-#   n_assess = 24,
-#   assess_type = "Rolling",
-#   method = c("ETS", "SARIMA"),
-#   auto_ets = TRUE,
-#   error = "auto",
-#   trend = "auto",
-#   season = "auto",
-#   damping = "auto",
-#   smooth_level = 0.1,
-#   smooth_trend = 0.1,
-#   smooth_season = 0.1,
-#   auto_arima = TRUE,
-#   non_seasonal_ar = 1,
-#   non_seasonal_differences = 1,
-#   non_seasonal_ma = 1,
-#   seasonal_ar = 1,
-#   seasonal_differences = 1,
-#   seasonal_ma = 1
-# )
-# 
-# fitted_model_list <- map(
-#   input$method,
-#   ~ fit_model(
-#     data = data_selected, method = ., params = input,
-#     n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
-#   )
-# )
-# forecast_results <- generate_forecast(
-#   fitted_model_list = fitted_model_list, data = data_selected,
-#   method = input$method, n_future = input$n_future,
-#   n_assess = input$n_assess, assess_type = input$assess_type
-# )
-# 
-# res <- map(
-#   input$method,
-#   ~ fit_model(
-#     data = data_selected,
-#     method = .,
-#     params = input,
-#     n_assess = input$n_assess,
-#     assess_type = input$assess_type,
-#     seed = 1992
-#   )
-# ) |>
-#   generate_forecast(
-#     data = data_selected,
-#     method = input$method,
-#     n_future = input$n_future,
-#     n_assess = input$n_assess,
-#     assess_type = input$assess_type
-#   )
-# res$accuracy |> format_accuracy(single_method = FALSE) |> filter(Type == "Test")
-```
