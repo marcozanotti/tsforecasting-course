@@ -20,16 +20,17 @@ runtime: shiny
 <!-- reset dataset uploaded -->
 <!-- cambiare logo -->
 <!-- deployment su github actions -->
+<!-- move to another github repo -->
+<!-- documentazione in alto a destra -->
 
-<!-- pensare e aggiungere la sezione di ensemble-combine -->
-<!-- pensare e aggiungere la sezione di optimize tuning -->
-<!-- pensare e aggiungere la sezione di compare-run competition -->
+<!-- pensare e aggiungere la sezione di compare-run competition (con in mente il save) -->
+<!-- pensare e aggiungere la sezione di ensemble-combine (con in mente il save) -->
+<!-- pensare e aggiungere la sezione di optimize tuning (con in mente il save) -->
 <!-- pensare e aggiungere il save del modello sia in Test & Evaluate sia in Optimize (da usare in Compare/Combine al posto dei default) -->
 <!-- aggiungere metodi di automl -->
 <!-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) -->
-<!-- pensare e aggiungere la sezione di feature engineering -->
+<!-- pensare e aggiungere la sezione di feature engineering (con in mente il save) -->
 <!-- modificare autput modello con parsing -->
-<!-- documentazione in alto a destra -->
 
 ```{r setup, include=FALSE, message=FALSE}
 source("R/utils.R")
@@ -45,7 +46,7 @@ source("R/generate_forecast.R")
 pkgs <- c(
   "tidyverse", "tsibbledata", "janitor", "skimr", "vroom",
   "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
-  "randomForest", "ranger", "xgboost", "treesnip", "lightgbm", "catboost",
+  "randomForest", "ranger", "xgboost", "treesnip", "lightgbm",
   "Cubist", "rules",
   "tidymodels", "modeltime",
   "plotly", "DT", "timetk",
@@ -141,17 +142,8 @@ output$data_table <- renderDT({
   data_selected() |>
       datatable(
         options = list(
-          ordering = TRUE,
-          pageLength = 20,
-          lengthChange = TRUE,
-          # FALSE
-          searching = TRUE,
-          # FALSE
-          info = FALSE,
-          paging = TRUE,
-          scrollY = 560,
-          # 250
-          scrollCollapse = TRUE
+          ordering = TRUE, pageLength = 20, lengthChange = TRUE, searching = TRUE, 
+          info = FALSE, paging = TRUE, scrollCollapse = TRUE, scrollY = 560 # 250
         )
       )
 })
@@ -174,7 +166,7 @@ conditionalPanel(
 
 
 
-Visualize, & Transform {data-navmenu="Analyze" data-orientation=rows}
+Visualize & Transform {data-navmenu="Analyze" data-orientation=rows}
 ===========================================================================
 
 Input {.sidebar}
@@ -439,7 +431,7 @@ test_results <- reactive({
 ```
 
 
-Row 1 {data-height=500}
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
 ### 
@@ -463,7 +455,7 @@ DTOutput(outputId = "test_table")
 ```
 
 
-Row 1 {data-height=500}
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
 ### {.no-padding}
@@ -803,22 +795,23 @@ conditionalPanel(
 forecast_results <- eventReactive(
   eventExpr = input$apply_forecast,
   valueExpr = {
-    data_cleaned() |>
-      fit_model(
-        method = input$method, params = input, 
-        n_assess = input$n_assess, assess_type = input$assess_type, 
-        seed = 1992
-      ) |> 
+    map(
+      input$method, 
+      ~ fit_model(
+        data = data_cleaned(), method = ., params = input, 
+        n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+      )
+    ) |> 
       generate_forecast(
         data = data_cleaned(), method = input$method, n_future = input$n_future,
         n_assess = input$n_assess, assess_type = input$assess_type
-    )
+      )
   }
 )
 ```
 
 
-Row 1 {data-height=500}
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
 ### Test Forecasts {.no-padding}
@@ -853,7 +846,7 @@ plotlyOutput(outputId = "plot_oos_forecast")
 ```
 
 
-Row 2 {data-height=500} 
+Row {data-height=500} 
 ---------------------------------------------------------------------------
 
 ### Evaluation Metrics {.no-padding}
@@ -861,21 +854,11 @@ Row 2 {data-height=500}
 ```{r}
 output$accuracy_table <- renderDT({
   forecast_results()$accuracy |>
-    select(-1, -2) |>
-    rename("Type" = ".type") |>
-    rename_with(.fn = toupper, .cols = -1) |>
-    relocate("ME", .after = 1) |> 
-    mutate(across(where(is.numeric), ~round(., 2))) |>
-    pivot_longer(cols = -1, names_to = "Metric", values_to = "Value") |>
-    pivot_wider(names_from = "Type", values_from = "Value") |>
+    format_accuracy(single_method = TRUE) |>
     datatable(
       options = list(
-        ordering = FALSE,
-        pageLength = 20,
-        lengthChange = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        paging = FALSE
+        ordering = FALSE, pageLength = 20, lengthChange = FALSE, searching = FALSE,
+        info = FALSE, paging = FALSE
       ), 
       rownames = FALSE
     )
@@ -920,89 +903,6 @@ output$plot_resid_acf <- renderPlotly({
     )
 })
 plotlyOutput(outputId = "plot_resid_acf")
-```
-
-
-```{r}
-# testing
-data_selected <- get_data(datasets[1])
-ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
-input <- list(
-  n_future = 12,
-  n_assess = 24,
-  assess_type = "Rolling",
-  method = "ETS",
-  error = "auto",
-  trend = "auto",
-  season = "auto",
-  damping = "auto",
-  smooth_level = 0.1,
-  smooth_trend = 0.1,
-  smooth_season = 0.1
-)
-input <- list(
-  n_future = 12,
-  n_assess = 24,
-  assess_type = "Rolling",
-  method = "Elastic Net",
-  penalty = 1,
-  mixture = 0.5
-)
-input <- list(
-  n_future = 12,
-  n_assess = 24,
-  assess_type = "Rolling",
-  method = "Rolling Average",
-  window_size = 12
-)
-
-fitted_model <- fit_model(
-  data = data_selected, method = input$method, params = input,
-  n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
-)
-
-forecast_results <- generate_forecast(
-  fitted_model = fitted_model, data = data_selected,
-  method = input$method, n_future = input$n_future,
-  n_assess = input$n_assess, assess_type = input$assess_type
-)
-
-data_selected |>
-  fit_model(
-    method = input$method,
-    params = input,
-    n_assess = input$n_assess,
-    assess_type = input$assess_type,
-    seed = 1992
-  ) |>
-  generate_forecast(
-    data = data_selected,
-    method = input$method,
-    n_future = input$n_future,
-    n_assess = input$n_assess,
-    assess_type = input$assess_type
-  )
-
-
-
-data = data_selected
-method = input$method
-params = input
-n_assess = input$n_assess
-assess_type = input$assess_type
-seed = 1992
-data_splits = fitted_model$splits
-fitted_model = fitted_model$fit
-n_future = input$n_future
-
-forecast_results$splits |>
-  tk_time_series_cv_plan() |>
-  plot_time_series_cv_plan(date, value)
-forecast_results$fit
-forecast_results$residuals
-forecast_results$accuracy
-forecast_results$test_forecast |> plot_modeltime_forecast()
-forecast_results$oos_forecast |> plot_modeltime_forecast()
 ```
 
 
@@ -1152,12 +1052,79 @@ observeEvent(
 )
 ```
 
-Row 1 {data-height=500}
+```{r}
+compare_results <- eventReactive(
+  eventExpr = input$comp_apply_forecast,
+  valueExpr = {
+    map(
+      input$comp_method, 
+      ~ fit_model(
+        data = data_cleaned(), method = ., params = input, 
+        n_assess = input$comp_n_assess, assess_type = input$comp_assess_type, seed = 1992
+      )
+    ) |> 
+      generate_forecast(
+        data = data_cleaned(), method = input$comp_method, n_future = input$comp_n_future,
+        n_assess = input$comp_n_assess, assess_type = input$comp_assess_type
+      )
+  }
+)
+```
+
+
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
-### Forecasts Results {.no-padding}
+### Test Forecasts {.no-padding}
 
-COMING SOON
+```{r}
+output$plot_comp_test_forecast <- renderPlotly({
+  compare_results()$test_forecast |> 
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_comp_test_forecast")
+```
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+output$plot_comp_oos_forecast <- renderPlotly({
+  compare_results()$oos_forecast |> 
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_comp_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {data-width=600 .no-padding}
+
+```{r}
+output$comp_accuracy_table <- renderDT({
+  compare_results()$accuracy |> 
+    format_accuracy(single_method = FALSE) |>
+    filter(Type == "Test") |> 
+    datatable(
+      options = list(
+        ordering = TRUE, pageLength = 6, lengthChange = FALSE, searching = FALSE, 
+        info = FALSE, paging = FALSE, scrollCollapse = TRUE, scrollY = 300
+      ), 
+      rownames = FALSE
+    )
+})
+DTOutput(outputId = "comp_accuracy_table")
+```
+
+### Algorithm Summary {data-width=400 .no-padding}
+
+```{r}
+output$comp_model_summary <- renderPrint({
+  compare_results()$fit
+})
+verbatimTextOutput(outputId = "comp_model_summary")
+```
 
 
 
@@ -1298,3 +1265,127 @@ Row 1 {data-height=500}
 
 COMING SOON
 
+
+
+
+```{r}
+# TEST & EVALUATE
+# data_selected <- get_data(datasets[1])
+# ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = "ETS",
+#   error = "auto",
+#   trend = "auto",
+#   season = "auto",
+#   damping = "auto",
+#   smooth_level = 0.1,
+#   smooth_trend = 0.1,
+#   smooth_season = 0.1
+# )
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = "Elastic Net",
+#   penalty = 1,
+#   mixture = 0.5
+# )
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = "Rolling Average",
+#   window_size = 12
+# )
+# 
+# fitted_model <- fit_model(
+#   data = data_selected, method = input$method, params = input,
+#   n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+# )
+# forecast_results <- generate_forecast(
+#   fitted_model = fitted_model, data = data_selected,
+#   method = input$method, n_future = input$n_future,
+#   n_assess = input$n_assess, assess_type = input$assess_type
+# )
+# 
+# data = data_selected
+# method = input$method
+# params = input
+# n_assess = input$n_assess
+# assess_type = input$assess_type
+# seed = 1992
+# data_splits = fitted_model$splits
+# fitted_model = fitted_model$fit
+# n_future = input$n_future
+# 
+# forecast_results$splits |>
+#   tk_time_series_cv_plan() |>
+#   plot_time_series_cv_plan(date, value)
+# forecast_results$fit
+# forecast_results$residuals
+# forecast_results$accuracy
+# forecast_results$test_forecast |> plot_modeltime_forecast()
+# forecast_results$oos_forecast |> plot_modeltime_forecast()
+# 
+# 
+# # COMPARE 
+# data_selected <- get_data(datasets[1])
+# ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
+# input <- list(
+#   n_future = 12,
+#   n_assess = 24,
+#   assess_type = "Rolling",
+#   method = c("ETS", "SARIMA"),
+#   auto_ets = TRUE,
+#   error = "auto",
+#   trend = "auto",
+#   season = "auto",
+#   damping = "auto",
+#   smooth_level = 0.1,
+#   smooth_trend = 0.1,
+#   smooth_season = 0.1,
+#   auto_arima = TRUE,
+#   non_seasonal_ar = 1,
+#   non_seasonal_differences = 1,
+#   non_seasonal_ma = 1,
+#   seasonal_ar = 1,
+#   seasonal_differences = 1,
+#   seasonal_ma = 1
+# )
+# 
+# fitted_model_list <- map(
+#   input$method,
+#   ~ fit_model(
+#     data = data_selected, method = ., params = input,
+#     n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+#   )
+# )
+# forecast_results <- generate_forecast(
+#   fitted_model_list = fitted_model_list, data = data_selected,
+#   method = input$method, n_future = input$n_future,
+#   n_assess = input$n_assess, assess_type = input$assess_type
+# )
+# 
+# res <- map(
+#   input$method,
+#   ~ fit_model(
+#     data = data_selected,
+#     method = .,
+#     params = input,
+#     n_assess = input$n_assess,
+#     assess_type = input$assess_type,
+#     seed = 1992
+#   )
+# ) |>
+#   generate_forecast(
+#     data = data_selected,
+#     method = input$method,
+#     n_future = input$n_future,
+#     n_assess = input$n_assess,
+#     assess_type = input$assess_type
+#   )
+# res$accuracy |> format_accuracy(single_method = FALSE) |> filter(Type == "Test")
+```

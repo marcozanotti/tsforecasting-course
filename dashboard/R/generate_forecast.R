@@ -1,5 +1,5 @@
 # function to forecast using time series methods
-generate_forecast <- function(fitted_model, data, method, n_future, n_assess, assess_type) {
+generate_forecast <- function(fitted_model_list, data, method, n_future, n_assess, assess_type) {
 
   splits <- timetk::time_series_split(
     data, date_var = date,
@@ -9,16 +9,21 @@ generate_forecast <- function(fitted_model, data, method, n_future, n_assess, as
   )
   train_tbl <- training(splits) |> select(-id, -frequency)
   test_tbl <- testing(splits) |> select(-id, -frequency)
-  future_tbl <- data |>
-    future_frame(.date_var = date, .length_out = n_future)
+  future_tbl <- future_frame(data, .date_var = date, .length_out = n_future)
 
   # model summary
   # fitted_model
 
+  # modeltime table
+  modeltime_tbl <- modeltime::modeltime_table()
+  for (i in 1:length(method)) {
+    modeltime_tbl <- modeltime_tbl |>
+      modeltime::add_modeltime_model(model = fitted_model_list[[i]]) |>
+      modeltime::update_modeltime_description(.model_id = i, .new_model_desc = method[i])
+  }
+
   # calibration
-  calibration_tbl <- fitted_model |>
-    modeltime::modeltime_table() |>
-    modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = method) |>
+  calibration_tbl <- modeltime_tbl |>
     modeltime::modeltime_calibrate(new_data = test_tbl)
 
   # residuals
@@ -46,6 +51,10 @@ generate_forecast <- function(fitted_model, data, method, n_future, n_assess, as
   # refitting
   refit_tbl <- calibration_tbl |>
     modeltime::modeltime_refit(data = data)
+  for (i in 1:length(method)) {
+    refit_tbl <- refit_tbl |>
+      modeltime::update_modeltime_description(.model_id = i, .new_model_desc = method[i])
+  }
 
   # out-of-sample forecasting
   oos_forecast_tbl <- refit_tbl |>
@@ -56,7 +65,7 @@ generate_forecast <- function(fitted_model, data, method, n_future, n_assess, as
 
   res <- list(
     "splits" = splits,
-    "fit" = fitted_model,
+    "fit" = fitted_model_list,
     "residuals" = residuals_tbl,
     "accuracy" = accuracy_tbl,
     "test_forecast" = test_forecast_tbl,

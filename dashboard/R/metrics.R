@@ -40,3 +40,26 @@ me.data.frame <- function(data, truth, estimate, na_rm = TRUE, case_weights = NU
 
 }
 
+# function to format accuracy table
+format_accuracy <- function(accuracy_table, single_method = TRUE, digits = 2) {
+
+  if (single_method == TRUE) {
+    res <- accuracy_table |>
+      select(-1, -2) |>
+      rename("Type" = ".type") |>
+      rename_with(.fn = toupper, .cols = -c("Type")) |>
+      relocate("ME", .after = "Type") |>
+      mutate(across(where(is.numeric), ~round(., digits))) |>
+      pivot_longer(cols = -1, names_to = "Metric", values_to = "Value") |>
+      pivot_wider(names_from = "Type", values_from = "Value")
+  } else {
+    res <- accuracy_table |>
+      select(-1) |>
+      rename("Algorithm" = ".model_desc", "Type" = ".type") |>
+      rename_with(.fn = toupper, .cols = -c("Algorithm", "Type")) |>
+      relocate("ME", .after = "Type") |>
+      mutate(across(where(is.numeric), ~round(., digits)))
+  }
+  return(res)
+
+}
