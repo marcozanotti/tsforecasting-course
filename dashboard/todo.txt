@@ -11,8 +11,10 @@ Next steps:
 - documentazione in alto a destra
 
 To Do:
+- rimappare tune_elanet ecc
+- finire update_tune_model_parameters con mapping parametri (occhio, non mtry ma rf_mtry)
 - fare la funzione parse_parameters per ottenere i nomi da mostrare in UI dal parametro
-- pensare e aggiungere la sezione di optimize tuning
+
 - aggiungere metodi di automl (h2o)
 - pensare e aggiungere la sezione di stacking (LM + Elastic Net)
 - pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?)

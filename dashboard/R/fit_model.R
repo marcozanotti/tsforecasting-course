@@ -84,7 +84,7 @@ generate_model_spec <- function(method, params) {
   } else if (method == "Rolling Average") {
 
     model_spec <- window_reg(
-      window_size = params$window_size
+      window_size = !!params$window_size
     ) |>
       set_engine("window_function", window_function = mean, na.rm = TRUE)
 
@@ -95,13 +95,13 @@ generate_model_spec <- function(method, params) {
         set_engine("ets")
     } else {
       model_spec <- exp_smoothing(
-        error = params$error,
-        trend = params$trend,
-        season = params$season,
-        damping = params$damping,
-        smooth_level = params$smooth_level,
-        smooth_trend = params$smooth_trend,
-        smooth_seasonal = params$smooth_seasonal
+        error = !!params$error,
+        trend = !!params$trend,
+        season = !!params$season,
+        damping = !!params$damping,
+        smooth_level = !!params$smooth_level,
+        smooth_trend = !!params$smooth_trend,
+        smooth_seasonal = !!params$smooth_seasonal
       ) |>
         set_engine("ets")
     }
@@ -118,12 +118,12 @@ generate_model_spec <- function(method, params) {
         set_engine("auto_arima")
     } else {
       model_spec <- arima_reg(
-        non_seasonal_ar = params$non_seasonal_ar,
-        non_seasonal_differences = params$non_seasonal_differences,
-        non_seasonal_ma = params$non_seasonal_ma,
-        seasonal_ar = params$seasonal_ar,
-        seasonal_differences = params$seasonal_differences,
-        seasonal_ma = params$seasonal_ma
+        non_seasonal_ar = !!params$non_seasonal_ar,
+        non_seasonal_differences = !!params$non_seasonal_differences,
+        non_seasonal_ma = !!params$non_seasonal_ma,
+        seasonal_ar = !!params$seasonal_ar,
+        seasonal_differences = !!params$seasonal_differences,
+        seasonal_ma = !!params$seasonal_ma
       ) |>
         set_engine("arima")
     }
@@ -135,9 +135,9 @@ generate_model_spec <- function(method, params) {
         set_engine("tbats")
     } else {
       model_spec <- seasonal_reg(
-        seasonal_period_1 = params$tbats_seasonal_period_1,
-        seasonal_period_2 = params$tbats_seasonal_period_2,
-        seasonal_period_3 = params$tbats_seasonal_period_3
+        seasonal_period_1 = !!params$tbats_seasonal_period_1,
+        seasonal_period_2 = !!params$tbats_seasonal_period_2,
+        seasonal_period_3 = !!params$tbats_seasonal_period_3
       ) |>
         set_engine("tbats")
     }
@@ -150,9 +150,9 @@ generate_model_spec <- function(method, params) {
           set_engine("stlm_ets")
       } else {
         model_spec <- seasonal_reg(
-          seasonal_period_1 = params$stlm_seasonal_period_1,
-          seasonal_period_2 = params$stlm_seasonal_period_2,
-          seasonal_period_3 = params$stlm_seasonal_period_3
+          seasonal_period_1 = !!params$stlm_seasonal_period_1,
+          seasonal_period_2 = !!params$stlm_seasonal_period_2,
+          seasonal_period_3 = !!params$stlm_seasonal_period_3
         ) |>
           set_engine("stlm_ets")
       }
@@ -162,9 +162,9 @@ generate_model_spec <- function(method, params) {
           set_engine("stlm_arima")
       } else {
         model_spec <- seasonal_reg(
-          seasonal_period_1 = params$stlm_seasonal_period_1,
-          seasonal_period_2 = params$stlm_seasonal_period_2,
-          seasonal_period_3 = params$stlm_seasonal_period_3
+          seasonal_period_1 = !!params$stlm_seasonal_period_1,
+          seasonal_period_2 = !!params$stlm_seasonal_period_2,
+          seasonal_period_3 = !!params$stlm_seasonal_period_3
         ) |>
           set_engine("stlm_arima")
       }
@@ -177,18 +177,18 @@ generate_model_spec <- function(method, params) {
         set_engine("prophet")
     } else {
       model_spec <- prophet_reg(
-        growth = params$growth,
-        changepoint_num = params$changepoint_num,
-        changepoint_range = params$changepoint_range,
-        season = params$prophet_season,
-        seasonality_yearly = params$seasonality_yearly,
-        seasonality_weekly = params$seasonality_weekly,
-        seasonality_daily = params$seasonality_daily,
-        prior_scale_changepoints = params$prior_scale_changepoints,
-        prior_scale_seasonality = params$prior_scale_seasonality,
-        prior_scale_holidays = params$prior_scale_holidays,
-        logistic_cap = params$logistic_cap,
-        logistic_floor = params$logistic_floor
+        growth = !!params$growth,
+        changepoint_num = !!params$changepoint_num,
+        changepoint_range = !!params$changepoint_range,
+        season = !!params$prophet_season,
+        seasonality_yearly = !!params$seasonality_yearly,
+        seasonality_weekly = !!params$seasonality_weekly,
+        seasonality_daily = !!params$seasonality_daily,
+        prior_scale_changepoints = !!params$prior_scale_changepoints,
+        prior_scale_seasonality = !!params$prior_scale_seasonality,
+        prior_scale_holidays = !!params$prior_scale_holidays,
+        logistic_cap = !!params$logistic_cap,
+        logistic_floor = !!params$logistic_floor
       ) |>
         set_engine("prophet")
     }
@@ -202,8 +202,8 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- linear_reg(
       mode = "regression",
-      penalty = params$penalty,
-      mixture = params$mixture
+      penalty = !!params$penalty,
+      mixture = !!params$mixture
     ) |>
       set_engine(engine = "glmnet")
 
@@ -211,9 +211,9 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- mars(
       mode = "regression",
-      num_terms = params$num_terms,
-      prod_degree = params$prod_degree,
-      prune_method = params$prune_method
+      num_terms = !!params$num_terms,
+      prod_degree = !!params$prod_degree,
+      prune_method = !!params$prune_method
     ) |>
       set_engine("earth") # endspan = 100
 
@@ -221,7 +221,7 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- nearest_neighbor(
       mode = "regression",
-      neighbors = params$neighbors
+      neighbors = !!params$neighbors
     ) |>
       set_engine("kknn")
 
@@ -230,15 +230,15 @@ generate_model_spec <- function(method, params) {
     if (params$boundary == "linear") {
       model_spec <- svm_linear(
         mode = "regression",
-        cost = params$cost,
-        margin = params$margin
+        cost = !!params$cost,
+        margin = !!params$margin
       ) |>
         set_engine("kernlab")
     } else {
       model_spec <- svm_rbf(
         mode = "regression",
-        cost = params$cost,
-        margin = params$margin
+        cost = !!params$cost,
+        margin = !!params$margin
       ) |>
         set_engine("kernlab")
     }
@@ -247,9 +247,9 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- rand_forest(
       mode = "regression",
-      mtry = params$rf_mtry,
-      trees = params$rf_trees,
-      min_n = params$rf_min_n
+      mtry = !!params$rf_mtry,
+      trees = !!params$rf_trees,
+      min_n = !!params$rf_min_n
     ) |>
       set_engine("ranger")
 
@@ -258,25 +258,25 @@ generate_model_spec <- function(method, params) {
     if (params$boost_method == "XGBoost") {
       model_spec <- boost_tree(
         mode = "regression",
-        mtry = params$boost_mtry,
-        trees = params$boost_trees,
-        min_n = params$boost_min_n,
-        tree_depth = params$boost_tree_depth,
-        learn_rate = params$boost_learn_rate,
-        loss_reduction = params$boost_loss_reduction,
-        sample_size = params$boost_sample_size
+        mtry = !!params$boost_mtry,
+        trees = !!params$boost_trees,
+        min_n = !!params$boost_min_n,
+        tree_depth = !!params$boost_tree_depth,
+        learn_rate = !!params$boost_learn_rate,
+        loss_reduction = !!params$boost_loss_reduction,
+        sample_size = !!params$boost_sample_size
       ) |>
         set_engine("xgboost")
     } else if (params$boost_method == "LightGBM") {
       model_spec <- boost_tree(
         mode = "regression",
-        mtry = params$boost_mtry,
-        trees = params$boost_trees,
-        min_n = params$boost_min_n,
-        tree_depth = params$boost_tree_depth,
-        learn_rate = params$boost_learn_rate,
-        loss_reduction = params$boost_loss_reduction,
-        sample_size = params$boost_sample_size
+        mtry = !!params$boost_mtry,
+        trees = !!params$boost_trees,
+        min_n = !!params$boost_min_n,
+        tree_depth = !!params$boost_tree_depth,
+        learn_rate = !!params$boost_learn_rate,
+        loss_reduction = !!params$boost_loss_reduction,
+        sample_size = !!params$boost_sample_size
       ) |>
         set_engine("lightgbm")
     } else {
@@ -286,9 +286,9 @@ generate_model_spec <- function(method, params) {
   } else if (method == "Cubist") {
 
     model_spec <- cubist_rules(
-      committees = params$committees,
-      neighbors = params$cub_neighbors,
-      max_rules = params$max_rules
+      committees = !!params$committees,
+      neighbors = !!params$cub_neighbors,
+      max_rules = !!params$max_rules
     ) |>
       set_engine("Cubist")
 
@@ -296,11 +296,11 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- mlp(
       mode = "regression",
-      hidden_units = params$ff_hidden_units,
-      penalty = params$ff_penalty,
-      epochs = params$ff_epochs,
-      dropout = params$ff_dropout,
-      learn_rate = params$ff_learn_rate
+      hidden_units = !!params$ff_hidden_units,
+      penalty = !!params$ff_penalty,
+      epochs = !!params$ff_epochs,
+      dropout = !!params$ff_dropout,
+      learn_rate = !!params$ff_learn_rate
     ) |>
       set_engine("nnet")
 
@@ -308,12 +308,12 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- nnetar_reg(
       mode = "regression",
-      non_seasonal_ar = params$ffar_non_seasonal_ar,
-      seasonal_ar = params$ffar_seasonal_ar,
-      hidden_units = params$ffar_hidden_units,
-      penalty = params$ffar_penalty,
-      epochs = params$ffar_epochs,
-      num_networks = params$ffar_num_networks
+      non_seasonal_ar = !!params$ffar_non_seasonal_ar,
+      seasonal_ar = !!params$ffar_seasonal_ar,
+      hidden_units = !!params$ffar_hidden_units,
+      penalty = !!params$ffar_penalty,
+      epochs = !!params$ffar_epochs,
+      num_networks = !!params$ffar_num_networks
     ) |>
       set_engine("nnetar")
 
@@ -321,13 +321,13 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- arima_boost(
       mode = "regression",
-      mtry = params$arima_boost_mtry,
-      trees = params$arima_boost_trees,
-      min_n = params$arima_boost_min_n,
-      tree_depth = params$arima_boost_tree_depth,
-      learn_rate = params$arima_boost_learn_rate,
-      loss_reduction = params$arima_boost_loss_reduction,
-      sample_size = params$arima_boost_sample_size
+      mtry = !!params$arima_boost_mtry,
+      trees = !!params$arima_boost_trees,
+      min_n = !!params$arima_boost_min_n,
+      tree_depth = !!params$arima_boost_tree_depth,
+      learn_rate = !!params$arima_boost_learn_rate,
+      loss_reduction = !!params$arima_boost_loss_reduction,
+      sample_size = !!params$arima_boost_sample_size
     ) |>
       set_engine("auto_arima_xgboost")
 
@@ -335,13 +335,13 @@ generate_model_spec <- function(method, params) {
 
     model_spec <- prophet_boost(
       mode = "regression",
-      mtry = params$prophet_boost_mtry,
-      trees = params$prophet_boost_trees,
-      min_n = params$prophet_boost_min_n,
-      tree_depth = params$prophet_boost_tree_depth,
-      learn_rate = params$prophet_boost_learn_rate,
-      loss_reduction = params$prophet_boost_loss_reduction,
-      sample_size = params$prophet_boost_sample_size
+      mtry = !!params$prophet_boost_mtry,
+      trees = !!params$prophet_boost_trees,
+      min_n = !!params$prophet_boost_min_n,
+      tree_depth = !!params$prophet_boost_tree_depth,
+      learn_rate = !!params$prophet_boost_learn_rate,
+      loss_reduction = !!params$prophet_boost_loss_reduction,
+      sample_size = !!params$prophet_boost_sample_size
     ) |>
       set_engine("prophet_xgboost")
 
@@ -350,6 +350,30 @@ generate_model_spec <- function(method, params) {
   }
 
   return(model_spec)
+
+}
+
+# function to generate the model specification for tuning
+update_tune_model_parameters <- function(method, params) {
+
+  # function to get default tuning parameters
+  get_tune <- function(parameter, value) {
+    if (value == FALSE) {
+      get_default(parameter)
+    } else {
+      tune()
+    }
+  }
+
+  # rimappare il parametro tune_elanet
+
+  mth_params <- getOption("tsf.dashboard.methods_params")[["Elastic Net"]]
+  tune_params <- clean_chr_inv(params$tune_elanet)
+  is_to_tune <- mth_params %in% tune_params
+  params_list <- map2(mth_params, is_to_tune, get_tune) |> set_names(mth_params)
+  update_params <- c(params, params_list)
+
+  return(update_params)
 
 }
 
@@ -471,6 +495,7 @@ fit_model_tuning <- function(
     seed = 1992
 ) {
 
+  # check_parameters(method, params)
   set.seed(seed)
 
   # initial split
@@ -486,28 +511,14 @@ fit_model_tuning <- function(
   rcp_spec <- generate_recipe_spec(train_tbl, method)
 
   # model specification
-  # model_spec <- generate_tune_model_spec(method, params)
-  model_spec <- linear_reg(
-    penalty = tune(),
-    mixture = tune()
-  ) |>
-    set_engine("glmnet")
-  hardhat::extract_parameter_set_dials(model_spec)
-  model_spec <- rand_forest(
-    mode = "regression",
-    trees = tune(),
-    mtry = tune()
-  ) |>
-    set_engine("ranger")
-  hardhat::extract_parameter_set_dials(model_spec)
+  params_new <- update_tune_model_parameters(method, params)
+  model_spec <- generate_model_spec(method, params_new)
 
   # workflow specification
-  wkfl_spec <- workflow() |>
-    add_recipe(rcp_spec) |>
-    add_model(model_spec)
+  wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
 
   # grid specification
-  grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
+  # grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
 
   # tuning
   if (n_folds > 10 | grid_size > 25) {
@@ -518,202 +529,19 @@ fit_model_tuning <- function(
   tune_fit <- wkfl_spec |>
     tune::tune_grid(
       resamples = cv_splits,
-      grid = grid_spec,
+      grid = params$grid_size, # grid_spec
       metrics = modeltime::default_forecast_accuracy_metric_set(),
       control = tune::control_grid(save_pred = FALSE)
     )
   future::plan(strategy = "sequential")
 
-  # pick best
+  # picking best model
   best_fit <- tune::show_best(tune_fit, metric = tolower(validation_metric), n = 1)
 
-  # finalize workflow (fit to training with optimal values)
-  wkfl_fit <- wkfl_spec |>
-    tune::finalize_workflow(best_fit) |>
-    fit(train_tbl)
+  # fitting (fit to training with optimal values)
+  wkfl_fit <- wkfl_spec |> tune::finalize_workflow(best_fit) |> fit(train_tbl)
 
   return(wkfl_fit)
 
 }
 
-
-# function to generate the model specification for tuning
-generate_tune_model_spec <- function(method, params) {
-
-  if (method == "Prophet") {
-
-    if (params$auto_prophet) {
-      model_spec <- prophet_reg() |>
-        set_engine("prophet")
-    } else {
-      model_spec <- prophet_reg(
-        growth = params$growth,
-        changepoint_num = params$changepoint_num,
-        changepoint_range = params$changepoint_range,
-        season = params$prophet_season,
-        seasonality_yearly = params$seasonality_yearly,
-        seasonality_weekly = params$seasonality_weekly,
-        seasonality_daily = params$seasonality_daily,
-        prior_scale_changepoints = params$prior_scale_changepoints,
-        prior_scale_seasonality = params$prior_scale_seasonality,
-        prior_scale_holidays = params$prior_scale_holidays,
-        logistic_cap = params$logistic_cap,
-        logistic_floor = params$logistic_floor
-      ) |>
-        set_engine("prophet")
-    }
-
-  } else if (method == "Elastic Net") {
-
-    model_spec <- linear_reg(
-      mode = "regression",
-      penalty = params$penalty,
-      mixture = params$mixture
-    ) |>
-      set_engine(engine = "glmnet")
-
-  } else if (method == "MARS") {
-
-    model_spec <- mars(
-      mode = "regression",
-      num_terms = params$num_terms,
-      prod_degree = params$prod_degree,
-      prune_method = params$prune_method
-    ) |>
-      set_engine("earth") # endspan = 100
-
-  } else if (method == "KNN") {
-
-    model_spec <- nearest_neighbor(
-      mode = "regression",
-      neighbors = params$neighbors
-    ) |>
-      set_engine("kknn")
-
-  } else if (method == "SVM") {
-
-    if (params$boundary == "linear") {
-      model_spec <- svm_linear(
-        mode = "regression",
-        cost = params$cost,
-        margin = params$margin
-      ) |>
-        set_engine("kernlab")
-    } else {
-      model_spec <- svm_rbf(
-        mode = "regression",
-        cost = params$cost,
-        margin = params$margin
-      ) |>
-        set_engine("kernlab")
-    }
-
-  } else if (method == "Random Forest") {
-
-    model_spec <- rand_forest(
-      mode = "regression",
-      mtry = params$rf_mtry,
-      trees = params$rf_trees,
-      min_n = params$rf_min_n
-    ) |>
-      set_engine("ranger")
-
-  } else if (method == "Boosted Trees") {
-
-    if (params$boost_method == "XGBoost") {
-      model_spec <- boost_tree(
-        mode = "regression",
-        mtry = params$boost_mtry,
-        trees = params$boost_trees,
-        min_n = params$boost_min_n,
-        tree_depth = params$boost_tree_depth,
-        learn_rate = params$boost_learn_rate,
-        loss_reduction = params$boost_loss_reduction,
-        sample_size = params$boost_sample_size
-      ) |>
-        set_engine("xgboost")
-    } else if (params$boost_method == "LightGBM") {
-      model_spec <- boost_tree(
-        mode = "regression",
-        mtry = params$boost_mtry,
-        trees = params$boost_trees,
-        min_n = params$boost_min_n,
-        tree_depth = params$boost_tree_depth,
-        learn_rate = params$boost_learn_rate,
-        loss_reduction = params$boost_loss_reduction,
-        sample_size = params$boost_sample_size
-      ) |>
-        set_engine("lightgbm")
-    } else {
-      stop(paste("Unknown Boosting method", params$boost_method))
-    }
-
-  } else if (method == "Cubist") {
-
-    model_spec <- cubist_rules(
-      committees = params$committees,
-      neighbors = params$cub_neighbors,
-      max_rules = params$max_rules
-    ) |>
-      set_engine("Cubist")
-
-  } else if (method == "Feed-Forward") {
-
-    model_spec <- mlp(
-      mode = "regression",
-      hidden_units = params$ff_hidden_units,
-      penalty = params$ff_penalty,
-      epochs = params$ff_epochs,
-      dropout = params$ff_dropout,
-      learn_rate = params$ff_learn_rate
-    ) |>
-      set_engine("nnet")
-
-  } else if (method == "Feed-Forward AR") {
-
-    model_spec <- nnetar_reg(
-      mode = "regression",
-      non_seasonal_ar = params$ffar_non_seasonal_ar,
-      seasonal_ar = params$ffar_seasonal_ar,
-      hidden_units = params$ffar_hidden_units,
-      penalty = params$ffar_penalty,
-      epochs = params$ffar_epochs,
-      num_networks = params$ffar_num_networks
-    ) |>
-      set_engine("nnetar")
-
-  } else if (method == "ARIMA-Boost") {
-
-    model_spec <- arima_boost(
-      mode = "regression",
-      mtry = params$arima_boost_mtry,
-      trees = params$arima_boost_trees,
-      min_n = params$arima_boost_min_n,
-      tree_depth = params$arima_boost_tree_depth,
-      learn_rate = params$arima_boost_learn_rate,
-      loss_reduction = params$arima_boost_loss_reduction,
-      sample_size = params$arima_boost_sample_size
-    ) |>
-      set_engine("auto_arima_xgboost")
-
-  } else if (method == "Prophet-Boost") {
-
-    model_spec <- prophet_boost(
-      mode = "regression",
-      mtry = params$prophet_boost_mtry,
-      trees = params$prophet_boost_trees,
-      min_n = params$prophet_boost_min_n,
-      tree_depth = params$prophet_boost_tree_depth,
-      learn_rate = params$prophet_boost_learn_rate,
-      loss_reduction = params$prophet_boost_loss_reduction,
-      sample_size = params$prophet_boost_sample_size
-    ) |>
-      set_engine("prophet_xgboost")
-
-  } else {
-    stop(paste("Unknown method", method))
-  }
-
-  return(model_spec)
-
-}

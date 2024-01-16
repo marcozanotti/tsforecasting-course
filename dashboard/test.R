@@ -200,6 +200,17 @@ input <- list(
   grid_size = 10,
   tune_elanet = c("Mixture")
 )
+input <- list(
+  n_future = 12,
+  n_assess = 24,
+  assess_type = "Rolling",
+  method = "Random Forest",
+  valid_type = "K-Fold CV",
+  n_folds = 5,
+  metric = "RMSE",
+  grid_size = 10,
+  tune_rf = c("rf_mtry")
+)
 
 data = data_selected
 params = input
