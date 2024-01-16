@@ -365,10 +365,9 @@ update_tune_model_parameters <- function(method, params) {
     }
   }
 
-  # rimappare il parametro tune_elanet
-
-  mth_params <- getOption("tsf.dashboard.methods_params")[["Elastic Net"]]
-  tune_params <- clean_chr_inv(params$tune_elanet)
+  mth_params <- getOption("tsf.dashboard.methods_params")[[method]]
+  prm_name <- grep("_xx_", names(params), value = TRUE)
+  tune_params <- clean_chr_inv(params[[prm_name]])
   is_to_tune <- mth_params %in% tune_params
   params_list <- map2(mth_params, is_to_tune, get_tune) |> set_names(mth_params)
   update_params <- c(params, params_list)
@@ -521,7 +520,7 @@ fit_model_tuning <- function(
   # grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
 
   # tuning
-  if (n_folds > 10 | grid_size > 25) {
+  if (n_folds > 20 | grid_size > 25) {
     doFuture::registerDoFuture()
     future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
     message("Number of parallel workers: ", future::nbrOfWorkers())
@@ -531,7 +530,7 @@ fit_model_tuning <- function(
       resamples = cv_splits,
       grid = params$grid_size, # grid_spec
       metrics = modeltime::default_forecast_accuracy_metric_set(),
-      control = tune::control_grid(save_pred = FALSE)
+      control = tune::control_grid(save_pred = FALSE, allow_par = TRUE)
     )
   future::plan(strategy = "sequential")
 

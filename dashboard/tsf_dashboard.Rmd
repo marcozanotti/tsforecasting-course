@@ -1107,7 +1107,7 @@ conditionalPanel(
   condition = "input.tune_method == 'Elastic Net'",
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
-    inputId = "tune_elanet", label = NULL, 
+    inputId = "tune_xx_elanet", label = NULL, # _xx_ need to recognize it easily in update_tune_model_parameters()
     choices = methods_params_cl[["Elastic Net"]], multiple = TRUE, 
     selected = methods_params_cl[["Elastic Net"]][2],
     options = list("actions-box" = TRUE)

@@ -4,14 +4,12 @@ generate_forecast <- function(
     ensemble_method = NULL
   ) {
 
-  splits <- timetk::time_series_split(
-    data, date_var = date,
-    initial = nrow(data) - n_assess,
-    assess = n_assess,
-    cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
-  )
+  # initial split
+  splits <- generate_initial_split(data, n_assess, assess_type)
   train_tbl <- training(splits) |> select(-id, -frequency)
   test_tbl <- testing(splits) |> select(-id, -frequency)
+
+  # future split
   future_tbl <- future_frame(data, .date_var = date, .length_out = n_future)
 
   # model summary
