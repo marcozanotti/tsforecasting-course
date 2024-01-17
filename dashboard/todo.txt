@@ -11,11 +11,10 @@ Next steps:
 - documentazione in alto a destra
 
 To Do:
-- aggiungere rbf_sigma conditional su svm_rbf
 - finire update_tune_model_parameters con mapping parametri (occhio, non mtry ma rf_mtry)
 - testare flusso optimize fino al forecast
-- change split in generate_forecast
 - fare la funzione parse_parameters per ottenere i nomi da mostrare in UI dal parametro
+- cambiare assegnazione nomi ai parametri in UI
 
 - aggiungere metodi di automl (h2o)
 - pensare e aggiungere la sezione di stacking (LM + Elastic Net)

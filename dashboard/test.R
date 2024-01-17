@@ -209,7 +209,7 @@ input <- list(
   n_folds = 5,
   metric = "RMSE",
   grid_size = 10,
-  tune_xx_rf = c("rf_mtry")
+  tune_xx_rf = c("mtry")
 )
 
 data = data_selected

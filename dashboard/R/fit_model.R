@@ -227,7 +227,7 @@ generate_model_spec <- function(method, params) {
 
   } else if (method == "SVM") {
 
-    if (params$boundary == "linear") {
+    if (params$boundary == "Linear") {
       model_spec <- svm_linear(
         mode = "regression",
         cost = !!params$cost,
@@ -238,7 +238,8 @@ generate_model_spec <- function(method, params) {
       model_spec <- svm_rbf(
         mode = "regression",
         cost = !!params$cost,
-        margin = !!params$margin
+        margin = !!params$margin,
+        rbf_sigma = !!params$rbf_sigma
       ) |>
         set_engine("kernlab")
     }
@@ -520,7 +521,7 @@ fit_model_tuning <- function(
   # grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
 
   # tuning
-  if (n_folds > 20 | grid_size > 25) {
+  if (n_folds > 10 | grid_size > 25) {
     doFuture::registerDoFuture()
     future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
     message("Number of parallel workers: ", future::nbrOfWorkers())
@@ -543,4 +544,3 @@ fit_model_tuning <- function(
   return(wkfl_fit)
 
 }
-

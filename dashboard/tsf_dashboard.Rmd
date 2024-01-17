@@ -51,10 +51,11 @@ dl_methods <- methods$dl
 mix_methods <- methods$mix
 ens_methods <- methods$ens
 stk_methods <- methods$stk
+tune_methods <- methods$tune
 methods <- c(ts_methods, ml_methods, dl_methods, mix_methods)
 
-methods_params <- getOption("tsf.dashboard.methods_params")
-methods_params_cl <- methods_params |> map(clean_chr)
+mtd_prm <- getOption("tsf.dashboard.methods_params")
+mtd_prm_names <- purrr::map(mtd_prm, names)
 
 metrics <- toupper(getOption("tsf.dashboard.metrics"))
 ```
@@ -526,7 +527,7 @@ pickerInput(
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
-  selected = ts_methods[1]
+  selected = "Naive"
 )
 
 actionButton(inputId = "apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -537,9 +538,8 @@ observeEvent(
     updateNumericInput(session = session, inputId = "n_future", value = 12)
     updateNumericInput(session = session, inputId = "n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "assess_type", selected = "Rolling")
-    updatePickerInput(session = session, inputId = "method", selected = ts_methods[1])
-    updateNumericInput(session = session, inputId = "window_size", value = 12)
-    shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_forecast")})
+    updatePickerInput(session = session, inputId = "method", selected = "Naive")
+    # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "apply_forecast")})
   }
 )
 
@@ -634,8 +634,8 @@ conditionalPanel(
     numericInput(inputId = "logistic_cap", label = "Logistic Cap", value = get_default("logistic_cap"), min = -Inf, max = Inf, step = 1),
     numericInput(inputId = "logistic_floor", label = "Logistic Floor", value = get_default("logistic_floor"), min = -Inf, max = Inf, step = 1)
   ),
-  numericInput(inputId = "changepoint_num", label = "Changepoints (num)", value = get_default("changepoint_num"), min = 0, max = Inf, step = 1),
-  numericInput(inputId = "changepoint_range", label = "Changepoints (range)", value = get_default("changepoint_range"), min = 0, max = 1),
+  numericInput(inputId = "changepoint_num", label = "Changepoints Num", value = get_default("changepoint_num"), min = 0, max = Inf, step = 1),
+  numericInput(inputId = "changepoint_range", label = "Changepoints Range", value = get_default("changepoint_range"), min = 0, max = 1),
   prettyRadioButtons(inputId = "prophet_season", label = "Seasonality", choices = c("additive", "multiplicative"), inline = TRUE, selected = get_default("prophet_season")),
   awesomeCheckbox(inputId = "seasonality_yearly", label = "Yearly Seasonality?", value = get_default("seasonality_yearly")),
   awesomeCheckbox(inputId = "seasonality_weekly", label = "Weekly Seasonality?", value = get_default("seasonality_weekly")),
@@ -680,9 +680,13 @@ conditionalPanel(
 conditionalPanel(
   condition = "input.method == 'SVM'",
   h5("Algorithm hyperparameters: "),
-  prettyRadioButtons(inputId = "boundary", label = "Boundary Type", choices = c("linear", "radial"), inline = TRUE, selected = get_default("boundary")),
+  prettyRadioButtons(inputId = "boundary", label = "Boundary Type", choices = c("Linear", "Radial"), inline = TRUE, selected = get_default("boundary")),
   numericInput(inputId = "cost", label = "Cost", value = get_default("cost"), min = 0, max = Inf),
-  numericInput(inputId = "margin", label = "Margin", value = get_default("margin"), min = 0, max = Inf)
+  numericInput(inputId = "margin", label = "Margin", value = get_default("margin"), min = 0, max = Inf),
+  conditionalPanel(
+    condition = "input.boundary == 'Radial'",
+    numericInput(inputId = "rbf_sigma", label = "Sigma", value = get_default("rbf_sigma"), min = 0, max = Inf)
+  )
 )
 
 # Random Forest
@@ -928,7 +932,7 @@ pickerInput(
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
-  selected = ts_methods[c(4, 6)], options = list("actions-box" = TRUE)
+  selected = c("ETS", "SARIMA"), options = list("actions-box" = TRUE)
 )
 
 br()
@@ -943,7 +947,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "comp_n_future", value = 12)
     updateNumericInput(session = session, inputId = "comp_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "comp_assess_type", selected = "Rolling")
-    updatePickerInput(session = session, inputId = "comp_method", selected = ts_methods[c(4, 6)])
+    updatePickerInput(session = session, inputId = "comp_method", selected = c("ETS", "SARIMA"))
     updateMaterialSwitch(session = session, inputId = "comp_tune", value = FALSE)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
@@ -1073,12 +1077,11 @@ dropdownButton(
 pickerInput(
   inputId = "tune_method", label = h3("Forecast Algorithm"), multiple = FALSE,
   choices = list(
-    `Time Series` = ts_methods, 
     `Machine Learning` = ml_methods,
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
-  selected = ml_methods[2]
+  selected = "Elastic Net"
 )
 
 actionButton(inputId = "tune_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -1093,8 +1096,8 @@ observeEvent(
     updateSliderInput(session = session, inputId = "tune_n_folds", value = 5)
     updateSelectInput(session = session, inputId = "tune_metric", selected = "RMSE")
     updateSliderInput(session = session, inputId = "tune_grid_size", value = 10)
-    updateSelectInput(session = session, inputId = "tune_method", selected = ml_methods[2])
-    updatePickerInput(session = session, inputId = "tune_elanet", selected = methods_params_cl[["Elastic Net"]][2])
+    updateSelectInput(session = session, inputId = "tune_method", selected = "Elastic Net")
+    updatePickerInput(session = session, inputId = "tune_elanet", selected = mtd_prm_names[["Elastic Net"]])
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )
@@ -1108,8 +1111,20 @@ conditionalPanel(
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
     inputId = "tune_xx_elanet", label = NULL, # _xx_ need to recognize it easily in update_tune_model_parameters()
-    choices = methods_params_cl[["Elastic Net"]], multiple = TRUE, 
-    selected = methods_params_cl[["Elastic Net"]][2],
+    choices = mtd_prm_names[["Elastic Net"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Elastic Net"]],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Random Forest
+conditionalPanel(
+  condition = "input.tune_method == 'Random Forest'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_xx_elanet", label = NULL, # _xx_ need to recognize it easily in update_tune_model_parameters()
+    choices = mtd_prm_names[["Random Forest"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Random Forest"]],
     options = list("actions-box" = TRUE)
   )
 )
@@ -1159,7 +1174,7 @@ pickerInput(
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
-  selected = ts_methods[c(4, 6)], multiple = TRUE,
+  selected = c("ETS", "SARIMA"), multiple = TRUE,
   options =  list(
     "actions-box" = FALSE,
     "max-options" = 5,
@@ -1169,13 +1184,13 @@ pickerInput(
 
 pickerInput(
   inputId = "ens_type", label = h3("Ensemble Method"), 
-  choices = ens_methods, selected = ens_methods[1], multiple = TRUE,
+  choices = ens_methods, selected = "Average", multiple = TRUE,
   options =  list("actions-box" = TRUE)
 )
 
 pickerInput(
   inputId = "stk_type", label = h3("Stacking Method"), 
-  choices = stk_methods, selected = stk_methods[1], multiple = TRUE,
+  choices = stk_methods, selected = "Linear Regression", multiple = TRUE,
   options =  list("actions-box" = TRUE)
 )
 
@@ -1191,8 +1206,9 @@ observeEvent(
     updateNumericInput(session = session, inputId = "ens_n_future", value = 12)
     updateNumericInput(session = session, inputId = "ens_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "ens_assess_type", selected = "Rolling")
-    updatePickerInput(session = session, inputId = "ens_method", selected = ts_methods[c(4, 6)])
-    updatePickerInput(session = session, inputId = "ens_type", selected = ens_methods[1])
+    updatePickerInput(session = session, inputId = "ens_method", selected = c("ETS", "SARIMA"))
+    updatePickerInput(session = session, inputId = "ens_type", selected = "Average")
+    updatePickerInput(session = session, inputId = "stk_type", selected = "Linear Regression")
     updateMaterialSwitch(session = session, inputId = "ens_tune", value = FALSE)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
@@ -1311,7 +1327,7 @@ pickerInput(
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
-  selected = ts_methods[4]
+  selected = "ETS"
 )
 
 actionButton(inputId = "scn_apply_forecast", label = "Forecast!", icon = icon("play"))
@@ -1322,7 +1338,7 @@ observeEvent(
     updateNumericInput(session = session, inputId = "scn_n_future", value = 12)
     updateNumericInput(session = session, inputId = "scn_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "scn_assess_type", selected = "Rolling")
-    updateSelectInput(session = session, inputId = "scn_method", selected = ts_methods[4])
+    updateSelectInput(session = session, inputId = "scn_method", selected = "ETS")
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )
