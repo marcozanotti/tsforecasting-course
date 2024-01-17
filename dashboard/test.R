@@ -198,7 +198,7 @@ input <- list(
   n_folds = 5,
   metric = "RMSE",
   grid_size = 10,
-  tune_elanet = c("Mixture")
+  tune_xx_elanet = c("Penalty", "Mixture")
 )
 input <- list(
   n_future = 12,
@@ -207,9 +207,9 @@ input <- list(
   method = "Random Forest",
   valid_type = "K-Fold CV",
   n_folds = 5,
-  metric = "RMSE",
+  valid_metric = "RMSE",
   grid_size = 10,
-  tune_xx_rf = c("mtry")
+  tune_xx_rf = c()
 )
 
 data = data_selected
@@ -221,13 +221,15 @@ validation_type = input$valid_type
 n_folds = input$n_folds
 validation_metric = input$metric
 grid_size = input$grid_size
-params = input
 
 fitted_model_list <- map(
   input$method,
-  ~ fit_model(
+  ~ fit_model_tuning(
     data = data_selected, method = ., params = input,
-    n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+    n_assess = input$n_assess, assess_type = input$assess_type,
+    validation_type = input$valid_type, n_folds = input$n_folds,
+    validation_metric = input$metric, grid_size = input$grid_size,
+    seed = 1992
   )
 )
 forecast_results <- generate_forecast(
@@ -239,12 +241,16 @@ forecast_results <- generate_forecast(
 
 res <- map(
   input$method,
-  ~ fit_model(
+  ~ fit_model_tuning(
     data = data_selected,
     method = .,
     params = input,
     n_assess = input$n_assess,
     assess_type = input$assess_type,
+    validation_type = input$valid_type,
+    n_folds = input$n_folds,
+    validation_metric = input$valid_metric,
+    grid_size = input$grid_size,
     seed = 1992
   )
 ) |>
@@ -255,4 +261,4 @@ res <- map(
     n_assess = input$n_assess,
     assess_type = input$assess_type
   )
-res$accuracy |> format_accuracy(single_method = FALSE) |> filter(Type == "Test")
+res$accuracy |> format_accuracy(single_method = TRUE)

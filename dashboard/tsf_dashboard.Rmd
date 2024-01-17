@@ -1063,7 +1063,7 @@ dropdownButton(
     min = 2, max = 50, value = 5, step = 1
   ),
   selectInput(
-    inputId = "tune_metric", label = "Validation Metric", 
+    inputId = "tune_valid_metric", label = "Validation Metric", 
     choices = metrics, selected = "RMSE"
   ),
   sliderInput(
@@ -1094,7 +1094,7 @@ observeEvent(
     updatePrettyRadioButtons(session = session, inputId = "tune_assess_type", selected = "Rolling")
     updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
     updateSliderInput(session = session, inputId = "tune_n_folds", value = 5)
-    updateSelectInput(session = session, inputId = "tune_metric", selected = "RMSE")
+    updateSelectInput(session = session, inputId = "tune_valid_metric", selected = "RMSE")
     updateSliderInput(session = session, inputId = "tune_grid_size", value = 10)
     updateSelectInput(session = session, inputId = "tune_method", selected = "Elastic Net")
     updatePickerInput(session = session, inputId = "tune_elanet", selected = mtd_prm_names[["Elastic Net"]])
@@ -1110,7 +1110,7 @@ conditionalPanel(
   condition = "input.tune_method == 'Elastic Net'",
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
-    inputId = "tune_xx_elanet", label = NULL, # _xx_ need to recognize it easily in update_tune_model_parameters()
+    inputId = "tune_xx_elanet", label = NULL, # _xx_ needed to recognize it easily in update_tune_model_parameters()
     choices = mtd_prm_names[["Elastic Net"]], multiple = TRUE, 
     selected = mtd_prm_names[["Elastic Net"]],
     options = list("actions-box" = TRUE)
@@ -1122,7 +1122,7 @@ conditionalPanel(
   condition = "input.tune_method == 'Random Forest'",
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
-    inputId = "tune_xx_elanet", label = NULL, # _xx_ need to recognize it easily in update_tune_model_parameters()
+    inputId = "tune_xx_rf", label = NULL, # _xx_ needed to recognize it easily in update_tune_model_parameters()
     choices = mtd_prm_names[["Random Forest"]], multiple = TRUE, 
     selected = mtd_prm_names[["Random Forest"]],
     options = list("actions-box" = TRUE)
@@ -1130,12 +1130,122 @@ conditionalPanel(
 )
 ```
 
-Row 1 {data-height=500}
+```{r}
+tune_results <- eventReactive(
+  eventExpr = input$tune_apply_forecast,
+  valueExpr = {
+    map(
+      input$tune_method, 
+      ~ fit_model_tuning(
+        data = data_cleaned(), method = ., params = input, 
+        n_assess = input$tune_n_assess, assess_type = input$tune_assess_type, 
+        validation_type = input$tune_valid_type, n_folds = input$tune_n_folds,
+        validation_metric = input$tune_valid_metric, grid_size = input$tune_grid_size, 
+        seed = 1992
+      )
+    ) |> 
+      generate_forecast(
+        data = data_cleaned(), method = input$tune_method, n_future = input$tune_n_future,
+        n_assess = input$tune_n_assess, assess_type = input$tune_assess_type
+      )
+  }
+)
+```
+
+
+Row {data-height=500}
 ---------------------------------------------------------------------------
 
-### Forecasts Results {.no-padding}
+### Test Forecasts {.no-padding}
 
-COMING SOON
+```{r}
+output$plot_tune_test_forecast <- renderPlotly({
+  tune_results()$test_forecast |> 
+    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_tune_test_forecast")
+```
+
+<!-- ### Validation Plan {.no-padding} -->
+
+<!-- ```{r} -->
+<!-- output$plot_splits <- renderPlotly({ -->
+<!--   forecast_results()$splits |>  -->
+<!--     tk_time_series_cv_plan() |> -->
+<!--     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE) -->
+<!-- }) -->
+<!-- plotlyOutput(outputId = "plot_splits") -->
+<!-- ``` -->
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+output$plot_tune_oos_forecast <- renderPlotly({
+  tune_results()$oos_forecast |> 
+    plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
+})
+plotlyOutput(outputId = "plot_tune_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {.no-padding}
+
+```{r}
+output$tune_accuracy_table <- renderDT({
+  tune_results()$accuracy |>
+    format_accuracy(single_method = TRUE) |>
+    datatable(
+      options = list(
+        ordering = FALSE, pageLength = 20, lengthChange = FALSE, searching = FALSE,
+        info = FALSE, paging = FALSE
+      ), 
+      rownames = FALSE
+    )
+})
+DTOutput(outputId = "tune_accuracy_table")
+```
+
+### Algorithm Summary {.no-padding}
+
+```{r}
+output$tune_model_summary <- renderPrint({
+  tune_results()$fit
+})
+verbatimTextOutput(outputId = "tune_model_summary")
+```
+
+### Residuals Time Plot {.no-padding}
+
+```{r}
+output$plot_tune_resid_ts <- renderPlotly({
+  tune_results()$residuals |> 
+    select(.index, .residuals) |> 
+    set_names(c("date", "value")) |> 
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, .title = NULL
+    )
+})
+plotlyOutput(outputId = "plot_tune_resid_ts")
+```
+
+### Residuals ACF {.no-padding}
+
+```{r}
+output$plot_tune_resid_acf <- renderPlotly({
+  tune_results()$residuals |> 
+    select(.index, .residuals) |> 
+    set_names(c("date", "value")) |> 
+    timetk::plot_acf_diagnostics(
+      .date_var = date, .value = value, .lags = 60,
+      .interactive = TRUE, .title = NULL, .y_lab = NULL,
+    )
+})
+plotlyOutput(outputId = "plot_tune_resid_acf")
+```
 
 
 

@@ -20,14 +20,14 @@ generate_cv_split <- function(
   set.seed(seed)
   if (validation_type == "Time Series CV") {
     cv_splits <- modeltime.resample::time_series_cv(
-      train_tbl, date_var = date,
-      initial = nrow(train_tbl) - n_assess,
+      data, date_var = date,
+      initial = nrow(data) - n_assess,
       assess = trunc(n_assess / n_folds),
       slice_limit = n_folds,
       cumulative = ifelse(assess_type == "Expanding", TRUE, FALSE)
     )
   } else {
-    cv_splits <- rsample::vfold_cv(train_tbl, v = n_folds)
+    cv_splits <- rsample::vfold_cv(data, v = n_folds)
   }
   return(cv_splits)
 
@@ -366,14 +366,22 @@ update_tune_model_parameters <- function(method, params) {
     }
   }
 
-  mth_params <- getOption("tsf.dashboard.methods_params")[[method]]
-  prm_name <- grep("_xx_", names(params), value = TRUE)
-  tune_params <- clean_chr_inv(params[[prm_name]])
-  is_to_tune <- mth_params %in% tune_params
-  params_list <- map2(mth_params, is_to_tune, get_tune) |> set_names(mth_params)
-  update_params <- c(params, params_list)
+  mtd_params <- getOption("tsf.dashboard.methods_params")[[method]] # get the parameters for the method
+  # prm_name <- grep("_xx_", names(params), value = TRUE) # get the UI input id
+  # prm_ui_name <- eval(parse(text = paste0("params$", prm_name))) # get the UI parameters name
+  if (method == "Elastic Net") {
+    prm_ui_name <- params$tune_xx_elanet
+  } else if (method == "Random Forest") {
+    prm_ui_name <- params$tune_xx_rf
+  } else {
+    stop(paste("Unknown method", method))
+  }
+  tune_params <- mtd_params[names(mtd_params) %in% prm_ui_name] # get the parameters to tune
+  is_to_tune <- mtd_params %in% tune_params
+  new_params <- purrr::map2(mtd_params, is_to_tune, get_tune) |> purrr::set_names(mtd_params)
+  # update_params <- c(params, new_params)
 
-  return(update_params)
+  return(new_params)
 
 }
 
@@ -495,7 +503,8 @@ fit_model_tuning <- function(
     seed = 1992
 ) {
 
-  # check_parameters(method, params)
+  params_new <- update_tune_model_parameters(method, params)
+  check_parameters(method, params_new)
   set.seed(seed)
 
   # initial split
@@ -511,7 +520,6 @@ fit_model_tuning <- function(
   rcp_spec <- generate_recipe_spec(train_tbl, method)
 
   # model specification
-  params_new <- update_tune_model_parameters(method, params)
   model_spec <- generate_model_spec(method, params_new)
 
   # workflow specification
@@ -529,7 +537,7 @@ fit_model_tuning <- function(
   tune_fit <- wkfl_spec |>
     tune::tune_grid(
       resamples = cv_splits,
-      grid = params$grid_size, # grid_spec
+      grid = params$tune_grid_size, # grid_spec
       metrics = modeltime::default_forecast_accuracy_metric_set(),
       control = tune::control_grid(save_pred = FALSE, allow_par = TRUE)
     )

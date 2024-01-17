@@ -4,6 +4,8 @@ Link to [Page 3](#page-3)
 data-icon="fa-list"
 
 Next steps:
+- rotellina o messaggio per operazioni in corso
+- add logs to screen and file
 - reset dataset uploaded
 - cambiare logo
 - deployment su github actions
@@ -11,9 +13,10 @@ Next steps:
 - documentazione in alto a destra
 
 To Do:
+- fare check senza if else in update_tune_model_parameters
+- tune_bayes
 - finire update_tune_model_parameters con mapping parametri (occhio, non mtry ma rf_mtry)
 - testare flusso optimize fino al forecast
-- fare la funzione parse_parameters per ottenere i nomi da mostrare in UI dal parametro
 - cambiare assegnazione nomi ai parametri in UI
 
 - aggiungere metodi di automl (h2o)
