@@ -355,10 +355,10 @@ generate_model_spec <- function(method, params) {
 }
 
 # function to generate the model specification for tuning
-update_tune_model_parameters <- function(method, params) {
+set_tune_parameters <- function(method, params) {
 
-  # function to get default tuning parameters
-  get_tune <- function(parameter, value) {
+  # function to set tuning parameters
+  set_tune <- function(parameter, value) {
     if (value == FALSE) {
       get_default(parameter)
     } else {
@@ -367,19 +367,45 @@ update_tune_model_parameters <- function(method, params) {
   }
 
   mtd_params <- getOption("tsf.dashboard.methods_params")[[method]] # get the parameters for the method
-  # prm_name <- grep("_xx_", names(params), value = TRUE) # get the UI input id
-  # prm_ui_name <- eval(parse(text = paste0("params$", prm_name))) # get the UI parameters name
   if (method == "Elastic Net") {
-    prm_ui_name <- params$tune_xx_elanet
+    prm_ui_name <- params$tune_elanet
+  } else if (method == "MARS") {
+    prm_ui_name <- params$tune_mars
+  } else if (method == "KNN") {
+    prm_ui_name <- params$tune_knn
+  } else if (method == "SVM") {
+    if (params$tune_boundary == "Linear") {
+      prm_ui_name <- params$tune_svm_linear
+    } else {
+      prm_ui_name <- params$tune_svm_rbf
+    }
   } else if (method == "Random Forest") {
-    prm_ui_name <- params$tune_xx_rf
+    prm_ui_name <- params$tune_rf
+  } else if (method == "Boosted Trees") {
+    prm_ui_name <- params$tune_boost
+  } else if (method == "Cubist") {
+    prm_ui_name <- params$tune_cub
+  } else if (method == "Feed-Forward") {
+    prm_ui_name <- params$tune_ff
+  } else if (method == "Feed-Forward AR") {
+    prm_ui_name <- params$tune_ffar
+  } else if (method == "ARIMA-Boost") {
+    prm_ui_name <- params$tune_arima_boost
+  } else if (method == "Prophet-Boost") {
+    prm_ui_name <- params$tune_prophet_boost
   } else {
     stop(paste("Unknown method", method))
   }
   tune_params <- mtd_params[names(mtd_params) %in% prm_ui_name] # get the parameters to tune
   is_to_tune <- mtd_params %in% tune_params
-  new_params <- purrr::map2(mtd_params, is_to_tune, get_tune) |> purrr::set_names(mtd_params)
-  # update_params <- c(params, new_params)
+  new_params <- purrr::map2(mtd_params, is_to_tune, set_tune) |> purrr::set_names(mtd_params)
+
+  if (method == "SVM") {
+    new_params$boundary <- params$tune_boundary
+  }
+  if (method == "Boosted Trees") {
+    new_params$boost_method <- params$tune_boost_method
+  }
 
   return(new_params)
 
@@ -503,7 +529,7 @@ fit_model_tuning <- function(
     seed = 1992
 ) {
 
-  params_new <- update_tune_model_parameters(method, params)
+  params_new <- set_tune_parameters(method, params)
   check_parameters(method, params_new)
   set.seed(seed)
 
@@ -529,11 +555,8 @@ fit_model_tuning <- function(
   # grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
 
   # tuning
-  if (n_folds > 10 | grid_size > 25) {
-    doFuture::registerDoFuture()
-    future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
-    message("Number of parallel workers: ", future::nbrOfWorkers())
-  }
+  doFuture::registerDoFuture()
+  future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
   tune_fit <- wkfl_spec |>
     tune::tune_grid(
       resamples = cv_splits,

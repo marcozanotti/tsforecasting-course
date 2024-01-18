@@ -777,7 +777,7 @@ conditionalPanel(
 # Coming Soon!
 conditionalPanel(
   condition = "input.method == 'COMING SOON!'",
-  h5("New Deep Learning algorithms will be released soon!")
+  h5("New algorithms will be released soon!")
 )
 ```
 
@@ -1077,7 +1077,7 @@ dropdownButton(
 pickerInput(
   inputId = "tune_method", label = h3("Forecast Algorithm"), multiple = FALSE,
   choices = list(
-    `Machine Learning` = ml_methods,
+    `Machine Learning` = ml_methods[-1],
     `Deep Learning` = dl_methods,
     `Mixed Algorithms` = mix_methods
   ), 
@@ -1110,10 +1110,60 @@ conditionalPanel(
   condition = "input.tune_method == 'Elastic Net'",
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
-    inputId = "tune_xx_elanet", label = NULL, # _xx_ needed to recognize it easily in update_tune_model_parameters()
+    inputId = "tune_elanet", label = NULL, 
     choices = mtd_prm_names[["Elastic Net"]], multiple = TRUE, 
     selected = mtd_prm_names[["Elastic Net"]],
     options = list("actions-box" = TRUE)
+  )
+)
+
+# MARS
+conditionalPanel(
+  condition = "input.tune_method == 'MARS'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_mars", label = NULL, 
+    choices = mtd_prm_names[["MARS"]], multiple = TRUE, 
+    selected = mtd_prm_names[["MARS"]][1:2],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# KNN
+conditionalPanel(
+  condition = "input.tune_method == 'KNN'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_knn", label = NULL, 
+    choices = mtd_prm_names[["KNN"]], multiple = TRUE, 
+    selected = mtd_prm_names[["KNN"]],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# SVM
+conditionalPanel(
+  condition = "input.tune_method == 'SVM'",
+  h5("Algorithm hyperparameters to optimize: "),
+  prettyRadioButtons(
+    inputId = "tune_boundary", label = "Boundary Type", choices = c("Linear", "Radial"), 
+    inline = TRUE, selected = get_default("boundary")
+  ),
+  conditionalPanel(
+    condition = "input.tune_boundary == 'Linear'",
+    pickerInput(
+      inputId = "tune_svm_linear", label = NULL, multiple = TRUE,
+      choices = mtd_prm_names[["SVM"]][-c(1, 4)], selected = mtd_prm_names[["SVM"]][2:3],
+      options = list("actions-box" = TRUE)
+    )
+  ),
+  conditionalPanel(
+    condition = "input.tune_boundary == 'Radial'",
+    pickerInput(
+      inputId = "tune_svm_rbf", label = NULL, multiple = TRUE,
+      choices = mtd_prm_names[["SVM"]][-1], selected = mtd_prm_names[["SVM"]][2:3],
+      options = list("actions-box" = TRUE)
+    )
   )
 )
 
@@ -1122,11 +1172,94 @@ conditionalPanel(
   condition = "input.tune_method == 'Random Forest'",
   h5("Algorithm hyperparameters to optimize: "),
   pickerInput(
-    inputId = "tune_xx_rf", label = NULL, # _xx_ needed to recognize it easily in update_tune_model_parameters()
+    inputId = "tune_rf", label = NULL, 
     choices = mtd_prm_names[["Random Forest"]], multiple = TRUE, 
     selected = mtd_prm_names[["Random Forest"]],
     options = list("actions-box" = TRUE)
   )
+)
+
+# Boosted Trees
+conditionalPanel(
+  condition = "input.tune_method == 'Boosted Trees'",
+  h5("Algorithm hyperparameters to optimize: "),
+  prettyRadioButtons(
+    inputId = "tune_boost_method", label = "Boosting Method", 
+    choices = c("XGBoost", "LightGBM"), 
+    inline = TRUE, selected = get_default("boost_method")
+  ),
+  pickerInput(
+    inputId = "tune_boost", label = NULL, 
+    choices = mtd_prm_names[["Boosted Trees"]][-1], multiple = TRUE, 
+    selected = mtd_prm_names[["Boosted Trees"]][6],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Cubist
+conditionalPanel(
+  condition = "input.tune_method == 'Cubist'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_cub", label = NULL, 
+    choices = mtd_prm_names[["Cubist"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Cubist"]],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Feed-Forward
+conditionalPanel(
+  condition = "input.tune_method == 'Feed-Forward'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_ff", label = NULL, 
+    choices = mtd_prm_names[["Feed-Forward"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Feed-Forward"]][1:3],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Feed-Forward AR
+conditionalPanel(
+  condition = "input.tune_method == 'Feed-Forward AR'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_ffar", label = NULL, 
+    choices = mtd_prm_names[["Feed-Forward AR"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Feed-Forward AR"]][2:4],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# ARIMA-Boost
+conditionalPanel(
+  condition = "input.tune_method == 'ARIMA-Boost'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_arima_boost", label = NULL, 
+    choices = mtd_prm_names[["ARIMA-Boost"]], multiple = TRUE, 
+    selected = mtd_prm_names[["ARIMA-Boost"]][5],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Prophet-Boost
+conditionalPanel(
+  condition = "input.tune_method == 'Prophet-Boost'",
+  h5("Algorithm hyperparameters to optimize: "),
+  pickerInput(
+    inputId = "tune_prophet_boost", label = NULL, 
+    choices = mtd_prm_names[["Prophet-Boost"]], multiple = TRUE, 
+    selected = mtd_prm_names[["Prophet-Boost"]][5],
+    options = list("actions-box" = TRUE)
+  )
+)
+
+# Coming Soon!
+conditionalPanel(
+  condition = "input.tune_method == 'COMING SOON!'",
+  h5("New algorithms will be released soon!")
 )
 ```
 
