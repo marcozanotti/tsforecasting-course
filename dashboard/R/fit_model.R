@@ -42,7 +42,7 @@ generate_recipe_spec <- function(data, method) {
 
     rcp_spec <- recipe(value ~ ., data = data)
 
-  } else if (method_type == "ml" | method_type == "dl") {
+  } else if (any(method_type %in% c("ml", "dl"))) {
 
     rcp_spec <- recipe(value ~ ., data = data) |>
       step_timeseries_signature(date) |>
@@ -51,13 +51,13 @@ generate_recipe_spec <- function(data, method) {
       step_rm(matches("(iso)|(xts)|(index.num)")) |>
       step_dummy(all_nominal(), one_hot = TRUE)
 
-  } else if (method_type == "mix") {
+  } else if (any(method_type %in% c("mix", "aml"))) {
 
     rcp_spec <- recipe(value ~ ., data = data) |>
       step_timeseries_signature(date) |>
-      step_normalize(date_index.num) |>
+      step_mutate(trend = as.numeric(date)) |>
       step_zv(all_predictors()) |>
-      step_rm(matches("(iso)|(xts)")) |>
+      step_rm(matches("(iso)|(xts)|(index.num)")) |>
       step_dummy(all_nominal(), one_hot = TRUE)
 
   } else {
@@ -346,11 +346,51 @@ generate_model_spec <- function(method, params) {
     ) |>
       set_engine("prophet_xgboost")
 
+  } else if (method == "H2O AutoML") {
+
+    model_spec <- automl_reg(mode = "regression") |>
+      set_engine(
+        engine = "h2o",
+        project_name = "h2o_tsf_dashboard",
+        max_models = 50,
+        max_runtime_secs = !!params$h2o_max_time,
+        max_runtime_secs_per_model = !!params$h2o_max_time_model,
+        nfolds = !!params$h2o_nfolds,
+        sort_metric = !!params$h2o_metric,
+        seed = 1992
+        # include_algos = c("DRF"),
+        # exclude_algos = c("DeepLearning"),
+        # verbosity = NULL
+      )
+
   } else {
     stop(paste("Unknown method", method))
   }
 
   return(model_spec)
+
+}
+
+# function to set the metric set
+set_metric_set <- function(metric) {
+
+  metric <- tolower(metric)
+  if (metric == "mae") {
+    mtr_set <- yardstick::metric_set(mae)
+  } else if (metric == "mape") {
+    mtr_set <- yardstick::metric_set(mape)
+  } else if (metric == "mase") {
+    mtr_set <- yardstick::metric_set(mase)
+  } else if (metric == "smape") {
+    mtr_set <- yardstick::metric_set(smape)
+  } else if (metric == "mse") {
+    mtr_set <- yardstick::metric_set(mse)
+  } else if (metric == "rmse") {
+    mtr_set <- yardstick::metric_set(rmse)
+  } else {
+    stop(paste("Unknown metric", metric))
+  }
+  return(mtr_set)
 
 }
 
@@ -366,7 +406,6 @@ set_tune_parameters <- function(method, params) {
     }
   }
 
-  mtd_params <- getOption("tsf.dashboard.methods_params")[[method]] # get the parameters for the method
   if (method == "Elastic Net") {
     prm_ui_name <- params$tune_elanet
   } else if (method == "MARS") {
@@ -396,6 +435,8 @@ set_tune_parameters <- function(method, params) {
   } else {
     stop(paste("Unknown method", method))
   }
+
+  mtd_params <- getOption("tsf.dashboard.methods_params")[[method]] # get the parameters for the method
   tune_params <- mtd_params[names(mtd_params) %in% prm_ui_name] # get the parameters to tune
   is_to_tune <- mtd_params %in% tune_params
   new_params <- purrr::map2(mtd_params, is_to_tune, set_tune) |> purrr::set_names(mtd_params)
@@ -456,6 +497,7 @@ fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) 
   wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
 
   # fitting
+  if (method == "H2O AutoML") { h2o.init() }
   wkfl_fit <- wkfl_spec |> fit(data = train_tbl)
 
   return(wkfl_fit)
@@ -526,11 +568,13 @@ fit_model_tuning <- function(
     data, method, params, n_assess, assess_type,
     validation_type = "Time Series CV",
     n_folds = 5, validation_metric = "rmse", grid_size = 10,
-    seed = 1992
+    bayesian_optimization = TRUE, seed = 1992
 ) {
 
   params_new <- set_tune_parameters(method, params)
   check_parameters(method, params_new)
+  validation_metric <- tolower(validation_metric)
+  valid_metric_set <- set_metric_set(validation_metric)
   set.seed(seed)
 
   # initial split
@@ -557,17 +601,31 @@ fit_model_tuning <- function(
   # tuning
   doFuture::registerDoFuture()
   future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
-  tune_fit <- wkfl_spec |>
-    tune::tune_grid(
-      resamples = cv_splits,
-      grid = params$tune_grid_size, # grid_spec
-      metrics = modeltime::default_forecast_accuracy_metric_set(),
-      control = tune::control_grid(save_pred = FALSE, allow_par = TRUE)
-    )
+  if (bayesian_optimization) {
+    tune_fit <- wkfl_spec |>
+      tune::tune_bayes(
+        resamples = cv_splits,
+        metrics = valid_metric_set,
+        initial = as.integer(params$tune_grid_size),
+        objective = tune::conf_bound(kappa = 0.1),
+        iter = 20L, # as.integer(length(params_new) * 20) good practice
+        control = tune::control_bayes(
+          save_pred = FALSE, allow_par = TRUE, verbose = TRUE, no_improve = 5L
+        )
+      )
+  } else {
+    tune_fit <- wkfl_spec |>
+      tune::tune_grid(
+        resamples = cv_splits,
+        metrics = valid_metric_set,
+        grid = as.integer(params$tune_grid_size), # grid_spec
+        control = tune::control_grid(save_pred = FALSE, allow_par = TRUE, verbose = TRUE)
+      )
+  }
   future::plan(strategy = "sequential")
 
   # picking best model
-  best_fit <- tune::show_best(tune_fit, metric = tolower(validation_metric), n = 1)
+  best_fit <- tune::show_best(tune_fit, metric = validation_metric, n = 1)
 
   # fitting (fit to training with optimal values)
   wkfl_fit <- wkfl_spec |> tune::finalize_workflow(best_fit) |> fit(train_tbl)

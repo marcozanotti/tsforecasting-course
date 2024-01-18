@@ -8,6 +8,7 @@ set_options <- function() {
       "ml" = c("Linear Regression", "Elastic Net", "MARS", "KNN", "SVM", "Random Forest", "Boosted Trees", "Cubist"),
       "dl" = c("Feed-Forward", "COMING SOON!"),
       "mix" = c("Feed-Forward AR", "ARIMA-Boost", "Prophet-Boost"),
+      "aml" = c("H2O AutoML", "COMING SOON!"),
       "ens" = c("Average", "Weighted Average", "Median"),
       "stk" = c("Linear Regression", "Elastic Net"),
       "tune" = c(
@@ -85,7 +86,9 @@ set_options <- function() {
       ) |> purrr::set_names(c(
         "Random Predictors", "Trees", "Min Node Size", "Tree Depth",
         "Learning Rate", "Min Loss Reduction", "Sample"
-      ))
+      )),
+      "H2O AutoML" = c("h2o_max_time", "h2o_max_time_model", "h2o_nfolds", "h2o_metric") |>
+        purrr::set_names(c("Max Time (secs)", "Max Time per Model (secs)", "Folds", "Metric"))
     ),
     tsf.dashboard.transfs = c("log", "boxcox", "norm", "stand", "diff", "sdiff"),
     tsf.dashboard.test_transfs = c("test_log", "test_diff", "test_sdiff"),
@@ -140,8 +143,14 @@ parse_method <- function(method) {
     res <- "dl"
   } else if (method %in% mtd$mix) {
     res <- "mix"
+  } else if (method %in% mtd$aml) {
+    res <- "aml"
   } else if (method %in% mtd$ens) {
     res <- "ens"
+  } else if (method %in% mtd$stk) {
+    res <- "stk"
+  } else if (method %in% mtd$tune) {
+    res <- "tune"
   } else {
     stop(paste("Unknown method", method))
   }
@@ -198,7 +207,8 @@ get_default <- function(parameter, return_value = TRUE) {
     "arima_boost_mtry" = 5, "arima_boost_trees" = 100, "arima_boost_min_n" = 1, "arima_boost_tree_depth" = 6, # ARIMA-Boost
     "arima_boost_learn_rate" = 0.3, "arima_boost_loss_reduction" = 0, "arima_boost_sample_size" = 1,
     "prophet_boost_mtry" = 5, "prophet_boost_trees" = 100, "prophet_boost_min_n" = 1, "prophet_boost_tree_depth" = 6, #  Prophet-Boost
-    "prophet_boost_learn_rate" = 0.3, "prophet_boost_loss_reduction" = 0, "prophet_boost_sample_size" = 1
+    "prophet_boost_learn_rate" = 0.3, "prophet_boost_loss_reduction" = 0, "prophet_boost_sample_size" = 1,
+    "h2o_max_time" = 30, "h2o_max_time_model" = 15, "h2o_nfolds" = 5, "h2o_metric" = "RMSE"
   )
 
   if (return_value) {

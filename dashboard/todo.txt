@@ -11,15 +11,17 @@ Next steps:
 - deployment su github actions
 - move to another github repo
 - documentazione in alto a destra
+- aggiungere package::function per ogni funzione
 
 To Do:
-- tune_bayes
-
-- aggiungere metodi di automl (h2o)
+- ancora problema con mtry con tune_bayes, risolvere creando la griglia
+- check h2o in compare e combine
 - pensare e aggiungere la sezione di stacking (LM + Elastic Net)
-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?)
+- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) + rolling variances
 - pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni
 - aggiungere metodi di dl (NeuralProphet + NBEATS + DeepAR)
 - pensare e aggiungere la sezione di feature engineering (con in mente il save)
 - modificare output modello con parsing
 - cambiare assegnazione nomi ai parametri in UI
+- XAI
+- aggiornamento cluster h2o

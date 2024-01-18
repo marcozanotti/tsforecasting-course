@@ -198,7 +198,7 @@ input <- list(
   n_folds = 5,
   metric = "RMSE",
   grid_size = 10,
-  tune_xx_elanet = c("Penalty", "Mixture")
+  tune_elanet = c("Penalty", "Mixture")
 )
 input <- list(
   n_future = 12,
@@ -221,6 +221,7 @@ validation_type = input$valid_type
 n_folds = input$n_folds
 validation_metric = input$metric
 grid_size = input$grid_size
+seed = 1992
 
 fitted_model_list <- map(
   input$method,
@@ -262,3 +263,40 @@ res <- map(
     assess_type = input$assess_type
   )
 res$accuracy |> format_accuracy(single_method = TRUE)
+
+
+### GRID
+
+model_spec <- rand_forest(
+  mode = "regression",
+  mtry = tune(),
+  trees = tune(),
+  min_n = tune()
+) |>
+  set_engine("ranger")
+
+model_spec <- boost_tree(
+  mode = "regression",
+  mtry = tune(),
+  trees = tune(),
+  min_n = tune(),
+  tree_depth = tune(),
+  learn_rate = tune(),
+  loss_reduction = tune(),
+  sample_size = tune()
+) |>
+  set_engine("xgboost")
+
+model_spec <- prophet_boost(
+  mode = "regression",
+  mtry = tune(),
+  trees = tune(),
+  min_n = tune(),
+  tree_depth = tune(),
+  learn_rate = tune(),
+  loss_reduction = tune(),
+  sample_size = tune()
+) |>
+  set_engine("prophet_xgboost")
+
+

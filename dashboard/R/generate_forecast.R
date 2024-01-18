@@ -75,6 +75,7 @@ generate_forecast <- function(
       conf_interval = 0.95, conf_method = "conformal_split"
     )
 
+  if (method == "H2O AutoML") { h2o.shutdown(prompt = FALSE) }
   res <- list(
     "splits" = splits,
     "fit" = fitted_model_list,

@@ -30,7 +30,8 @@ pkgs <- c(
   "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
   "randomForest", "ranger", "xgboost", "treesnip", "lightgbm",
   "Cubist", "rules",
-  "tidymodels", "modeltime",
+  "tidymodels", 
+  "modeltime", "modeltime.ensemble", "modeltime.resample", "modeltime.h2o",
   "plotly", "DT", "timetk",
   "rmarkdown", "flexdashboard",
   "shiny", "shinyWidgets", "shinyjs", "shinymanager"
@@ -43,12 +44,14 @@ datasets <- c(
 )
 
 set_options()
+Sys.setenv(JAVA_HOME = "/usr/lib/jvm/jdk-17/")
 
 methods <- getOption("tsf.dashboard.methods")
 ts_methods <- methods$ts
 ml_methods <- methods$ml
 dl_methods <- methods$dl
 mix_methods <- methods$mix
+aml_methods <- methods$aml
 ens_methods <- methods$ens
 stk_methods <- methods$stk
 tune_methods <- methods$tune
@@ -116,15 +119,7 @@ data_selected <- reactive({
 ts_freq <- reactive({
   data_selected()$frequency |> unique() |> parse_frequency()
 })
-```
 
-
-Row 1 {data-height=100}
----------------------------------------------------------------------------
-
-### 
-
-```{r}
 output$data_table <- renderDT({
   data_selected() |>
       datatable(
@@ -136,7 +131,15 @@ output$data_table <- renderDT({
 })
 output$data_str <- renderPrint({ str(data_selected()) })
 output$data_summ <- renderPrint({ skim(data_selected()) })
+```
 
+
+Row 1 {data-height=100}
+---------------------------------------------------------------------------
+
+### 
+
+```{r}
 conditionalPanel(
   condition = "input.table_type == 'Preview'",
   DTOutput(outputId = "data_table")
@@ -237,15 +240,7 @@ data_transformed <- reactive({
     transform_data(section = "viz_transf", params = input, freq = ts_freq()) |> 
     filter(between(date, input$date_range[1], input$date_range[2]))
 })
-```
 
-
-Row 1 {data-height=400}
----------------------------------------------------------------------------
-
-### {.no-padding}
-
-```{r}
 output$ts_plot_smooth <- renderPlotly({
   data_transformed() |>
     timetk::plot_time_series(
@@ -254,12 +249,7 @@ output$ts_plot_smooth <- renderPlotly({
       .interactive = TRUE
     )
 })
-plotlyOutput(outputId = "ts_plot_smooth")
-```
 
-### {.no-padding}
-
-```{r}
 output$autocorr_plot <- renderPlotly({
   data_transformed() |>
     timetk::plot_acf_diagnostics(
@@ -269,6 +259,38 @@ output$autocorr_plot <- renderPlotly({
       .title = "Autocorrelation", .y_lab = NULL,
     )
 })
+
+output$decomp_plot <- renderPlotly({
+    data_transformed() |>
+      timetk::plot_stl_diagnostics(
+    .date_var = date, .value = value, 
+    .feature_set = c("season", "trend", "remainder"), .interactive = TRUE,
+    .title = "Decomposition"
+  )
+})
+
+output$season_plot <- renderPlotly({
+  data_transformed() |>
+    timetk::plot_seasonal_diagnostics(
+      .date_var = date, .value = value, 
+      .interactive = TRUE, .title = "Seasonality"
+    )
+})
+```
+
+
+Row 1 {data-height=400}
+---------------------------------------------------------------------------
+
+### {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "ts_plot_smooth")
+```
+
+### {.no-padding}
+
+```{r}
 plotlyOutput(outputId = "autocorr_plot")
 ```
 
@@ -279,27 +301,12 @@ Row 2 {data-height=600}
 ### {.no-padding}
 
 ```{r}
-output$decomp_plot <- renderPlotly({
-    data_transformed() |>
-      timetk::plot_stl_diagnostics(
-    .date_var = date, .value = value, 
-    .feature_set = c("season", "trend", "remainder"), .interactive = TRUE,
-    .title = "Decomposition"
-  )
-})
 plotlyOutput(outputId = "decomp_plot")
 ```
 
 ### {.no-padding}
 
 ```{r}
-output$season_plot <- renderPlotly({
-  data_transformed() |>
-    timetk::plot_seasonal_diagnostics(
-      .date_var = date, .value = value, 
-      .interactive = TRUE, .title = "Seasonality"
-    )
-})
 plotlyOutput(outputId = "season_plot")
 ```
 
@@ -338,6 +345,24 @@ observeEvent(
 data_cleaned <- reactive({
   data_transformed() |> clean_data(params = input)
 })
+
+output$anomaly_plot <- renderPlotly({
+  data_transformed() |>
+    timetk::plot_anomaly_diagnostics(
+      .date_var = date, .value = value, 
+      .alpha = input$alpha, .max_anomalies = input$max_anomalies,
+      .interactive = TRUE, .title = "Anomaly Plot", .legend_show = FALSE
+    )
+})
+
+output$clean_plot <- renderPlotly({
+  data_cleaned() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, 
+      .title = "Cleaned Time Series"
+    )
+})
 ```
 
 
@@ -347,14 +372,6 @@ Row 1 {data-height=650}
 ### {.no-padding}
 
 ```{r}
-output$anomaly_plot <- renderPlotly({
-  data_transformed() |>
-    timetk::plot_anomaly_diagnostics(
-      .date_var = date, .value = value, 
-      .alpha = input$alpha, .max_anomalies = input$max_anomalies,
-      .interactive = TRUE, .title = "Anomaly Plot", .legend_show = FALSE
-    )
-})
 plotlyOutput(outputId = "anomaly_plot")
 ```
 
@@ -365,14 +382,6 @@ Row 2 {data-height=350}
 ### {.no-padding}
 
 ```{r}
-output$clean_plot <- renderPlotly({
-  data_cleaned() |>
-    timetk::plot_time_series(
-      .date_var = date, .value = value,
-      .smooth = FALSE, .interactive = TRUE, 
-      .title = "Cleaned Time Series"
-    )
-})
 plotlyOutput(outputId = "clean_plot")
 ```
 
@@ -415,15 +424,7 @@ data_test <- reactive({
 test_results <- reactive({
   data_test() |> compute_hptests()
 })
-```
 
-
-Row {data-height=500}
----------------------------------------------------------------------------
-
-### 
-
-```{r}
 output$test_table <- renderDT({
   test_results() |>
     datatable(
@@ -438,6 +439,32 @@ output$test_table <- renderDT({
       rownames = FALSE
     )
 })
+
+output$test_ts_plot <- renderPlotly({
+  data_test() |>
+    timetk::plot_time_series(
+      .date_var = date, .value = value,
+      .smooth = FALSE, .interactive = TRUE, .title = NULL
+    )
+})
+
+output$test_autocorr_plot <- renderPlotly({
+  data_test() |>
+    timetk::plot_acf_diagnostics(
+      .date_var = date, .value = value, 
+      .lags = ifelse(ts_freq() < 60, ts_freq() * 3, 150),
+      .interactive = TRUE, .title = NULL, .y_lab = NULL
+    )
+})
+```
+
+
+Row {data-height=500}
+---------------------------------------------------------------------------
+
+### 
+
+```{r}
 DTOutput(outputId = "test_table")
 ```
 
@@ -448,27 +475,12 @@ Row {data-height=500}
 ### {.no-padding}
 
 ```{r}
-output$test_ts_plot <- renderPlotly({
-  data_test() |>
-    timetk::plot_time_series(
-      .date_var = date, .value = value,
-      .smooth = FALSE, .interactive = TRUE, .title = NULL
-    )
-})
 plotlyOutput(outputId = "test_ts_plot")
 ```
 
 ### {.no-padding}
 
 ```{r}
-output$test_autocorr_plot <- renderPlotly({
-  data_test() |>
-    timetk::plot_acf_diagnostics(
-      .date_var = date, .value = value, 
-      .lags = ifelse(ts_freq() < 60, ts_freq() * 3, 150),
-      .interactive = TRUE, .title = NULL, .y_lab = NULL
-    )
-})
 plotlyOutput(outputId = "test_autocorr_plot")
 ```
 
@@ -525,7 +537,8 @@ pickerInput(
     `Time Series` = ts_methods, 
     `Machine Learning` = ml_methods,
     `Deep Learning` = dl_methods,
-    `Mixed Algorithms` = mix_methods
+    `Mixed Algorithms` = mix_methods,
+    `Auto ML` = aml_methods
   ), 
   selected = "Naive"
 )
@@ -774,6 +787,16 @@ conditionalPanel(
   numericInput(inputId = "prophet_boost_sample_size", label = "Sample Size", value = get_default("prophet_boost_sample_size"), min = 0, max = 1)
 )
 
+# H2O AutoML
+conditionalPanel(
+  condition = "input.method == 'H2O AutoML'",
+  h5("Algorithm hyperparameters: "),
+  numericInput(inputId = "h2o_max_time", label = "Max Time (secs)", value = get_default("h2o_max_time"), min = 5, max = Inf, step = 1),
+  numericInput(inputId = "h2o_max_time_model", label = "Max Time per Model (secs)", value = get_default("h2o_max_time_model"), min = 5, max = Inf, step = 1),
+  sliderInput(inputId = "h2o_nfolds", label = "Folds", min = 2, max = 50, value = get_default("h2o_nfolds"), step = 1),
+  selectInput(inputId = "h2o_metric", label = "Metric", choices = metrics, selected = get_default("h2o_metric"))
+)
+
 # Coming Soon!
 conditionalPanel(
   condition = "input.method == 'COMING SOON!'",
@@ -798,50 +821,23 @@ forecast_results <- eventReactive(
       )
   }
 )
-```
 
-
-Row {data-height=500}
----------------------------------------------------------------------------
-
-### Test Forecasts {.no-padding}
-
-```{r}
 output$plot_test_forecast <- renderPlotly({
   forecast_results()$test_forecast |> 
     plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_test_forecast")
-```
 
-<!-- ### Validation Plan {.no-padding} -->
+# output$plot_splits <- renderPlotly({
+#   forecast_results()$splits |>
+#     tk_time_series_cv_plan() |>
+#     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE)
+# })
 
-<!-- ```{r} -->
-<!-- output$plot_splits <- renderPlotly({ -->
-<!--   forecast_results()$splits |>  -->
-<!--     tk_time_series_cv_plan() |> -->
-<!--     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE) -->
-<!-- }) -->
-<!-- plotlyOutput(outputId = "plot_splits") -->
-<!-- ``` -->
-
-### Out-of-Sample Forecasts {.no-padding}
-
-```{r}
 output$plot_oos_forecast <- renderPlotly({
   forecast_results()$oos_forecast |> 
     plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_oos_forecast")
-```
 
-
-Row {data-height=500} 
----------------------------------------------------------------------------
-
-### Evaluation Metrics {.no-padding}
-
-```{r}
 output$accuracy_table <- renderDT({
   forecast_results()$accuracy |>
     format_accuracy(single_method = TRUE) |>
@@ -853,21 +849,11 @@ output$accuracy_table <- renderDT({
       rownames = FALSE
     )
 })
-DTOutput(outputId = "accuracy_table")
-```
 
-### Algorithm Summary {.no-padding}
-
-```{r}
 output$model_summary <- renderPrint({
   forecast_results()$fit
 })
-verbatimTextOutput(outputId = "model_summary")
-```
 
-### Residuals Time Plot {.no-padding}
-
-```{r}
 output$plot_resid_ts <- renderPlotly({
   forecast_results()$residuals |> 
     select(.index, .residuals) |> 
@@ -877,12 +863,7 @@ output$plot_resid_ts <- renderPlotly({
       .smooth = FALSE, .interactive = TRUE, .title = NULL
     )
 })
-plotlyOutput(outputId = "plot_resid_ts")
-```
 
-### Residuals ACF {.no-padding}
-
-```{r}
 output$plot_resid_acf <- renderPlotly({
   forecast_results()$residuals |> 
     select(.index, .residuals) |> 
@@ -892,6 +873,55 @@ output$plot_resid_acf <- renderPlotly({
       .interactive = TRUE, .title = NULL, .y_lab = NULL,
     )
 })
+```
+
+
+Row {data-height=500}
+---------------------------------------------------------------------------
+
+### Test Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_test_forecast")
+```
+
+<!-- ### Validation Plan {.no-padding} -->
+
+<!-- ```{r} -->
+<!-- plotlyOutput(outputId = "plot_splits") -->
+<!-- ``` -->
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {.no-padding}
+
+```{r}
+DTOutput(outputId = "accuracy_table")
+```
+
+### Algorithm Summary {.no-padding}
+
+```{r}
+verbatimTextOutput(outputId = "model_summary")
+```
+
+### Residuals Time Plot {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_resid_ts")
+```
+
+### Residuals ACF {.no-padding}
+
+```{r}
 plotlyOutput(outputId = "plot_resid_acf")
 ```
 
@@ -930,7 +960,8 @@ pickerInput(
     `Time Series` = ts_methods, 
     `Machine Learning` = ml_methods,
     `Deep Learning` = dl_methods,
-    `Mixed Algorithms` = mix_methods
+    `Mixed Algorithms` = mix_methods,
+    `Auto ML` = aml_methods
   ), 
   selected = c("ETS", "SARIMA"), options = list("actions-box" = TRUE)
 )
@@ -971,39 +1002,17 @@ compare_results <- eventReactive(
       )
   }
 )
-```
 
-
-Row {data-height=500}
----------------------------------------------------------------------------
-
-### Test Forecasts {.no-padding}
-
-```{r}
 output$plot_comp_test_forecast <- renderPlotly({
   compare_results()$test_forecast |> 
     plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_comp_test_forecast")
-```
 
-### Out-of-Sample Forecasts {.no-padding}
-
-```{r}
 output$plot_comp_oos_forecast <- renderPlotly({
   compare_results()$oos_forecast |> 
     plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_comp_oos_forecast")
-```
 
-
-Row {data-height=500} 
----------------------------------------------------------------------------
-
-### Evaluation Metrics {data-width=600 .no-padding}
-
-```{r}
 output$comp_accuracy_table <- renderDT({
   compare_results()$accuracy |> 
     format_accuracy(single_method = FALSE) |>
@@ -1016,15 +1025,41 @@ output$comp_accuracy_table <- renderDT({
       rownames = FALSE
     )
 })
+
+output$comp_model_summary <- renderPrint({
+  compare_results()$fit
+})
+```
+
+
+Row {data-height=500}
+---------------------------------------------------------------------------
+
+### Test Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_comp_test_forecast")
+```
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_comp_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {data-width=600 .no-padding}
+
+```{r}
 DTOutput(outputId = "comp_accuracy_table")
 ```
 
 ### Algorithm Summary {data-width=400 .no-padding}
 
 ```{r}
-output$comp_model_summary <- renderPrint({
-  compare_results()$fit
-})
 verbatimTextOutput(outputId = "comp_model_summary")
 ```
 
@@ -1066,6 +1101,7 @@ dropdownButton(
     inputId = "tune_valid_metric", label = "Validation Metric", 
     choices = metrics, selected = "RMSE"
   ),
+  awesomeCheckbox(inputId = "tune_bayes", label = "Use Bayes-Optim?", value = TRUE),
   sliderInput(
     inputId = "tune_grid_size", label = "Grid Size", 
     value = 10, min = 1, max = 200, step = 10
@@ -1095,6 +1131,7 @@ observeEvent(
     updatePrettyRadioButtons(session = session, inputId = "tune_valid_type", selected = "Time Series CV")
     updateSliderInput(session = session, inputId = "tune_n_folds", value = 5)
     updateSelectInput(session = session, inputId = "tune_valid_metric", selected = "RMSE")
+    updateAwesomeCheckbox(session = session, inputId = "tune_bayes", value = TRUE)
     updateSliderInput(session = session, inputId = "tune_grid_size", value = 10)
     updateSelectInput(session = session, inputId = "tune_method", selected = "Elastic Net")
     updatePickerInput(session = session, inputId = "tune_elanet", selected = mtd_prm_names[["Elastic Net"]])
@@ -1273,7 +1310,8 @@ tune_results <- eventReactive(
         data = data_cleaned(), method = ., params = input, 
         n_assess = input$tune_n_assess, assess_type = input$tune_assess_type, 
         validation_type = input$tune_valid_type, n_folds = input$tune_n_folds,
-        validation_metric = input$tune_valid_metric, grid_size = input$tune_grid_size, 
+        validation_metric = input$tune_valid_metric, 
+        bayesian_optimization = input$tune_bayes, grid_size = input$tune_grid_size, 
         seed = 1992
       )
     ) |> 
@@ -1283,50 +1321,23 @@ tune_results <- eventReactive(
       )
   }
 )
-```
 
-
-Row {data-height=500}
----------------------------------------------------------------------------
-
-### Test Forecasts {.no-padding}
-
-```{r}
 output$plot_tune_test_forecast <- renderPlotly({
   tune_results()$test_forecast |> 
     plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_tune_test_forecast")
-```
 
-<!-- ### Validation Plan {.no-padding} -->
+# output$plot_tune_splits <- renderPlotly({
+#   tune_results()$splits |>
+#     tk_time_series_cv_plan() |>
+#     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE)
+# })
 
-<!-- ```{r} -->
-<!-- output$plot_splits <- renderPlotly({ -->
-<!--   forecast_results()$splits |>  -->
-<!--     tk_time_series_cv_plan() |> -->
-<!--     plot_time_series_cv_plan(date, value, .title = NULL, .legend_show = FALSE) -->
-<!-- }) -->
-<!-- plotlyOutput(outputId = "plot_splits") -->
-<!-- ``` -->
-
-### Out-of-Sample Forecasts {.no-padding}
-
-```{r}
 output$plot_tune_oos_forecast <- renderPlotly({
   tune_results()$oos_forecast |> 
     plot_modeltime_forecast(.legend_show = FALSE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_tune_oos_forecast")
-```
 
-
-Row {data-height=500} 
----------------------------------------------------------------------------
-
-### Evaluation Metrics {.no-padding}
-
-```{r}
 output$tune_accuracy_table <- renderDT({
   tune_results()$accuracy |>
     format_accuracy(single_method = TRUE) |>
@@ -1338,21 +1349,11 @@ output$tune_accuracy_table <- renderDT({
       rownames = FALSE
     )
 })
-DTOutput(outputId = "tune_accuracy_table")
-```
 
-### Algorithm Summary {.no-padding}
-
-```{r}
 output$tune_model_summary <- renderPrint({
   tune_results()$fit
 })
-verbatimTextOutput(outputId = "tune_model_summary")
-```
 
-### Residuals Time Plot {.no-padding}
-
-```{r}
 output$plot_tune_resid_ts <- renderPlotly({
   tune_results()$residuals |> 
     select(.index, .residuals) |> 
@@ -1362,12 +1363,7 @@ output$plot_tune_resid_ts <- renderPlotly({
       .smooth = FALSE, .interactive = TRUE, .title = NULL
     )
 })
-plotlyOutput(outputId = "plot_tune_resid_ts")
-```
 
-### Residuals ACF {.no-padding}
-
-```{r}
 output$plot_tune_resid_acf <- renderPlotly({
   tune_results()$residuals |> 
     select(.index, .residuals) |> 
@@ -1377,6 +1373,55 @@ output$plot_tune_resid_acf <- renderPlotly({
       .interactive = TRUE, .title = NULL, .y_lab = NULL,
     )
 })
+```
+
+
+Row {data-height=500}
+---------------------------------------------------------------------------
+
+### Test Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_tune_test_forecast")
+```
+
+<!-- ### Validation Plan {.no-padding} -->
+
+<!-- ```{r} -->
+<!-- plotlyOutput(outputId = "plot_tune_splits") -->
+<!-- ``` -->
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_tune_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {.no-padding}
+
+```{r}
+DTOutput(outputId = "tune_accuracy_table")
+```
+
+### Algorithm Summary {.no-padding}
+
+```{r}
+verbatimTextOutput(outputId = "tune_model_summary")
+```
+
+### Residuals Time Plot {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_tune_resid_ts")
+```
+
+### Residuals ACF {.no-padding}
+
+```{r}
 plotlyOutput(outputId = "plot_tune_resid_acf")
 ```
 
@@ -1415,7 +1460,8 @@ pickerInput(
     `Time Series` = ts_methods, 
     `Machine Learning` = ml_methods,
     `Deep Learning` = dl_methods,
-    `Mixed Algorithms` = mix_methods
+    `Mixed Algorithms` = mix_methods,
+    `Auto ML` = aml_methods
   ), 
   selected = c("ETS", "SARIMA"), multiple = TRUE,
   options =  list(
@@ -1476,39 +1522,17 @@ ensemble_results <- eventReactive(
       )
   }
 )
-```
 
-
-Row {data-height=500}
----------------------------------------------------------------------------
-
-### Test Forecasts {.no-padding}
-
-```{r}
 output$plot_ens_test_forecast <- renderPlotly({
   ensemble_results()$test_forecast |> 
     plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_ens_test_forecast")
-```
 
-### Out-of-Sample Forecasts {.no-padding}
-
-```{r}
 output$plot_ens_oos_forecast <- renderPlotly({
   ensemble_results()$oos_forecast |> 
     plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
-plotlyOutput(outputId = "plot_ens_oos_forecast")
-```
 
-
-Row {data-height=500} 
----------------------------------------------------------------------------
-
-### Evaluation Metrics {data-width=600 .no-padding}
-
-```{r}
 output$ens_accuracy_table <- renderDT({
   ensemble_results()$accuracy |> 
     format_accuracy(single_method = FALSE) |>
@@ -1521,15 +1545,41 @@ output$ens_accuracy_table <- renderDT({
       rownames = FALSE
     )
 })
+
+output$ens_model_summary <- renderPrint({
+  ensemble_results()$fit
+})
+```
+
+
+Row {data-height=500}
+---------------------------------------------------------------------------
+
+### Test Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_ens_test_forecast")
+```
+
+### Out-of-Sample Forecasts {.no-padding}
+
+```{r}
+plotlyOutput(outputId = "plot_ens_oos_forecast")
+```
+
+
+Row {data-height=500} 
+---------------------------------------------------------------------------
+
+### Evaluation Metrics {data-width=600 .no-padding}
+
+```{r}
 DTOutput(outputId = "ens_accuracy_table")
 ```
 
 ### Algorithm Summary {data-width=400 .no-padding}
 
 ```{r}
-output$ens_model_summary <- renderPrint({
-  ensemble_results()$fit
-})
 verbatimTextOutput(outputId = "ens_model_summary")
 ```
 
@@ -1568,7 +1618,8 @@ pickerInput(
     `Time Series` = ts_methods, 
     `Machine Learning` = ml_methods,
     `Deep Learning` = dl_methods,
-    `Mixed Algorithms` = mix_methods
+    `Mixed Algorithms` = mix_methods,
+    `Auto ML` = aml_methods
   ), 
   selected = "ETS"
 )
