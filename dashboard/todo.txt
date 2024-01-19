@@ -14,8 +14,6 @@ Next steps:
 - aggiungere package::function per ogni funzione
 
 To Do:
-- ancora problema con mtry con tune_bayes, risolvere creando la griglia
-- check h2o in compare e combine
 - pensare e aggiungere la sezione di stacking (LM + Elastic Net)
 - pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) + rolling variances
 - pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni

@@ -1471,23 +1471,30 @@ pickerInput(
   )
 )
 
+br()
+awesomeCheckbox(inputId = "ens_tune", label = "Use optimized algorithms?", value = FALSE)
+br()
+
 pickerInput(
   inputId = "ens_type", label = h3("Ensemble Method"), 
   choices = ens_methods, selected = "Average", multiple = TRUE,
   options =  list("actions-box" = TRUE)
 )
+actionButton(inputId = "ens_apply_forecast", label = "Forecast!", icon = icon("play"))
 
+br()
+br()
+br()
 pickerInput(
   inputId = "stk_type", label = h3("Stacking Method"), 
   choices = stk_methods, selected = "Linear Regression", multiple = TRUE,
   options =  list("actions-box" = TRUE)
 )
+actionButton(inputId = "stk_apply_forecast", label = "Forecast!", icon = icon("play"))
 
 br()
-awesomeCheckbox(inputId = "ens_tune", label = "Use optimized algorithms?", value = FALSE)
 br()
-
-actionButton(inputId = "ens_apply_forecast", label = "Forecast!", icon = icon("play"))
+br()
 actionButton(inputId = "ens_reset", label = "Reset", icon = icon("sync"))
 observeEvent(
   eventExpr = input$ens_reset, 
@@ -1496,9 +1503,9 @@ observeEvent(
     updateNumericInput(session = session, inputId = "ens_n_assess", value = 24)
     updatePrettyRadioButtons(session = session, inputId = "ens_assess_type", selected = "Rolling")
     updatePickerInput(session = session, inputId = "ens_method", selected = c("ETS", "SARIMA"))
+    updateMaterialSwitch(session = session, inputId = "ens_tune", value = FALSE)
     updatePickerInput(session = session, inputId = "ens_type", selected = "Average")
     updatePickerInput(session = session, inputId = "stk_type", selected = "Linear Regression")
-    updateMaterialSwitch(session = session, inputId = "ens_tune", value = FALSE)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )
@@ -1523,31 +1530,88 @@ ensemble_results <- eventReactive(
   }
 )
 
+stacking_results <- eventReactive(
+  eventExpr = input$stk_apply_forecast,
+  valueExpr = {
+    map(
+      input$ens_method,
+      ~ fit_model(
+        data = data_cleaned(), method = ., params = input,
+        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type, seed = 1992
+      )
+    ) |>
+      generate_forecast(
+        data = data_cleaned(), method = input$ens_method, n_future = input$ens_n_future,
+        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type,
+        ensemble_method = input$stk_type
+      )
+  }
+)
+
 output$plot_ens_test_forecast <- renderPlotly({
-  ensemble_results()$test_forecast |> 
-    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  if (input$ens_apply_forecast) {
+    ensemble_results()$test_forecast |> 
+      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  } else if (input$stk_apply_forecast) {
+    stacking_results()$test_forecast |> 
+      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  }
 })
 
 output$plot_ens_oos_forecast <- renderPlotly({
-  ensemble_results()$oos_forecast |> 
-    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  if (input$ens_apply_forecast) {
+    ensemble_results()$oos_forecast |> 
+      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  } else if (input$stk_apply_forecast) {
+    stacking_results()$oos_forecast |> 
+      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
+  }
 })
 
 output$ens_accuracy_table <- renderDT({
-  ensemble_results()$accuracy |> 
-    format_accuracy(single_method = FALSE) |>
-    filter(Type == "Test") |> 
-    datatable(
-      options = list(
-        ordering = TRUE, pageLength = 6, lengthChange = FALSE, searching = FALSE, 
-        info = FALSE, paging = FALSE, scrollCollapse = TRUE, scrollY = 300
-      ), 
-      rownames = FALSE
-    )
+  if (input$ens_apply_forecast) {
+    ensemble_results()$accuracy |> 
+      format_accuracy(single_method = FALSE) |>
+      filter(Type == "Test") |> 
+      datatable(
+        options = list(
+          ordering = TRUE,
+          pageLength = 6,
+          lengthChange = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          paging = FALSE,
+          scrollCollapse = TRUE,
+          scrollY = 300
+        ),
+        rownames = FALSE
+      )
+  } else if (input$stk_apply_forecast) {
+    stacking_results()$accuracy |> 
+      format_accuracy(single_method = FALSE) |>
+      filter(Type == "Test") |> 
+      datatable(
+        options = list(
+          ordering = TRUE,
+          pageLength = 6,
+          lengthChange = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          paging = FALSE,
+          scrollCollapse = TRUE,
+          scrollY = 300
+        ),
+        rownames = FALSE
+      )
+  }
 })
 
 output$ens_model_summary <- renderPrint({
-  ensemble_results()$fit
+  if (input$ens_apply_forecast) {
+    ensemble_results()$fit
+  } else if (input$stk_apply_forecast) {
+    stacking_results()$fit
+  }
 })
 ```
 

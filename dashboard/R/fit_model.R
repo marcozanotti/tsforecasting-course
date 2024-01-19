@@ -452,22 +452,24 @@ set_tune_parameters <- function(method, params) {
 
 }
 
+# function to generate the feature set
+generate_feature_set <- function(recipe_spec) {
+  feature_set <- recipe_spec |>
+    recipes::prep() |>
+    recipes::bake(new_data = NULL) |>
+    dplyr::select(-date, -value)
+  return(feature_set)
+}
+
 # function to perform grid specification
-generate_grid_spec <- function(method, model_spec, grid_size, seed = 1992) {
+generate_grid_spec <- function(method, model_spec, recipe_spec, grid_size, seed = 1992) {
 
   set.seed(seed)
-  if (method %in% c("Random Forest", "Boosted Trees")) {
-    grid_spec <- grid_latin_hypercube(
-      hardhat::extract_parameter_set_dials(model_spec) |>
-        recipes::update(mtry = mtry(range = c(1, 15))),
-      size = grid_size
-    )
-  } else {
-    grid_spec <- dials::grid_latin_hypercube(
-      hardhat::extract_parameter_set_dials(model_spec),
-      size = grid_size
-    )
-  }
+  feature_set <- generate_feature_set(recipe_spec)
+  updated_parameter_set <- model_spec |>
+    hardhat::extract_parameter_set_dials() |>
+    dials::finalize(x = feature_set)
+  grid_spec <- dials::grid_latin_hypercube(updated_parameter_set, size = grid_size)
   return(grid_spec)
 
 }
@@ -575,7 +577,6 @@ fit_model_tuning <- function(
   check_parameters(method, params_new)
   validation_metric <- tolower(validation_metric)
   valid_metric_set <- set_metric_set(validation_metric)
-  set.seed(seed)
 
   # initial split
   splits <- generate_initial_split(data, n_assess, assess_type)
@@ -596,30 +597,39 @@ fit_model_tuning <- function(
   wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
 
   # grid specification
-  # grid_spec <- generate_grid_spec(method, model_spec, grid_size, seed)
+  # grid_spec <- generate_grid_spec(method, model_spec, rcp_spec, grid_size, seed)
 
   # tuning
   doFuture::registerDoFuture()
   future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
   if (bayesian_optimization) {
+    feat_set <- generate_feature_set(rcp_spec)
+    updated_param_set <- hardhat::extract_parameter_set_dials(model_spec) |>
+      dials::finalize(x = feat_set)
+    set.seed(seed)
     tune_fit <- wkfl_spec |>
       tune::tune_bayes(
         resamples = cv_splits,
         metrics = valid_metric_set,
-        initial = as.integer(params$tune_grid_size),
+        initial = as.integer(params$tune_grid_size), # tune_fit (result from tune_grid)
         objective = tune::conf_bound(kappa = 0.1),
         iter = 20L, # as.integer(length(params_new) * 20) good practice
+        param_info = updated_param_set,
         control = tune::control_bayes(
           save_pred = FALSE, allow_par = TRUE, verbose = TRUE, no_improve = 5L
         )
       )
   } else {
+    set.seed(seed)
     tune_fit <- wkfl_spec |>
       tune::tune_grid(
+        preprocessor = rcp_spec,
         resamples = cv_splits,
         metrics = valid_metric_set,
-        grid = as.integer(params$tune_grid_size), # grid_spec
-        control = tune::control_grid(save_pred = FALSE, allow_par = TRUE, verbose = TRUE)
+        grid = as.integer(params$tune_grid_size), # as.integer(params$tune_grid_size)
+        control = tune::control_grid(
+          save_pred = FALSE, allow_par = TRUE, verbose = TRUE
+        )
       )
   }
   future::plan(strategy = "sequential")

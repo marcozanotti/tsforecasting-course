@@ -68,22 +68,26 @@ input <- list(
   n_future = 12,
   n_assess = 24,
   assess_type = "Rolling",
-  method = c("ETS", "SARIMA"),
-  auto_ets = TRUE,
-  error = "auto",
-  trend = "auto",
-  season = "auto",
-  damping = "auto",
-  smooth_level = 0.1,
-  smooth_trend = 0.1,
-  smooth_season = 0.1,
-  auto_arima = TRUE,
-  non_seasonal_ar = 1,
-  non_seasonal_differences = 1,
-  non_seasonal_ma = 1,
-  seasonal_ar = 1,
-  seasonal_differences = 1,
-  seasonal_ma = 1
+  method = c("ETS", "SARIMA", "H2O AutoML"),
+  auto_ets = get_default("auto_ets"),
+  error = get_default("error"),
+  trend = get_default("trend"),
+  season = get_default("season"),
+  damping = get_default("damping"),
+  smooth_level = get_default("smooth_level"),
+  smooth_trend = get_default("smooth_trend"),
+  smooth_season = get_default("smooth_season"),
+  auto_arima = get_default("auto_arima"),
+  non_seasonal_ar = get_default("non_seasonal_ar"),
+  non_seasonal_differences = get_default("non_seasonal_differences"),
+  non_seasonal_ma = get_default("non_seasonal_ma"),
+  seasonal_ar = get_default("seasonal_ar"),
+  seasonal_differences = get_default("seasonal_differences"),
+  seasonal_ma = get_default("seasonal_ma"),
+  h2o_max_time = get_default("h2o_max_time"),
+  h2o_max_time_model = get_default("h2o_max_time_model"),
+  h2o_nfolds = get_default("h2o_nfolds"),
+  h2o_metric = get_default("h2o_metric")
 )
 
 fitted_model_list <- map(
@@ -124,29 +128,34 @@ res$accuracy |> format_accuracy(single_method = FALSE) |> filter(Type == "Test")
 # COMBINE -----------------------------------------------------------------
 data_selected <- get_data(datasets[1])
 ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
+ens_methods <- getOption("tsf.dashboard.methods")[["ens"]]
 input <- list(
   n_future = 12,
   n_assess = 24,
   assess_type = "Rolling",
-  method = c("ETS", "SARIMA", "Elastic Net"),
+  method = c("ETS", "SARIMA", "Elastic Net", "H2O AutoML"),
   ens_type = ens_methods,
-  auto_ets = TRUE,
-  error = "auto",
-  trend = "auto",
-  season = "auto",
-  damping = "auto",
-  smooth_level = 0.1,
-  smooth_trend = 0.1,
-  smooth_season = 0.1,
-  auto_arima = TRUE,
-  non_seasonal_ar = 1,
-  non_seasonal_differences = 1,
-  non_seasonal_ma = 1,
-  seasonal_ar = 1,
-  seasonal_differences = 1,
-  seasonal_ma = 1,
-  penalty = 1,
-  mixture = 0.5
+  auto_ets = get_default("auto_ets"),
+  error = get_default("error"),
+  trend = get_default("trend"),
+  season = get_default("season"),
+  damping = get_default("damping"),
+  smooth_level = get_default("smooth_level"),
+  smooth_trend = get_default("smooth_trend"),
+  smooth_season = get_default("smooth_season"),
+  auto_arima = get_default("auto_arima"),
+  non_seasonal_ar = get_default("non_seasonal_ar"),
+  non_seasonal_differences = get_default("non_seasonal_differences"),
+  non_seasonal_ma = get_default("non_seasonal_ma"),
+  seasonal_ar = get_default("seasonal_ar"),
+  seasonal_differences = get_default("seasonal_differences"),
+  seasonal_ma = get_default("seasonal_ma"),
+  penalty = get_default("penalty"),
+  mixture = get_default("mixture"),
+  h2o_max_time = get_default("h2o_max_time"),
+  h2o_max_time_model = get_default("h2o_max_time_model"),
+  h2o_nfolds = get_default("h2o_nfolds"),
+  h2o_metric = get_default("h2o_metric")
 )
 
 fitted_model_list <- map(
@@ -201,26 +210,29 @@ input <- list(
   tune_elanet = c("Penalty", "Mixture")
 )
 input <- list(
-  n_future = 12,
-  n_assess = 24,
-  assess_type = "Rolling",
-  method = "Random Forest",
-  valid_type = "K-Fold CV",
-  n_folds = 5,
-  valid_metric = "RMSE",
-  grid_size = 10,
-  tune_xx_rf = c()
+  tune_n_future = 12,
+  tune_n_assess = 24,
+  tune_assess_type = "Rolling",
+  tune_method = "Random Forest",
+  tune_valid_type = "K-Fold CV",
+  tune_n_folds = 5,
+  tune_valid_metric = "RMSE",
+  tune_bayes = TRUE,
+  tune_grid_size = 10,
+  tune_rf = c("Random Predictors", "Trees")
 )
 
 data = data_selected
 params = input
-n_assess = input$n_assess
-assess_type = input$assess_type
-method = input$method
-validation_type = input$valid_type
-n_folds = input$n_folds
-validation_metric = input$metric
-grid_size = input$grid_size
+n_assess = input$tune_n_assess
+assess_type = input$tune_assess_type
+method = input$tune_method
+validation_type = input$tune_valid_type
+n_folds = input$tune_n_folds
+validation_metric = input$tune_valid_metric
+bayesian_optimization = input$tune_bayes
+grid_size = input$tune_grid_size
+n_future = input$tune_n_future
 seed = 1992
 
 fitted_model_list <- map(
@@ -263,40 +275,5 @@ res <- map(
     assess_type = input$assess_type
   )
 res$accuracy |> format_accuracy(single_method = TRUE)
-
-
-### GRID
-
-model_spec <- rand_forest(
-  mode = "regression",
-  mtry = tune(),
-  trees = tune(),
-  min_n = tune()
-) |>
-  set_engine("ranger")
-
-model_spec <- boost_tree(
-  mode = "regression",
-  mtry = tune(),
-  trees = tune(),
-  min_n = tune(),
-  tree_depth = tune(),
-  learn_rate = tune(),
-  loss_reduction = tune(),
-  sample_size = tune()
-) |>
-  set_engine("xgboost")
-
-model_spec <- prophet_boost(
-  mode = "regression",
-  mtry = tune(),
-  trees = tune(),
-  min_n = tune(),
-  tree_depth = tune(),
-  learn_rate = tune(),
-  loss_reduction = tune(),
-  sample_size = tune()
-) |>
-  set_engine("prophet_xgboost")
 
 
