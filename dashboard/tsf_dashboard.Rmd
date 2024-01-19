@@ -103,7 +103,6 @@ prettyRadioButtons(
 
 ```{r}
 data_selected <- reactive({
-
   if (input$data_import & !input$data_reset) {
     req(input$upload_custom)
     ext <- tools::file_ext(input$upload_custom$datapath)
@@ -113,7 +112,6 @@ data_selected <- reactive({
   } else {
     get_data(input$dataset)
   }
-  
 })
 
 ts_freq <- reactive({
@@ -1512,106 +1510,98 @@ observeEvent(
 ```
 
 ```{r}
-ensemble_results <- eventReactive(
-  eventExpr = input$ens_apply_forecast,
-  valueExpr = {
-    map(
-      input$ens_method, 
-      ~ fit_model(
-        data = data_cleaned(), method = ., params = input, 
-        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type, seed = 1992
-      )
-    ) |> 
+react_val <- reactiveValues(combine_results = NULL)
+
+observeEvent(
+  eventExpr = input$ens_apply_forecast, 
+  handlerExpr = {
+    react_val$combine_results <-
+      map(
+        input$ens_method,
+        ~ fit_model(
+          data = data_cleaned(),
+          method = .,
+          params = input,
+          n_assess = input$ens_n_assess,
+          assess_type = input$ens_assess_type,
+          seed = 1992
+        )
+      ) |>
       generate_forecast(
-        data = data_cleaned(), method = input$ens_method, n_future = input$ens_n_future,
-        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type,
-        ensemble_method = input$ens_type
+        data = data_cleaned(),
+        method = input$ens_method,
+        n_future = input$ens_n_future,
+        n_assess = input$ens_n_assess,
+        assess_type = input$ens_assess_type,
+        ensemble_methods = input$ens_type,
+        stacking_methods = NULL
       )
   }
 )
 
-stacking_results <- eventReactive(
-  eventExpr = input$stk_apply_forecast,
-  valueExpr = {
-    map(
-      input$ens_method,
-      ~ fit_model(
-        data = data_cleaned(), method = ., params = input,
-        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type, seed = 1992
-      )
-    ) |>
+observeEvent(
+  eventExpr = input$stk_apply_forecast, 
+  handlerExpr = {
+    react_val$combine_results <-
+      map(
+        input$ens_method,
+        ~ fit_model(
+          data = data_cleaned(),
+          method = .,
+          params = input,
+          n_assess = input$ens_n_assess,
+          assess_type = input$ens_assess_type,
+          seed = 1992
+        )
+      ) |>
       generate_forecast(
-        data = data_cleaned(), method = input$ens_method, n_future = input$ens_n_future,
-        n_assess = input$ens_n_assess, assess_type = input$ens_assess_type,
-        ensemble_method = input$stk_type
+        data = data_cleaned(),
+        method = input$ens_method,
+        n_future = input$ens_n_future,
+        n_assess = input$ens_n_assess,
+        assess_type = input$ens_assess_type,
+        ensemble_methods = NULL,
+        stacking_methods = input$stk_type
       )
   }
 )
 
 output$plot_ens_test_forecast <- renderPlotly({
-  if (input$ens_apply_forecast) {
-    ensemble_results()$test_forecast |> 
-      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
-  } else if (input$stk_apply_forecast) {
-    stacking_results()$test_forecast |> 
-      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
-  }
+  req(react_val$combine_results$test_forecast)
+  react_val$combine_results$test_forecast |>
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
 
+
 output$plot_ens_oos_forecast <- renderPlotly({
-  if (input$ens_apply_forecast) {
-    ensemble_results()$oos_forecast |> 
-      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
-  } else if (input$stk_apply_forecast) {
-    stacking_results()$oos_forecast |> 
-      plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
-  }
+  req(react_val$combine_results$oos_forecast)
+  react_val$combine_results$oos_forecast |> 
+    plot_modeltime_forecast(.legend_show = TRUE, .title = FALSE, .conf_interval_fill = "lightblue")
 })
 
 output$ens_accuracy_table <- renderDT({
-  if (input$ens_apply_forecast) {
-    ensemble_results()$accuracy |> 
-      format_accuracy(single_method = FALSE) |>
-      filter(Type == "Test") |> 
-      datatable(
-        options = list(
-          ordering = TRUE,
-          pageLength = 6,
-          lengthChange = FALSE,
-          searching = FALSE,
-          info = FALSE,
-          paging = FALSE,
-          scrollCollapse = TRUE,
-          scrollY = 300
-        ),
-        rownames = FALSE
-      )
-  } else if (input$stk_apply_forecast) {
-    stacking_results()$accuracy |> 
-      format_accuracy(single_method = FALSE) |>
-      filter(Type == "Test") |> 
-      datatable(
-        options = list(
-          ordering = TRUE,
-          pageLength = 6,
-          lengthChange = FALSE,
-          searching = FALSE,
-          info = FALSE,
-          paging = FALSE,
-          scrollCollapse = TRUE,
-          scrollY = 300
-        ),
-        rownames = FALSE
-      )
-  }
+  req(react_val$combine_results$accuracy)
+  react_val$combine_results$accuracy |>
+    format_accuracy(single_method = FALSE) |>
+    filter(Type == "Test") |>
+    datatable(
+      options = list(
+        ordering = TRUE,
+        pageLength = 6,
+        lengthChange = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        paging = FALSE,
+        scrollCollapse = TRUE,
+        scrollY = 300
+      ),
+      rownames = FALSE
+    )
 })
 
 output$ens_model_summary <- renderPrint({
-  if (input$ens_apply_forecast) {
-    ensemble_results()$fit
-  } else if (input$stk_apply_forecast) {
-    stacking_results()$fit
-  }
+  req(react_val$combine_results$fit)
+  react_val$combine_results$fit
 })
 ```
 

@@ -1,7 +1,7 @@
 # function to forecast using time series methods
 generate_forecast <- function(
     fitted_model_list, data, method, n_future, n_assess, assess_type,
-    ensemble_method = NULL
+    ensemble_methods = NULL, stacking_methods = NULL
   ) {
 
   # initial split
@@ -12,9 +12,6 @@ generate_forecast <- function(
   # future split
   future_tbl <- future_frame(data, .date_var = date, .length_out = n_future)
 
-  # model summary
-  # fitted_model
-
   # modeltime table
   modeltime_tbl <- modeltime::modeltime_table()
   for (i in 1:length(method)) {
@@ -23,15 +20,30 @@ generate_forecast <- function(
       modeltime::update_modeltime_description(.model_id = i, .new_model_desc = method[i])
   }
 
-  # ensemble
-  if (!is.null(ensemble_method)) {
+  # ensembling
+  if (!is.null(ensemble_methods)) {
     weights <- modeltime_tbl |>
       modeltime::modeltime_calibrate(new_data = test_tbl) |>
       modeltime::modeltime_accuracy(new_data = test_tbl) |>
       dplyr::transmute(rank = dplyr::min_rank(-rmse)) |>
       dplyr::pull("rank") # weights / sum(weights)
-    ensemble_tbl <- fit_ensemble(modeltime_tbl, ensemble_method, weights)
+    ensemble_tbl <- fit_ensemble(modeltime_tbl, ensemble_methods, weights)
     modeltime_tbl <- modeltime::combine_modeltime_tables(modeltime_tbl, ensemble_tbl)
+  }
+
+  # stacking
+  if (!is.null(stacking_methods)) {
+    # doFuture::registerDoFuture()
+    # future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
+    cv_splits <- generate_cv_split(train_tbl, n_assess, assess_type, "Time Series CV", 5)
+    rsmpl <- modeltime.resample::modeltime_fit_resamples(
+      modeltime_tbl, resamples = cv_splits,
+      control = control_resamples(verbose = TRUE, allow_par = TRUE)
+    )
+    stacking_res <- fit_stack(modeltime_tbl, stacking_methods, rsmpl)
+    modeltime_tbl <- modeltime::combine_modeltime_tables(modeltime_tbl, stacking_res$tbl)
+    fitted_model_list <- c(fitted_model_list, stacking_res$fit)
+    # future::plan(strategy = "sequential")
   }
 
   # calibration
@@ -61,8 +73,11 @@ generate_forecast <- function(
     )
 
   # refitting
-  refit_tbl <- calibration_tbl |>
-    modeltime::modeltime_refit(data = data)
+  if (!is.null(stacking_methods)) {
+    refit_tbl <- calibration_tbl |> modeltime::modeltime_refit(data = data, resamples = cv_splits)
+  } else {
+    refit_tbl <- calibration_tbl |> modeltime::modeltime_refit(data = data)
+  }
   for (i in 1:length(method)) {
     refit_tbl <- refit_tbl |>
       modeltime::update_modeltime_description(.model_id = i, .new_model_desc = method[i])
@@ -74,6 +89,9 @@ generate_forecast <- function(
       actual_data = data, new_data = future_tbl,
       conf_interval = 0.95, conf_method = "conformal_split"
     )
+
+  # model summary
+  # fitted_model_list
 
   if (any(method %in% "H2O AutoML")) { h2o.shutdown(prompt = FALSE) }
   res <- list(

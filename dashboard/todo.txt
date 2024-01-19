@@ -6,7 +6,6 @@ data-icon="fa-list"
 Next steps:
 - rotellina o messaggio per operazioni in corso
 - add logs to screen and file
-- reset dataset uploaded
 - cambiare logo
 - deployment su github actions
 - move to another github repo
@@ -14,7 +13,7 @@ Next steps:
 - aggiungere package::function per ogni funzione
 
 To Do:
-- pensare e aggiungere la sezione di stacking (LM + Elastic Net)
+- reset dataset uploaded
 - pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) + rolling variances
 - pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni
 - aggiungere metodi di dl (NeuralProphet + NBEATS + DeepAR)
@@ -23,3 +22,4 @@ To Do:
 - cambiare assegnazione nomi ai parametri in UI
 - XAI
 - aggiornamento cluster h2o
+- option tune stack?

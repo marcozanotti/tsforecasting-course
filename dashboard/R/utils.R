@@ -196,9 +196,9 @@ get_default <- function(parameter, return_value = TRUE) {
     "num_terms" = 20, "prod_degree" = 1, "prune_method" = "backward", # MARS
     "neighbors" = 5, # KNN
     "boundary" = "Linear", "cost" = 1, "margin" = 0.1, "rbf_sigma" = 0.02, # SVM
-    "rf_mtry" = 5, "rf_trees" = 500, "rf_min_n" = 5, # Random Forest
+    "rf_mtry" = 5, "rf_trees" = 1000, "rf_min_n" = 5, # Random Forest
     "boost_method" = "XGBoost", # Boosted Trees
-    "boost_mtry" = 5, "boost_trees" = 100, "boost_min_n" = 1, "boost_tree_depth" = 6,
+    "boost_mtry" = 5, "boost_trees" = 1000, "boost_min_n" = 1, "boost_tree_depth" = 6,
     "boost_learn_rate" = 0.3, "boost_loss_reduction" = 0, "boost_sample_size" = 1,
     "committees" = 1, "cub_neighbors" = 0, "max_rules" = 20, # Cubist
     "ff_hidden_units" = 10, "ff_penalty" = 0, "ff_epochs" = 100, "ff_dropout" = 0.1, "ff_learn_rate" = 0.3, # Feed-Forward

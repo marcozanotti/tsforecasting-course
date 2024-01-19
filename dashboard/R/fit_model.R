@@ -509,19 +509,19 @@ fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) 
 # function to perform ensemble model estimation
 # it is just adding the ensemble method to the modeltime table
 # because no fitting is required for simple ensembles
-fit_ensemble <- function(modeltime_table, ensemble_method, weights, seed = 1992) {
+fit_ensemble <- function(modeltime_table, ensemble_methods, weights, seed = 1992) {
 
   set.seed(seed)
   ensemble_tbl <- modeltime::modeltime_table()
 
-  if ("Average" %in% ensemble_method) {
+  if ("Average" %in% ensemble_methods) {
     ens_tmp <- modeltime.ensemble::ensemble_average(modeltime_table, type = "mean") |>
       modeltime::modeltime_table() |>
       modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Average")
     ensemble_tbl <- modeltime::combine_modeltime_tables(ensemble_tbl, ens_tmp)
   }
 
-  if ("Weighted Average" %in% ensemble_method) {
+  if ("Weighted Average" %in% ensemble_methods) {
     ens_tmp <- modeltime.ensemble::ensemble_weighted(
       modeltime_table, loadings = weights, scale_loadings = TRUE
     ) |>
@@ -530,7 +530,7 @@ fit_ensemble <- function(modeltime_table, ensemble_method, weights, seed = 1992)
     ensemble_tbl <- modeltime::combine_modeltime_tables(ensemble_tbl, ens_tmp)
   }
 
-  if ("Median" %in% ensemble_method) {
+  if ("Median" %in% ensemble_methods) {
     ens_tmp <- modeltime.ensemble::ensemble_average(modeltime_table, type = "median") |>
       modeltime::modeltime_table() |>
       modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Median")
@@ -542,30 +542,71 @@ fit_ensemble <- function(modeltime_table, ensemble_method, weights, seed = 1992)
 }
 
 # function to perform stacking model estimation
-fit_stack <- function(modeltime_table, stack_method, seed = 1992) {
+fit_stack <- function(modeltime_table, stacking_methods, resamples, seed = 1992) {
 
   set.seed(seed)
+  stack_fit_list <- list()
   stack_tbl <- modeltime::modeltime_table()
 
-  ens_model_spec <- modeltime.ensemble::ensemble_model_spec(
-    modeltime_table,
-    model_spec = linear_reg() |> set_engine("lm"),
-    control = control_grid(verbose = TRUE)
-  )
-
-  if ("Stacked" %in% stack_method) {
-    ens_tmp <- modeltime.ensemble::ensemble_stacked(modeltime_table) |>
+  if ("Linear Regression" %in% stacking_methods) {
+    stk_model_spec <- modeltime.ensemble::ensemble_model_spec(
+      resamples,
+      model_spec = linear_reg(mode = "regression") |> set_engine("lm"),
+      control = control_grid(verbose = FALSE)
+    )
+    stk_tmp <- stk_model_spec |>
       modeltime::modeltime_table() |>
-      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Stacked")
-    stack_tbl <- modeltime::combine_modeltime_tables(stack_tbl, ens_tmp)
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Stack - LM")
+    stack_tbl <- modeltime::combine_modeltime_tables(stack_tbl, stk_tmp)
+    stack_fit_list$lm <- stk_model_spec$fit$fit
   }
 
-  return(stack_tbl)
+  if ("Elastic Net" %in% stacking_methods) {
+    stk_model_spec <- modeltime.ensemble::ensemble_model_spec(
+      resamples,
+      model_spec = linear_reg(
+        mode = "regression",
+        penalty = get_default("penalty"),
+        mixture = get_default("mixture")
+      ) |> set_engine("glmnet"),
+      control = control_grid(verbose = FALSE)
+    )
+    stk_tmp <- stk_model_spec |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Stack - Elastic Net")
+    stack_tbl <- modeltime::combine_modeltime_tables(stack_tbl, stk_tmp)
+    stack_fit_list$elanet <- stk_model_spec$fit$fit
+  }
+
+  if ("Boosted Trees" %in% stacking_methods) {
+    stk_model_spec <- modeltime.ensemble::ensemble_model_spec(
+      resamples,
+      model_spec = boost_tree(
+        mode = "regression",
+        mtry = get_default("boost_mtry"),
+        trees = get_default("boost_trees"),
+        min_n = get_default("boost_min_n"),
+        tree_depth = get_default("boost_tree_depth"),
+        learn_rate = get_default("boost_learn_rate"),
+        loss_reduction = get_default("boost_loss_reduction"),
+        sample_size = get_default("boost_sample_size")
+      ) |>
+        set_engine("xgboost"),
+      control = control_grid(verbose = FALSE)
+    )
+    stk_tmp <- stk_model_spec |>
+      modeltime::modeltime_table() |>
+      modeltime::update_modeltime_description(.model_id = 1, .new_model_desc = "Stack - XGBoost")
+    stack_tbl <- modeltime::combine_modeltime_tables(stack_tbl, stk_tmp)
+    stack_fit_list$xgboost <- stk_model_spec$fit$fit
+  }
+
+  stack_res <- list("fit" = unname(stack_fit_list), "tbl" = stack_tbl)
+  return(stack_res)
 
 }
 
 # function to perform model optimization
-#
 fit_model_tuning <- function(
     data, method, params, n_assess, assess_type,
     validation_type = "Time Series CV",

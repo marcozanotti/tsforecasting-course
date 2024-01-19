@@ -129,6 +129,7 @@ res$accuracy |> format_accuracy(single_method = FALSE) |> filter(Type == "Test")
 data_selected <- get_data(datasets[1])
 ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
 ens_methods <- getOption("tsf.dashboard.methods")[["ens"]]
+ens_methods <- getOption("tsf.dashboard.methods")[["stk"]]
 input <- list(
   n_future = 12,
   n_assess = 24,
@@ -157,6 +158,28 @@ input <- list(
   h2o_nfolds = get_default("h2o_nfolds"),
   h2o_metric = get_default("h2o_metric")
 )
+input <- list(
+  n_future = 12,
+  n_assess = 24,
+  assess_type = "Rolling",
+  method = c("ETS", "SARIMA"),
+  stk_type = stk_methods,
+  auto_ets = get_default("auto_ets"),
+  error = get_default("error"),
+  trend = get_default("trend"),
+  season = get_default("season"),
+  damping = get_default("damping"),
+  smooth_level = get_default("smooth_level"),
+  smooth_trend = get_default("smooth_trend"),
+  smooth_season = get_default("smooth_season"),
+  auto_arima = get_default("auto_arima"),
+  non_seasonal_ar = get_default("non_seasonal_ar"),
+  non_seasonal_differences = get_default("non_seasonal_differences"),
+  non_seasonal_ma = get_default("non_seasonal_ma"),
+  seasonal_ar = get_default("seasonal_ar"),
+  seasonal_differences = get_default("seasonal_differences"),
+  seasonal_ma = get_default("seasonal_ma")
+)
 
 fitted_model_list <- map(
   input$method,
@@ -165,12 +188,32 @@ fitted_model_list <- map(
     n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
   )
 )
+
+# ensemble simple
 forecast_results <- generate_forecast(
   fitted_model_list = fitted_model_list, data = data_selected,
   method = input$method, n_future = input$n_future,
   n_assess = input$n_assess, assess_type = input$assess_type,
-  ensemble_method = input$ens_type
+  ensemble_methods = input$ens_type, stacking_methods = NULL
 )
+
+# stacking
+forecast_results <- generate_forecast(
+  fitted_model_list = fitted_model_list, data = data_selected,
+  method = input$method, n_future = input$n_future,
+  n_assess = input$n_assess, assess_type = input$assess_type,
+  ensemble_methods = NULL, stacking_methods = input$stk_type
+)
+
+fitted_model_list = fitted_model_list
+data = data_selected
+method = input$method
+n_future = input$n_future
+n_assess = input$n_assess
+assess_type = input$assess_type
+ensemble_methods = NULL
+stacking_methods = input$stk_type
+
 
 res <- map(
   input$method,
