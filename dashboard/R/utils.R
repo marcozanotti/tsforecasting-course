@@ -10,7 +10,7 @@ set_options <- function() {
       "mix" = c("Feed-Forward AR", "ARIMA-Boost", "Prophet-Boost"),
       "aml" = c("H2O AutoML", "COMING SOON!"),
       "ens" = c("Average", "Weighted Average", "Median"),
-      "stk" = c("Linear Regression", "Elastic Net"),
+      "stk" = c("Linear Regression", "Elastic Net", "Boosted Trees"),
       "tune" = c(
         "Elastic Net", "MARS", "KNN", "SVM", "Random Forest", "Boosted Trees", "Cubist",
         "Feed-Forward", "Feed-Forward AR", "ARIMA-Boost", "Prophet-Boost"
@@ -229,4 +229,28 @@ clean_chr <- function(x) {
 clean_chr_inv <- function(x) {
   stringr::str_replace_all(x, " ", "_") |>
     stringr::str_to_lower()
+}
+
+# function to format accuracy table
+format_accuracy <- function(accuracy_table, single_method = TRUE, digits = 2) {
+
+  if (single_method == TRUE) {
+    res <- accuracy_table |>
+      select(-1, -2) |>
+      rename("Type" = ".type") |>
+      rename_with(.fn = toupper, .cols = -c("Type")) |>
+      relocate("ME", .after = "Type") |>
+      mutate(across(where(is.numeric), ~round(., digits))) |>
+      pivot_longer(cols = -1, names_to = "Metric", values_to = "Value") |>
+      pivot_wider(names_from = "Type", values_from = "Value")
+  } else {
+    res <- accuracy_table |>
+      select(-1) |>
+      rename("Algorithm" = ".model_desc", "Type" = ".type") |>
+      rename_with(.fn = toupper, .cols = -c("Algorithm", "Type")) |>
+      relocate("ME", .after = "Type") |>
+      mutate(across(where(is.numeric), ~round(., digits)))
+  }
+  return(res)
+
 }

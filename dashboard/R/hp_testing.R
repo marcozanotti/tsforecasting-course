@@ -19,6 +19,7 @@ compute_hptests <- function(data, digits = 4) {
   # urca::ur.pp() type = c("Z-alpha", "Z-tau"), model = c("constant", "trend"), use.lag = NULL
   # urca::ur.df() type = c("none", "drift", "trend"), lags = 1
 
+  logging::loginfo("Hypothesis testing...")
   x <- data$value
   x <- x[which(!is.na(x))]
   k <- trunc((length(x) - 1) ^ (1 / 3))
@@ -41,6 +42,7 @@ compute_hptests <- function(data, digits = 4) {
   )
 
   # normality tests
+  logging::loginfo("Normality Tests")
   tmp <- tseries::jarque.bera.test(x)
   res[1, 4] <- unname(tmp$statistic)
   res[1, 5] <- tmp$p.value
@@ -49,6 +51,7 @@ compute_hptests <- function(data, digits = 4) {
   res[2, 5] <- tmp$p.value
 
   # autocorrelation tests
+  logging::loginfo("Autocorrelation Tests")
   tmp <- stats::Box.test(x, type = "Box-Pierce", lag = k)
   res[3, 4] <- unname(tmp$statistic)
   res[3, 5] <- tmp$p.value
@@ -57,6 +60,7 @@ compute_hptests <- function(data, digits = 4) {
   res[4, 5] <- tmp$p.value
 
   # stationarity
+  logging::loginfo("Statinarity Tests")
   tmp <- suppressWarnings(tseries::adf.test(x, k = k))
   res[5, 4] <- unname(tmp$statistic)
   res[5, 5] <- tmp$p.value
@@ -79,7 +83,6 @@ compute_hptests <- function(data, digits = 4) {
     #   )
     # ) |>
     dplyr::select(-Type)
-
   return(res)
 
 }

@@ -4,15 +4,21 @@ generate_forecast <- function(
     ensemble_methods = NULL, stacking_methods = NULL
   ) {
 
+  logging::loginfo("*** Generating Forecasts ***")
+  logging::loginfo(paste("Method(s):", paste0(method, collapse = ", ")))
+
   # initial split
+  logging::loginfo("Initial Split")
   splits <- generate_initial_split(data, n_assess, assess_type)
   train_tbl <- training(splits) |> select(-id, -frequency)
   test_tbl <- testing(splits) |> select(-id, -frequency)
 
   # future split
+  logging::loginfo("Future Frame")
   future_tbl <- future_frame(data, .date_var = date, .length_out = n_future)
 
   # modeltime table
+  logging::loginfo("Modeltime Table")
   modeltime_tbl <- modeltime::modeltime_table()
   for (i in 1:length(method)) {
     modeltime_tbl <- modeltime_tbl |>
@@ -22,6 +28,7 @@ generate_forecast <- function(
 
   # ensembling
   if (!is.null(ensemble_methods)) {
+    logging::loginfo("Ensembling")
     weights <- modeltime_tbl |>
       modeltime::modeltime_calibrate(new_data = test_tbl) |>
       modeltime::modeltime_accuracy(new_data = test_tbl) |>
@@ -33,6 +40,7 @@ generate_forecast <- function(
 
   # stacking
   if (!is.null(stacking_methods)) {
+    logging::loginfo("Stacking")
     # doFuture::registerDoFuture()
     # future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
     cv_splits <- generate_cv_split(train_tbl, n_assess, assess_type, "Time Series CV", 5)
@@ -47,14 +55,17 @@ generate_forecast <- function(
   }
 
   # calibration
+  logging::loginfo("Calibration")
   calibration_tbl <- modeltime_tbl |>
     modeltime::modeltime_calibrate(new_data = test_tbl)
 
   # residuals
+  logging::loginfo("Residuals")
   residuals_tbl <- calibration_tbl |>
     modeltime::modeltime_residuals(new_data = train_tbl)
 
   # evaluation
+  logging::loginfo("Accuracy Evaluation")
   new_mset <- modeltime::default_forecast_accuracy_metric_set(me) # add ME to the default metric set
   accuracy_tbl <- dplyr::bind_rows(
     calibration_tbl |>
@@ -66,6 +77,7 @@ generate_forecast <- function(
   )
 
   # test forecasting
+  logging::loginfo("Test Forecasting")
   test_forecast_tbl <- calibration_tbl |>
     modeltime::modeltime_forecast(
       actual_data = data, new_data = test_tbl,
@@ -73,6 +85,7 @@ generate_forecast <- function(
     )
 
   # refitting
+  logging::loginfo("Refitting")
   if (!is.null(stacking_methods)) {
     refit_tbl <- calibration_tbl |> modeltime::modeltime_refit(data = data, resamples = cv_splits)
   } else {
@@ -84,6 +97,7 @@ generate_forecast <- function(
   }
 
   # out-of-sample forecasting
+  logging::loginfo("Out-of-Sample Forecasting")
   oos_forecast_tbl <- refit_tbl |>
     modeltime::modeltime_forecast(
       actual_data = data, new_data = future_tbl,

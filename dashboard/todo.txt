@@ -5,7 +5,6 @@ data-icon="fa-list"
 
 Next steps:
 - rotellina o messaggio per operazioni in corso
-- add logs to screen and file
 - cambiare logo
 - deployment su github actions
 - move to another github repo

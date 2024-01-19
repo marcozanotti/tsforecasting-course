@@ -482,23 +482,31 @@ generate_grid_spec <- function(method, model_spec, recipe_spec, grid_size, seed 
 # has to be performed using the fit_resamples() function (as in tuning).
 fit_model <- function(data, method, params, n_assess, assess_type, seed = 1992) {
 
+  logging::loginfo("*** Fitting Algorithm ***")
+  logging::loginfo(paste("Method(s):", paste0(method, collapse = ", ")))
+
   check_parameters(method, params)
   set.seed(seed)
 
   # initial split
+  logging::loginfo("Initial Split")
   splits <- generate_initial_split(data, n_assess, assess_type)
   train_tbl <- training(splits) |> select(-id, -frequency)
 
   # recipe specification
+  logging::loginfo("Recipe Specification")
   rcp_spec <- generate_recipe_spec(train_tbl, method)
 
   # model specification
+  logging::loginfo("Model Specification")
   model_spec <- generate_model_spec(method, params)
 
   # workflow specification
+  logging::loginfo("Workflow Specification")
   wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
 
   # fitting
+  logging::loginfo("Fitting")
   if (method == "H2O AutoML") { h2o.init() }
   wkfl_fit <- wkfl_spec |> fit(data = train_tbl)
 
@@ -614,33 +622,43 @@ fit_model_tuning <- function(
     bayesian_optimization = TRUE, seed = 1992
 ) {
 
+  logging::loginfo("*** Tuning Algorithm ***")
+  logging::loginfo(paste("Method(s):", paste0(method, collapse = ", ")))
+
   params_new <- set_tune_parameters(method, params)
   check_parameters(method, params_new)
   validation_metric <- tolower(validation_metric)
   valid_metric_set <- set_metric_set(validation_metric)
 
   # initial split
+  logging::loginfo("Initial Split")
   splits <- generate_initial_split(data, n_assess, assess_type)
   train_tbl <- training(splits) |> select(-id, -frequency)
 
   # validation split
+  logging::loginfo("Validation Split")
   cv_splits <- generate_cv_split(
     train_tbl, n_assess, assess_type, validation_type, n_folds, seed
   )
 
   # recipe specification
+  logging::loginfo("Recipe Specification")
   rcp_spec <- generate_recipe_spec(train_tbl, method)
 
   # model specification
+  logging::loginfo("Model Specification")
   model_spec <- generate_model_spec(method, params_new)
 
   # workflow specification
+  logging::loginfo("Workflow Specification")
   wkfl_spec <- workflow() |> add_recipe(rcp_spec) |> add_model(model_spec)
 
   # grid specification
+  # logging::loginfo("Grid Specification")
   # grid_spec <- generate_grid_spec(method, model_spec, rcp_spec, grid_size, seed)
 
   # tuning
+  logging::loginfo("Tuning")
   doFuture::registerDoFuture()
   future::plan(strategy = "multisession", workers = parallelly::availableCores() - 1)
   if (bayesian_optimization) {
@@ -676,9 +694,11 @@ fit_model_tuning <- function(
   future::plan(strategy = "sequential")
 
   # picking best model
+  logging::loginfo("Extracting Best Model")
   best_fit <- tune::show_best(tune_fit, metric = validation_metric, n = 1)
 
   # fitting (fit to training with optimal values)
+  logging::loginfo("Fitting")
   wkfl_fit <- wkfl_spec |> tune::finalize_workflow(best_fit) |> fit(train_tbl)
 
   return(wkfl_fit)

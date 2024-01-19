@@ -26,7 +26,7 @@ source("R/generate_forecast.R")
 
 # Packages
 pkgs <- c(
-  "tidyverse", "tsibbledata", "janitor", "skimr", "vroom",
+  "tidyverse", "tsibbledata", "janitor", "skimr", "vroom", "logging",
   "forecast", "prophet", "glmnet", "earth", "kernlab", "kknn",
   "randomForest", "ranger", "xgboost", "treesnip", "lightgbm",
   "Cubist", "rules",
@@ -45,6 +45,7 @@ datasets <- c(
 
 set_options()
 Sys.setenv(JAVA_HOME = "/usr/lib/jvm/jdk-17/")
+logging::addHandler(logging::writeToFile, file = "tsf_dashboard.log")
 
 methods <- getOption("tsf.dashboard.methods")
 ts_methods <- methods$ts
