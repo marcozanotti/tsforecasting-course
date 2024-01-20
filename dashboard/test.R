@@ -320,3 +320,63 @@ res <- map(
 res$accuracy |> format_accuracy(single_method = TRUE)
 
 
+
+# SCENARIO -----------------------------------------------------------------
+data_selected <- get_data(datasets[1])
+ts_freq <- data_selected$frequency |> unique() |> parse_frequency()
+input <- list(
+  n_future = 12,
+  n_assess = 24,
+  assess_type = "Rolling",
+  method = "ETS",
+  auto_ets = TRUE,
+  error = "additive",
+  trend = "additive",
+  season = get_default("season"),
+  damping = get_default("damping"),
+  smooth_level = get_default("smooth_level"),
+  smooth_trend = 0.1,
+  smooth_season = get_default("smooth_season"),
+  confidence_level = c(0.25, 0.99)
+)
+
+data = data_selected
+method = input$method
+params = input
+n_assess = input$n_assess
+assess_type = input$assess_type
+seed = 1992
+n_future = input$n_future
+confidence_level = input$confidence_level
+
+fitted_model_list <- map(
+  input$method,
+  ~ fit_model(
+    data = data_selected, method = ., params = input,
+    n_assess = input$n_assess, assess_type = input$assess_type, seed = 1992
+  )
+)
+forecast_results <- generate_forecast(
+  fitted_model_list = fitted_model_list, data = data_selected,
+  method = input$method, n_future = input$n_future,
+  n_assess = input$n_assess, assess_type = input$assess_type,
+  confidence_level = input$confidence_level
+)
+
+# !!!!! ATTENZIONE 0.95 non lo trova  per confronto numerico
+forecast_results$oos_forecast |>
+  dplyr::filter(.model_desc == "ACTUAL" | .conf_lvl == "0.55") |>
+  plot_modeltime_forecast()
+
+beta = 0.05
+c(.2, .25, .3, .35) + beta * (1:4)
+
+
+
+
+
+
+
+
+
+

@@ -254,3 +254,12 @@ format_accuracy <- function(accuracy_table, single_method = TRUE, digits = 2) {
   return(res)
 
 }
+
+# function to set confidence levels
+set_confidence_levels <- function(confidence_level, by = 0.05) {
+  min_lvl <- min(confidence_level)
+  max_lvl <- max(confidence_level)
+  lvls <- seq(min_lvl, max_lvl, by = by)
+  lvls <- unique(c(min_lvl, lvls, max_lvl))
+  return(lvls)
+}

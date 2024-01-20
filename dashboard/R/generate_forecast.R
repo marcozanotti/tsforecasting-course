@@ -1,7 +1,7 @@
 # function to forecast using time series methods
 generate_forecast <- function(
     fitted_model_list, data, method, n_future, n_assess, assess_type,
-    ensemble_methods = NULL, stacking_methods = NULL
+    ensemble_methods = NULL, stacking_methods = NULL, confidence_level = 0.95
   ) {
 
   logging::loginfo("*** Generating Forecasts ***")
@@ -81,7 +81,7 @@ generate_forecast <- function(
   test_forecast_tbl <- calibration_tbl |>
     modeltime::modeltime_forecast(
       actual_data = data, new_data = test_tbl,
-      conf_interval = 0.95, conf_method = "conformal_split"
+      conf_interval = confidence_level, conf_method = "conformal_split"
     )
 
   # refitting
@@ -98,11 +98,25 @@ generate_forecast <- function(
 
   # out-of-sample forecasting
   logging::loginfo("Out-of-Sample Forecasting")
-  oos_forecast_tbl <- refit_tbl |>
-    modeltime::modeltime_forecast(
-      actual_data = data, new_data = future_tbl,
-      conf_interval = 0.95, conf_method = "conformal_split"
-    )
+  if (length(confidence_level) > 1) {
+    conf_lvls <- set_confidence_levels(confidence_level, by = 0.05)
+    oos_forecast_tbl <- purrr::map(
+      conf_lvls,
+      ~ modeltime::modeltime_forecast(
+        refit_tbl, actual_data = data, new_data = future_tbl,
+        conf_interval = ., conf_method = "conformal_split"
+      )
+    ) |> purrr::map2(conf_lvls, ~ dplyr::mutate(.x, .conf_lvl = .y)) |>
+      dplyr::bind_rows() |>
+      dplyr::mutate(.conf_lvl = ifelse(.model_desc == "ACTUAL", NA_real_, .conf_lvl)) |>
+      dplyr::distinct(.keep_all = TRUE)
+  } else {
+    oos_forecast_tbl <- refit_tbl |>
+      modeltime::modeltime_forecast(
+        actual_data = data, new_data = future_tbl,
+        conf_interval = confidence_level, conf_method = "conformal_split"
+      )
+  }
 
   # model summary
   # fitted_model_list

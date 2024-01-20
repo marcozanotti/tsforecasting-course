@@ -10,15 +10,28 @@ Next steps:
 - move to another github repo
 - documentazione in alto a destra
 - aggiungere package::function per ogni funzione
+- aggiornamento cluster h2o
 
 To Do:
 - reset dataset uploaded
-- pensare e aggiungere la sezione di scenario forecasting + uncertainty + judgmental (gauges?) + rolling variances
-- pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni
-- aggiungere metodi di dl (NeuralProphet + NBEATS + DeepAR)
+- aggiungere logica di transform_back i forecast - pensare bene a questo con feature eng
+
+- pensare e aggiungere la sezione di scenario forecasting
++ creazione fanchart
++ uncertainty
++ judgmental (gauges?)
++ rolling variances
++ con lnk a vai a scenario
++ in scenario aggiungere delta rispetto a horizon precedente e horizon precedente della stagione
++ aggiungere funzione di aggregazione del risultato sull'horizon (mean, median, max, min, ecc)
++ espansione nel tempo di prediction intervals con expanded_level = value + beta * t (problem: linear, renderlo esponenziale)
+
+
 - pensare e aggiungere la sezione di feature engineering (con in mente il save)
 - modificare output modello con parsing
-- cambiare assegnazione nomi ai parametri in UI
+- pensare e aggiungere il save del modello ottimizzato + use optimize in altre sezioni
+- aggiungere metodi di dl (NeuralProphet + NBEATS + DeepAR)
 - XAI
-- aggiornamento cluster h2o
-- option tune stack?
+- option tune stack? per il tuning degli stack
+- cambiare assegnazione nomi ai parametri in UI
+
