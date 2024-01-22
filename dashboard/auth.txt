@@ -1,3 +1,0 @@
-user,password
-test,testpw
-my_new_user,my_new_password

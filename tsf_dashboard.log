@@ -86,3 +86,89 @@
 2024-01-22 07:22:44 INFO::Test Forecasting
 2024-01-22 07:22:45 INFO::Refitting
 2024-01-22 07:22:45 INFO::Out-of-Sample Forecasting
+2024-01-22 11:12:56 INFO::Getting Air Passengers data...
+2024-01-22 11:12:56 INFO::*** Fitting Algorithm ***
+2024-01-22 11:12:56 INFO::Method(s): ETS
+2024-01-22 11:12:56 INFO::Initial Split
+2024-01-22 11:12:56 INFO::Recipe Specification
+2024-01-22 11:12:56 INFO::Model Specification
+2024-01-22 11:12:56 INFO::Workflow Specification
+2024-01-22 11:12:56 INFO::Fitting
+2024-01-22 11:12:57 INFO::*** Generating Forecasts ***
+2024-01-22 11:12:57 INFO::Method(s): ETS
+2024-01-22 11:12:57 INFO::Initial Split
+2024-01-22 11:12:57 INFO::Future Frame
+2024-01-22 11:12:57 INFO::Modeltime Table
+2024-01-22 11:12:57 INFO::Calibration
+2024-01-22 11:12:57 INFO::Residuals
+2024-01-22 11:12:57 INFO::Accuracy Evaluation
+2024-01-22 11:12:57 INFO::Test Forecasting
+2024-01-22 11:12:57 INFO::Refitting
+2024-01-22 11:12:58 INFO::Out-of-Sample Forecasting
+2024-01-22 11:14:10 INFO::*** Generating Forecasts ***
+2024-01-22 11:14:10 INFO::Method(s): ETS
+2024-01-22 11:14:10 INFO::Initial Split
+2024-01-22 11:14:10 INFO::Future Frame
+2024-01-22 11:14:10 INFO::Modeltime Table
+2024-01-22 11:14:10 INFO::Calibration
+2024-01-22 11:14:10 INFO::Residuals
+2024-01-22 11:14:10 INFO::Accuracy Evaluation
+2024-01-22 11:14:10 INFO::Test Forecasting
+2024-01-22 11:14:10 INFO::Refitting
+2024-01-22 11:14:11 INFO::Out-of-Sample Forecasting
+2024-01-22 11:14:11 INFO::Out-of-Sample Forecasting - Multiple Prediction Intervals
+2024-01-22 11:19:00 INFO::*** Generating Forecasts ***
+2024-01-22 11:19:00 INFO::Method(s): ETS
+2024-01-22 11:19:00 INFO::Initial Split
+2024-01-22 11:19:00 INFO::Future Frame
+2024-01-22 11:19:01 INFO::Modeltime Table
+2024-01-22 11:19:01 INFO::Calibration
+2024-01-22 11:19:01 INFO::Residuals
+2024-01-22 11:19:01 INFO::Accuracy Evaluation
+2024-01-22 11:19:01 INFO::Test Forecasting
+2024-01-22 11:19:01 INFO::Refitting
+2024-01-22 11:19:01 INFO::Out-of-Sample Forecasting
+2024-01-22 11:19:01 INFO::Out-of-Sample Forecasting - Multiple Prediction Intervals
+2024-01-22 11:22:31 INFO::*** Fitting Algorithm ***
+2024-01-22 11:22:31 INFO::Method(s): NAIVE
+2024-01-22 11:22:31 INFO::Initial Split
+2024-01-22 11:22:31 INFO::Recipe Specification
+2024-01-22 11:23:19 INFO::*** Fitting Algorithm ***
+2024-01-22 11:23:19 INFO::Method(s): Naive
+2024-01-22 11:23:19 INFO::Initial Split
+2024-01-22 11:23:19 INFO::Recipe Specification
+2024-01-22 11:23:19 INFO::Model Specification
+2024-01-22 11:23:19 INFO::Workflow Specification
+2024-01-22 11:23:19 INFO::Fitting
+2024-01-22 11:23:22 INFO::*** Generating Forecasts ***
+2024-01-22 11:23:22 INFO::Method(s): Naive
+2024-01-22 11:23:22 INFO::Initial Split
+2024-01-22 11:23:22 INFO::Future Frame
+2024-01-22 11:23:22 INFO::Modeltime Table
+2024-01-22 11:23:22 INFO::Calibration
+2024-01-22 11:23:22 INFO::Residuals
+2024-01-22 11:23:22 INFO::Accuracy Evaluation
+2024-01-22 11:23:22 INFO::Test Forecasting
+2024-01-22 11:23:22 INFO::Refitting
+2024-01-22 11:23:22 INFO::Out-of-Sample Forecasting
+2024-01-22 11:23:22 INFO::Out-of-Sample Forecasting - Multiple Prediction Intervals
+2024-01-22 14:27:19 INFO::Getting Air Passengers data...
+2024-01-22 14:27:27 INFO::*** Fitting Algorithm ***
+2024-01-22 14:27:27 INFO::Method(s): ETS
+2024-01-22 14:27:27 INFO::Initial Split
+2024-01-22 14:27:27 INFO::Recipe Specification
+2024-01-22 14:27:27 INFO::Model Specification
+2024-01-22 14:27:27 INFO::Workflow Specification
+2024-01-22 14:27:27 INFO::Fitting
+2024-01-22 14:27:30 INFO::*** Generating Forecasts ***
+2024-01-22 14:27:30 INFO::Method(s): ETS
+2024-01-22 14:27:30 INFO::Initial Split
+2024-01-22 14:27:30 INFO::Future Frame
+2024-01-22 14:27:30 INFO::Modeltime Table
+2024-01-22 14:27:30 INFO::Calibration
+2024-01-22 14:27:30 INFO::Residuals
+2024-01-22 14:27:30 INFO::Accuracy Evaluation
+2024-01-22 14:27:30 INFO::Test Forecasting
+2024-01-22 14:27:30 INFO::Refitting
+2024-01-22 14:27:31 INFO::Out-of-Sample Forecasting
+2024-01-22 14:27:31 INFO::Out-of-Sample Forecasting - Multiple Prediction Intervals
