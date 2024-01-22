@@ -24,6 +24,7 @@ To Do:
 + con lnk a vai a scenario
 + in scenario aggiungere delta rispetto a horizon precedente e horizon precedente della stagione
 + aggiungere funzione di aggregazione del risultato sull'horizon (mean, median, max, min, ecc)
++ aggiungere funzione di adjustment del forecast
 + espansione nel tempo di prediction intervals con expanded_level = value + beta * t (problem: linear, renderlo esponenziale)
 
 

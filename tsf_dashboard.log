@@ -1,0 +1,88 @@
+2024-01-20 12:11:43 INFO::Getting Air Passengers data...
+2024-01-20 12:11:56 INFO::*** Fitting Algorithm ***
+2024-01-20 12:11:56 INFO::Method(s): ETS
+2024-01-20 12:11:56 INFO::Initial Split
+2024-01-20 12:11:56 INFO::Recipe Specification
+2024-01-20 12:11:56 INFO::Model Specification
+2024-01-20 12:11:56 INFO::Workflow Specification
+2024-01-20 12:11:56 INFO::Fitting
+2024-01-20 12:13:09 INFO::*** Fitting Algorithm ***
+2024-01-20 12:13:09 INFO::Method(s): ETS
+2024-01-20 12:13:16 INFO::Initial Split
+2024-01-20 12:13:18 INFO::Recipe Specification
+2024-01-20 12:16:17 INFO::*** Fitting Algorithm ***
+2024-01-20 12:16:17 INFO::Method(s): ETS
+2024-01-20 12:16:17 INFO::Initial Split
+2024-01-20 12:16:17 INFO::Recipe Specification
+2024-01-20 12:16:17 INFO::Model Specification
+2024-01-20 12:16:17 INFO::Workflow Specification
+2024-01-20 12:16:17 INFO::Fitting
+2024-01-20 12:17:04 INFO::*** Generating Forecasts ***
+2024-01-20 12:17:04 INFO::Method(s): ETS
+2024-01-20 12:17:05 INFO::Initial Split
+2024-01-20 12:17:08 INFO::Future Frame
+2024-01-20 12:17:10 INFO::Modeltime Table
+2024-01-20 12:17:19 INFO::Calibration
+2024-01-20 12:17:22 INFO::Residuals
+2024-01-20 12:17:25 INFO::Accuracy Evaluation
+2024-01-20 12:17:36 INFO::Test Forecasting
+2024-01-20 13:22:34 INFO::*** Generating Forecasts ***
+2024-01-20 13:22:34 INFO::Method(s): ETS
+2024-01-20 13:22:34 INFO::Initial Split
+2024-01-20 13:22:34 INFO::Future Frame
+2024-01-20 13:22:34 INFO::Modeltime Table
+2024-01-20 13:22:34 INFO::Calibration
+2024-01-20 13:22:34 INFO::Residuals
+2024-01-20 13:22:34 INFO::Accuracy Evaluation
+2024-01-20 13:22:34 INFO::Test Forecasting
+2024-01-20 13:22:34 INFO::Refitting
+2024-01-20 13:22:35 INFO::Out-of-Sample Forecasting
+2024-01-21 20:01:02 INFO::Getting Air Passengers data...
+2024-01-21 20:02:23 INFO::*** Fitting Algorithm ***
+2024-01-21 20:02:23 INFO::Method(s): ETS
+2024-01-21 20:02:23 INFO::Initial Split
+2024-01-21 20:02:23 INFO::Recipe Specification
+2024-01-21 20:02:23 INFO::Model Specification
+2024-01-21 20:02:23 INFO::Workflow Specification
+2024-01-21 20:02:23 INFO::Fitting
+2024-01-21 20:02:27 INFO::*** Generating Forecasts ***
+2024-01-21 20:02:27 INFO::Method(s): ETS
+2024-01-21 20:02:27 INFO::Initial Split
+2024-01-21 20:02:27 INFO::Future Frame
+2024-01-21 20:02:27 INFO::Modeltime Table
+2024-01-21 20:02:27 INFO::Calibration
+2024-01-21 20:02:27 INFO::Residuals
+2024-01-21 20:02:27 INFO::Accuracy Evaluation
+2024-01-21 20:02:27 INFO::Test Forecasting
+2024-01-21 20:02:27 INFO::Refitting
+2024-01-21 20:02:28 INFO::Out-of-Sample Forecasting
+2024-01-21 20:03:51 INFO::*** Generating Forecasts ***
+2024-01-21 20:03:51 INFO::Method(s): ETS
+2024-01-21 20:03:51 INFO::Initial Split
+2024-01-21 20:03:52 INFO::Future Frame
+2024-01-21 20:03:52 INFO::Modeltime Table
+2024-01-21 20:03:52 INFO::Calibration
+2024-01-21 20:03:52 INFO::Residuals
+2024-01-21 20:03:52 INFO::Accuracy Evaluation
+2024-01-21 20:03:52 INFO::Test Forecasting
+2024-01-21 20:03:52 INFO::Refitting
+2024-01-21 20:03:52 INFO::Out-of-Sample Forecasting
+2024-01-22 07:22:05 INFO::Getting Air Passengers data...
+2024-01-22 07:22:21 INFO::*** Fitting Algorithm ***
+2024-01-22 07:22:21 INFO::Method(s): ETS
+2024-01-22 07:22:21 INFO::Initial Split
+2024-01-22 07:22:21 INFO::Recipe Specification
+2024-01-22 07:22:21 INFO::Model Specification
+2024-01-22 07:22:21 INFO::Workflow Specification
+2024-01-22 07:22:21 INFO::Fitting
+2024-01-22 07:22:44 INFO::*** Generating Forecasts ***
+2024-01-22 07:22:44 INFO::Method(s): ETS
+2024-01-22 07:22:44 INFO::Initial Split
+2024-01-22 07:22:44 INFO::Future Frame
+2024-01-22 07:22:44 INFO::Modeltime Table
+2024-01-22 07:22:44 INFO::Calibration
+2024-01-22 07:22:44 INFO::Residuals
+2024-01-22 07:22:44 INFO::Accuracy Evaluation
+2024-01-22 07:22:44 INFO::Test Forecasting
+2024-01-22 07:22:45 INFO::Refitting
+2024-01-22 07:22:45 INFO::Out-of-Sample Forecasting

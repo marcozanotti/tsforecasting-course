@@ -1686,13 +1686,13 @@ sliderInput(
 )
 br()
 selectInput(
-  inputId = "scn_agg_fun", label = "Aggregation Function", 
-  choices = c("sum", "mean", "median"), selected = "sum"
+  inputId = "scn_aggreg_fun", label = "Aggregation Function", 
+  choices = getOption("tsf.dashboard.aggreg_funs"), selected = "sum"
 )
 br()
 numericInput(
-  inputId = "scn_adj", label = "Business Adjustment (%)", 
-  value = 0, min = 0, max = 100, step = 5
+  inputId = "scn_adjust", label = "Business Adjustment (%)", 
+  value = 0, min = -Inf, max = Inf, step = 5
 )
 br()
 
@@ -1706,8 +1706,8 @@ observeEvent(
     updatePrettyRadioButtons(session = session, inputId = "scn_assess_type", selected = "Rolling")
     updateSelectInput(session = session, inputId = "scn_method", selected = "ETS")
     updateSliderInput(session = session, inputId = "scn_conf_lvl", value = 0.9)
-    updateSelectInput(session = session, inputId = "scn_agg_fun", selected = "sum")
-    updateNumericInput(session = session, inputId = "scn_adj", value = 0)
+    updateSelectInput(session = session, inputId = "scn_aggreg_fun", selected = "sum")
+    updateNumericInput(session = session, inputId = "scn_adjust", value = 0)
     # shinyjs::delay(ms = 300, expr = {shinyjs::click(id = "tune_apply_forecast")})
   }
 )

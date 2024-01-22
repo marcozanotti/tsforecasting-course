@@ -337,7 +337,9 @@ input <- list(
   smooth_level = get_default("smooth_level"),
   smooth_trend = 0.1,
   smooth_season = get_default("smooth_season"),
-  confidence_level = c(0.25, 0.99)
+  conf_lvl = 0.9,
+  aggreg_fun = "sum",
+  adjust = 5
 )
 
 data = data_selected
@@ -347,7 +349,9 @@ n_assess = input$n_assess
 assess_type = input$assess_type
 seed = 1992
 n_future = input$n_future
-confidence_level = input$confidence_level
+confidence_level = input$conf_lvl
+aggregate_fun = input$aggreg_fun
+adjustment = input$adjust
 
 fitted_model_list <- map(
   input$method,
@@ -360,7 +364,7 @@ forecast_results <- generate_forecast(
   fitted_model_list = fitted_model_list, data = data_selected,
   method = input$method, n_future = input$n_future,
   n_assess = input$n_assess, assess_type = input$assess_type,
-  confidence_level = input$confidence_level
+  confidence_level = c(0.05, 0.99)
 )
 
 # !!!!! ATTENZIONE 0.95 non lo trova  per confronto numerico
@@ -368,8 +372,12 @@ forecast_results$oos_forecast |>
   dplyr::filter(.model_desc == "ACTUAL" | .conf_lvl == "0.55") |>
   plot_modeltime_forecast()
 
-beta = 0.05
-c(.2, .25, .3, .35) + beta * (1:4)
+forecast_results$oos_forecast |> adjust_forecast(adjustment)
+forecast_results$oos_forecast |> aggregate_forecast(n_future, confidence_level, aggregate_fun)
+
+forecast_results$oos_forecast |>
+  adjust_forecast(adjustment) |>
+  aggregate_forecast(n_future, confidence_level, aggregate_fun)
 
 
 

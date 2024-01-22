@@ -1,7 +1,7 @@
 # function to forecast using time series methods
 generate_forecast <- function(
     fitted_model_list, data, method, n_future, n_assess, assess_type,
-    ensemble_methods = NULL, stacking_methods = NULL, confidence_level = 0.95
+    ensemble_methods = NULL, stacking_methods = NULL, confidence_level = 0.9
   ) {
 
   logging::loginfo("*** Generating Forecasts ***")
@@ -108,14 +108,15 @@ generate_forecast <- function(
       )
     ) |> purrr::map2(conf_lvls, ~ dplyr::mutate(.x, .conf_lvl = .y)) |>
       dplyr::bind_rows() |>
-      dplyr::mutate(.conf_lvl = ifelse(.model_desc == "ACTUAL", NA_real_, .conf_lvl)) |>
+      dplyr::mutate(.conf_lvl = ifelse(.key == "actual", NA_real_, .conf_lvl)) |>
       dplyr::distinct(.keep_all = TRUE)
   } else {
     oos_forecast_tbl <- refit_tbl |>
       modeltime::modeltime_forecast(
         actual_data = data, new_data = future_tbl,
         conf_interval = confidence_level, conf_method = "conformal_split"
-      )
+      ) |>
+      dplyr::mutate(.conf_lvl = ifelse(.key == "actual", NA_real_, confidence_level))
   }
 
   # model summary
@@ -134,3 +135,97 @@ generate_forecast <- function(
 
 }
 
+# function to aggregate oos forecasts
+aggregate_forecast <- function(
+    forecasts, n_future, confidence_level = 0.9, aggregation_fun = "sum"
+) {
+
+  rate_of_change <- function(x_t, x_t1) {
+    (x_t - x_t1) / x_t1 * 100
+  }
+
+  aggregation_fun <- eval(parse(text = aggregation_fun))
+
+  frc_tbl <- forecasts |>
+    dplyr::filter(.key == "actual" | .conf_lvl == as.character(confidence_level)) |>
+    dplyr::select(.key, .index, .value, .conf_lo, .conf_hi) |>
+    dplyr::distinct(.keep_all = TRUE)
+
+  preds <- frc_tbl |> dplyr::filter(.key == "prediction")
+  actual_t <- frc_tbl |>
+    dplyr::filter(.key == "actual") |>
+    dplyr::slice_tail(n = n_future)
+  actual_seas_t <- frc_tbl |>
+    dplyr::filter(.key == "actual") |>
+    dplyr::filter(.index %in% (preds$.index - lubridate::years(1))) # previous year
+
+  agg_preds <- preds |> dplyr::summarise(value = aggregation_fun(.value), sd = sd(.value))
+  agg_conf_lo <- preds |> dplyr::summarise(value = aggregation_fun(.conf_lo), sd = sd(.value))
+  agg_conf_up <- preds |> dplyr::summarise(value = aggregation_fun(.conf_hi), sd = sd(.value))
+  agg_actual_t <- actual_t |> dplyr::summarise(value = aggregation_fun(.value), sd = sd(.value))
+  agg_actual_seas_t <- actual_seas_t |> dplyr::summarise(value = aggregation_fun(.value), sd = sd(.value))
+
+  delta_actual_t <- c(
+    rate_of_change(agg_preds$value, agg_actual_t$value),
+    rate_of_change(agg_conf_lo$value, agg_actual_t$value),
+    rate_of_change(agg_conf_up$value, agg_actual_t$value)
+  )
+  delta_actual_seas_t <- c(
+    rate_of_change(agg_actual_t$value, agg_actual_seas_t$value),
+    rate_of_change(agg_preds$value, agg_actual_seas_t$value),
+    rate_of_change(agg_conf_lo$value, agg_actual_seas_t$value),
+    rate_of_change(agg_conf_up$value, agg_actual_seas_t$value)
+  )
+
+  res_agg <- tibble::tibble(
+    "Period" = c("Previous Season", "Previous Period", NA_character_, "Forecast", "Worst Case", "Best Case"),
+    "Value" = c(agg_actual_seas_t$value, agg_actual_t$value, NA_real_, agg_preds$value, agg_conf_lo$value, agg_conf_up$value),
+    "Variability" = c(agg_actual_seas_t$sd, agg_actual_t$sd, NA_real_, agg_preds$sd, agg_conf_lo$sd, agg_conf_up$sd),
+    "Delta PP" = c(NA_real_, NA_real_, NA_real_, delta_actual_t),
+    "Delta PS" = c(NA_real_, delta_actual_seas_t[1], NA_real_, delta_actual_seas_t[2:4])
+  )
+  return(res_agg)
+
+}
+
+# function to adjust oos forecasts
+adjust_forecast <- function(forecasts, adjustment) {
+
+  frc_tbl <- forecasts |>
+    dplyr::mutate(
+      .value = ifelse(
+        .key == "prediction", .value + (.value * (adjustment / 100)), .value
+      )
+    )
+  return(frc_tbl)
+
+}
+
+# function to adjust prediction intervals
+adjust_prediction_interval <- function(forecast, type = "linear", beta = 0.01) {
+
+  adj_fun <- function(x, type = "linear", beta = 0.01) {
+    if (type == "linear") {
+      x + (beta * seq(0, length(x) - 1, 1))
+    } else if (type == "exponential") {
+      exp(log(x) + (beta * log(seq(1, length(x), 1))))
+    } else {
+      stop(paste("Unknown type:", type))
+    }
+  }
+
+  conf_lvls <- forecast |> tidyr::drop_na() |> dplyr::pull(".conf_lvl") |> unique()
+  for (lvl in conf_lvls) {
+    frc_tmp <- forecast |> dplyr::filter(.conf_lvl == lvl)
+    adj_conf_lo_tmp <- adj_fun(frc_tmp$.conf_lo, type, beta)
+    adj_conf_hi_tmp <- adj_fun(frc_tmp$.conf_hi, type, beta)
+    forecast <- forecast |>
+      dplyr::mutate(
+        .conf_lo = ifelse(.conf_lvl == lvl, adj_conf_lo_tmp, .conf_lo),
+        .conf_hi = ifelse(.conf_lvl == lvl, adj_conf_hi_tmp, .conf_hi)
+      )
+  }
+
+  return(forecast)
+
+}
