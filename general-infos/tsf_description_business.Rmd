@@ -34,14 +34,11 @@ with new methods.
 
 ## Course Structure
 
-The aim of the course is to teach the students how time series 
-forecasting problems can be solved in practice.  
-The state-of-the-art techniques are presented from a very practical 
-point of view, throughout R tutorials on each main topic. 
+The aim of the course is to teach how time series forecasting problems can be 
+solved in practice. The state-of-the-art techniques are presented from a very 
+practical point of view, throughout R tutorials on each main topic. 
 Python algorithms are also presented and used within R by means 
 of the *reticulate* package.
-Theoretical concepts are left to those who are interested in and 
-bibliographic references are listed at the end of the course.
 
 
 ## Contents
@@ -58,7 +55,7 @@ bibliographic references are listed at the end of the course.
 * Nested (Iterative) Forecasting
 * Global Modelling
 
-Specific business needs may be discussed during the lectures.  
+Specific business needs and adjustments may be discussed.  
 
 
 ## Duration
@@ -73,7 +70,3 @@ statisticians, IT specialists, developers, project managers and
 business leaders who want to develop the most in-demand skills to  
 solve time series forecasting problems.   
 
-
-## Requirements
-
-Basic statistic and programming knowledge.

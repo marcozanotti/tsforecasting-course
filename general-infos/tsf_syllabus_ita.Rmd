@@ -1,5 +1,5 @@
 ---
-title: "Time Series Forecasting  \n  with  \n  Machine Learning & Deep Learning  \n  - Programma del Corso -"
+title: "Time Series Forecasting  \n  con  \n  Machine Learning & Deep Learning  \n  - Programma del Corso -"
 author: "Marco Zanotti"
 date: ""
 output:
@@ -86,6 +86,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - TBATS  
 - STLM (Decomposition models)  
 - Facebook's Prophet  
+- Facebook's Neural Prophet  
 
 
 ## Machine Learning Models

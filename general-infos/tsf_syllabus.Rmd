@@ -1,8 +1,5 @@
 ---
-title: | 
-  | Time Series Forecasting:
-  | Machine Learning and Deep Learning with R and Python
-  | - Course Syllabus -
+title: "Time Series Forecasting  \n  with  \n  Machine Learning & Deep Learning  \n  - Course Program -"
 author: "Marco Zanotti"
 date: ""
 output:
@@ -91,6 +88,7 @@ knitr::opts_chunk$set(echo = TRUE)
 - TBATS  
 - STLM (Decomposition models)  
 - Facebook's Prophet  
+- Facebook's Neural Prophet  
 
 
 ## Lecture 5: Machine Learning Models
@@ -177,6 +175,8 @@ knitr::opts_chunk$set(echo = TRUE)
 **Forecasting Methods**:  
 - Nested Forecasting  
 - Global Modelling  
+
+
 <!--- Hierarchical Time Series Forecasting-->
 
 

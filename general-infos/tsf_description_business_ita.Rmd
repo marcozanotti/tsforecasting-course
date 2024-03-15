@@ -12,8 +12,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-&nbsp; 
-
 ## Introduzione
 
 Negli ultimi 15 anni, le richieste aziendali legate alla previsione di
@@ -37,10 +35,10 @@ tecnologie e algoritmi.
 ## Obiettivi
 
 L'obiettivo del corso è apprendere come i problemi di forecasting
-con dati temporali possono essere risolti in pratica.  
+con dati temporali possono essere risolti in pratica.
 I metodi e le tecnologie passate e attuali sono presentati da un
 punto di vista estremamente pratico attraverso la programmazione R.
-Anche numerosi algoritmi Python sono presentati e utilizzati.  
+Anche numerosi algoritmi Python sono presentati e utilizzati attraverso R.  
 
 
 ## Contenuti
@@ -74,9 +72,4 @@ statistici, professionisti IT, sviluppatori, capi progetto che
 vogliono acquisire know how sui metodi e sulle applicazioni riguardanti 
 il forecasting di dati temporali e la tecnologie più in voga per risolvere 
 tali problematiche aziendali.  
-
-
-## Requisiti
-
-Sono richieste conoscenze di base della statistica e della programmazione.  
 
